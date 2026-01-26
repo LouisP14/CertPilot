@@ -371,7 +371,7 @@ async function createDemoData() {
         city: tc.city,
         contactEmail: tc.contactEmail,
         isPartner: true,
-        negotiatedDiscount: tc.discount,
+        discountPercent: tc.discount,
         rating: 4 + Math.random(),
       },
     });

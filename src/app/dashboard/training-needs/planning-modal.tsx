@@ -1165,7 +1165,7 @@ export default function PlanningModal({
               onClick={() => setStep(3)}
               disabled={
                 !selectedCenter ||
-                (selectedCenter.offering.maxParticipants &&
+                (selectedCenter.offering.maxParticipants !== null &&
                   selectedEmployees.length >
                     selectedCenter.offering.maxParticipants)
               }
@@ -1181,7 +1181,8 @@ export default function PlanningModal({
               disabled={
                 creating ||
                 !sessionDate ||
-                (selectedCenter?.offering.maxParticipants &&
+                (selectedCenter?.offering.maxParticipants !== null &&
+                  selectedCenter?.offering.maxParticipants !== undefined &&
                   selectedEmployees.length >
                     selectedCenter.offering.maxParticipants)
               }

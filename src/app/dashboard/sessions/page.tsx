@@ -715,11 +715,11 @@ export default function SessionsPage() {
       {/* Dialog de confirmation de suppression */}
       <ConfirmDialog
         open={!!sessionToDelete}
-        onOpenChange={(open) => !open && setSessionToDelete(null)}
+        onClose={() => setSessionToDelete(null)}
         title="Supprimer la session"
-        description="Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible et supprimera également toutes les convocations associées."
-        confirmLabel={deleting ? "Suppression..." : "Supprimer"}
-        cancelLabel="Annuler"
+        message="Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible et supprimera également toutes les convocations associées."
+        confirmText={deleting ? "Suppression..." : "Supprimer"}
+        cancelText="Annuler"
         variant="danger"
         onConfirm={() => sessionToDelete && deleteSession(sessionToDelete)}
       />

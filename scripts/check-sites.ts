@@ -30,7 +30,6 @@ async function checkSites() {
       type: "SITE",
       value: {
         contains: "audreuil",
-        mode: "insensitive",
       },
     },
   });

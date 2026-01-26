@@ -33,7 +33,7 @@ export function StatusBadge({
 
 interface SimpleBadgeProps {
   children: React.ReactNode;
-  variant?: "default" | "secondary" | "success" | "warning" | "danger";
+  variant?: "default" | "secondary" | "success" | "warning" | "danger" | "outline";
   className?: string;
 }
 
@@ -48,6 +48,7 @@ export function Badge({
     success: "bg-green-100 text-green-800 border-green-200",
     warning: "bg-yellow-100 text-yellow-800 border-yellow-200",
     danger: "bg-red-100 text-red-800 border-red-200",
+    outline: "bg-transparent text-gray-600 border-gray-300",
   };
 
   return (

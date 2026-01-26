@@ -125,7 +125,13 @@ export async function POST(request: NextRequest) {
         isPartner,
         contactEmail,
       },
-      session.user,
+      session.user
+        ? {
+            id: session.user.id,
+            name: session.user.name || undefined,
+            email: session.user.email || undefined,
+          }
+        : null,
     );
 
     return NextResponse.json(trainingCenter, { status: 201 });

@@ -87,8 +87,8 @@ export async function PATCH(
     const updateData: Record<string, unknown> = {};
 
     // Mise à jour des champs autorisés
-    if (body.plannedDate !== undefined) {
-      updateData.plannedDate = new Date(body.plannedDate);
+    if (body.startDate !== undefined) {
+      updateData.startDate = new Date(body.startDate);
     }
     if (body.startTime !== undefined) {
       updateData.startTime = body.startTime ? new Date(body.startTime) : null;
@@ -113,35 +113,41 @@ export async function PATCH(
           });
 
           // Créer ou mettre à jour le certificat
-          const expiryDate = new Date(existingSession.plannedDate);
-          if (formationType?.validityMonths) {
+          const expiryDate = new Date(existingSession.startDate);
+          if (formationType?.defaultValidityMonths) {
             expiryDate.setMonth(
-              expiryDate.getMonth() + formationType.validityMonths,
+              expiryDate.getMonth() + formationType.defaultValidityMonths,
             );
           } else {
             expiryDate.setFullYear(expiryDate.getFullYear() + 1); // Par défaut 1 an
           }
 
-          await prisma.certificate.upsert({
+          // Trouver le certificat existant
+          const existingCertificate = await prisma.certificate.findFirst({
             where: {
-              employeeId_formationTypeId: {
-                employeeId: attendee.employeeId,
-                formationTypeId: existingSession.formationTypeId,
-              },
-            },
-            update: {
-              obtainedDate: existingSession.plannedDate,
-              expiryDate,
-              status: "VALID",
-            },
-            create: {
               employeeId: attendee.employeeId,
               formationTypeId: existingSession.formationTypeId,
-              obtainedDate: existingSession.plannedDate,
-              expiryDate,
-              status: "VALID",
             },
           });
+
+          if (existingCertificate) {
+            await prisma.certificate.update({
+              where: { id: existingCertificate.id },
+              data: {
+                obtainedDate: existingSession.startDate,
+                expiryDate,
+              },
+            });
+          } else {
+            await prisma.certificate.create({
+              data: {
+                employeeId: attendee.employeeId,
+                formationTypeId: existingSession.formationTypeId,
+                obtainedDate: existingSession.startDate,
+                expiryDate,
+              },
+            });
+          }
 
           // Mettre à jour le TrainingNeed si existant
           await prisma.trainingNeed.updateMany({

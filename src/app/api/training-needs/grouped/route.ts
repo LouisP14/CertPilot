@@ -48,6 +48,19 @@ export async function GET() {
     });
 
     // Regrouper par type de formation
+    interface GroupedFormation {
+      formationType: (typeof needs)[0]["formationType"];
+      needs: typeof needs;
+      totalEmployees: number;
+      avgPriority: number;
+      maxPriority: number;
+      earliestExpiry: Date | null;
+      totalEstimatedCost: number;
+      totalAbsenceCost: number;
+      sites: Set<string>;
+      teams: Set<string>;
+    }
+
     const groupedByFormation = needs.reduce(
       (acc, need) => {
         const ftId = need.formationTypeId;
@@ -85,27 +98,14 @@ export async function GET() {
 
         return acc;
       },
-      {} as Record<string, unknown>,
+      {} as Record<string, GroupedFormation>,
     );
 
     // Calculer la moyenne de priorité et convertir les Sets en arrays
-    const result = Object.values(groupedByFormation).map((group: unknown) => {
-      const g = group as {
-        needs: { priority: number }[];
-        totalEmployees: number;
-        maxPriority: number;
-        sites: Set<string>;
-        teams: Set<string>;
-        formationType: unknown;
-        earliestExpiry: Date | null;
-        totalEstimatedCost: number;
-        totalAbsenceCost: number;
-      };
+    const result = Object.values(groupedByFormation).map((g) => {
       const avgPriority =
-        g.needs.reduce(
-          (sum: number, n: { priority: number }) => sum + n.priority,
-          0,
-        ) / g.totalEmployees;
+        g.needs.reduce((sum: number, n) => sum + n.priority, 0) /
+        g.totalEmployees;
 
       return {
         ...g,

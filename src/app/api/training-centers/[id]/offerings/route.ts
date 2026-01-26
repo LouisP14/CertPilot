@@ -1,3 +1,4 @@
+import { auditCreate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -148,7 +149,13 @@ export async function POST(
         maxParticipants,
         availableModes,
       },
-      session.user,
+      session.user
+        ? {
+            id: session.user.id,
+            name: session.user.name || undefined,
+            email: session.user.email || undefined,
+          }
+        : null,
     );
 
     return NextResponse.json(offering, { status: 201 });

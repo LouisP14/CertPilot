@@ -37,6 +37,7 @@ async function getEmployee(id: string) {
       medicalCheckupDate: true,
       managerEmail: true,
       createdAt: true,
+      qrToken: true,
       manager: {
         select: { id: true, firstName: true, lastName: true },
       },
