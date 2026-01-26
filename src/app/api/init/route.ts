@@ -1,24 +1,14 @@
+import { createTablesIfNotExist } from "@/lib/create-tables";
 import { seedDemoDataIfNeeded } from "@/lib/seed-demo";
-import { execSync } from "child_process";
 import { NextResponse } from "next/server";
 
 // Cette route initialise la base de données avec des données de démo
 // Elle est appelée automatiquement au premier accès sur Vercel
 export async function GET() {
   try {
-    // Sur Vercel, créer les tables si elles n'existent pas
-    if (process.env.VERCEL) {
-      try {
-        console.log("🔧 Création des tables SQLite...");
-        execSync("npx prisma db push --skip-generate", {
-          stdio: "inherit",
-          env: { ...process.env, DATABASE_URL: "file:/tmp/dev.db" },
-        });
-        console.log("✅ Tables créées");
-      } catch (dbError) {
-        console.log("Tables peut-être déjà existantes:", dbError);
-      }
-    }
+    // Créer les tables si elles n'existent pas
+    console.log("🔧 Vérification des tables...");
+    await createTablesIfNotExist();
 
     const result = await seedDemoDataIfNeeded();
 
