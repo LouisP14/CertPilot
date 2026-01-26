@@ -12,7 +12,7 @@ import {
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -21,6 +21,27 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [initStatus, setInitStatus] = useState<string | null>(null);
+
+  // Initialiser la base de données au chargement (pour Vercel)
+  useEffect(() => {
+    const initDb = async () => {
+      try {
+        const res = await fetch("/api/init");
+        const data = await res.json();
+        if (data.status === "seeded") {
+          setInitStatus(
+            "Base initialisée ! Utilisez demo@certpilot.fr / demo123",
+          );
+          setEmail("demo@certpilot.fr");
+          setPassword("demo123");
+        }
+      } catch (e) {
+        console.log("Init check:", e);
+      }
+    };
+    initDb();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +157,15 @@ export default function LoginPage() {
               Connectez-vous à votre espace de gestion
             </p>
           </div>
+
+          {/* Message d'initialisation démo */}
+          {initStatus && (
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+              <p className="text-sm text-emerald-700 font-medium">
+                🎉 {initStatus}
+              </p>
+            </div>
+          )}
 
           {/* Formulaire */}
           <form onSubmit={handleSubmit} className="space-y-5">
