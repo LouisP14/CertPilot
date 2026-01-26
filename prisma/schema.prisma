@@ -1,0 +1,665 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTHENTIFICATION
+// ============================================
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  password            String
+  name                String
+  role                String    @default("ADMIN") // SUPER_ADMIN, ADMIN, MANAGER, VIEWER
+  companyId           String?
+  company             Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  mustChangePassword  Boolean   @default(false) // Force changement mdp au premier login
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// ============================================
+// DEMANDES DE CONTACT / DEMO
+// ============================================
+
+model ContactRequest {
+  id              String    @id @default(cuid())
+  companyName     String
+  contactName     String
+  email           String
+  phone           String?
+  employeeCount   String?   // "1-50", "51-100", "101-200", "201-500", "500+"
+  message         String?
+  status          String    @default("PENDING") // PENDING, CONTACTED, CONVERTED, REJECTED
+  notes           String?   // Notes internes admin
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ============================================
+// CONFIGURATION ENTREPRISE
+// ============================================
+
+model Company {
+  id                    String   @id @default(cuid())
+  name                  String
+  logo                  String?
+  alertThresholds       String   @default("90,60,30,7") // jours avant expiration, séparés par virgule
+  adminEmail            String?
+  // Signature électronique du responsable
+  signatureEnabled      Boolean  @default(false)
+  signatureImage        String?  // Image de la signature en base64
+  signatureResponsable  String?  // Nom du responsable de site
+  signatureTitre        String?  // Titre/fonction du responsable
+  
+  // Abonnement & Trial
+  trialEndsAt           DateTime?  // Date de fin d'essai gratuit (null = pas de trial)
+  subscriptionStatus    String     @default("TRIAL") // TRIAL, ACTIVE, EXPIRED, CANCELLED
+  subscriptionPlan      String?    // Starter, Growth, Scale, Business
+  employeeLimit         Int        @default(50)  // Limite d'employés selon le plan
+  stripeCustomerId      String?    // ID client Stripe (pour plus tard)
+  stripeSubscriptionId  String?    // ID abonnement Stripe (pour plus tard)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relations
+  users                 User[]
+  planningConstraints   PlanningConstraints?
+}
+
+// ============================================
+// CONTRAINTES DE PLANIFICATION
+// ============================================
+
+model PlanningConstraints {
+  id                    String   @id @default(cuid())
+  companyId             String   @unique
+  company               Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  // Budget
+  monthlyBudget         Float?   // Budget mensuel formation (€)
+  quarterlyBudget       Float?   // Budget trimestriel (€)
+  yearlyBudget          Float?   // Budget annuel (€)
+  
+  // Seuils d'alerte planification
+  alertThresholdDays    String   @default("90,60,30") // Jours avant expiration pour déclencher planification
+  
+  // Contraintes d'absence
+  maxAbsentPerTeam      Int      @default(2)  // Max absents par équipe/jour
+  maxAbsentPerSite      Int      @default(5)  // Max absents par site/jour
+  maxAbsentPercent      Float    @default(20) // % max d'absents (ex: 20%)
+  
+  // Jours blacklistés (JSON array: ["2026-03-15", "2026-06-01"])
+  blacklistedDates      String   @default("[]")
+  
+  // Jours de formation autorisés (bitmask: 1=Lun, 2=Mar, 4=Mer, 8=Jeu, 16=Ven, 32=Sam, 64=Dim)
+  allowedTrainingDays   Int      @default(31) // Lun-Ven par défaut
+  
+  // Préférences
+  preferGroupSessions   Boolean  @default(true)  // Privilégier sessions groupées
+  preferIntraCompany    Boolean  @default(true)  // Privilégier formations intra
+  minDaysBeforeExpiry   Int      @default(30)    // Jours min avant expiration pour planifier
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+// ============================================
+// EMPLOYÉS (PASSEPORTS)
+// ============================================
+
+model Employee {
+  id                 String        @id @default(cuid())
+  firstName          String
+  lastName           String
+  email              String?
+  photo              String?
+  employeeId         String        @unique // Matricule
+  position           String        // Fonction
+  department         String        // Service
+  site               String?       // Site géographique (ex: "Rouen", "Paris", "Lyon")
+  team               String?       // Équipe (ex: "Équipe A", "Maintenance Jour")
+  managerId          String?
+  manager            Employee?     @relation("ManagerRelation", fields: [managerId], references: [id])
+  subordinates       Employee[]    @relation("ManagerRelation")
+  managerEmail       String?
+  medicalCheckupDate DateTime?     // Date visite médicale
+  qrToken            String        @unique @default(cuid())
+  isActive           Boolean       @default(true)
+  
+  // Données pour calcul coût planification
+  hourlyCost         Float?        // Coût horaire chargé (€/h)
+  contractType       String?       // CDI, CDD, Interim, etc.
+  workingHoursPerDay Float         @default(7) // Heures travaillées/jour
+  
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  certificates       Certificate[]
+  passportSignature  PassportSignature?
+  trainingNeeds      TrainingNeed[]
+  plannedSessions    TrainingSessionAttendee[]
+  absences           EmployeeAbsence[]
+}
+
+// ============================================
+// CATALOGUE DES FORMATIONS
+// ============================================
+
+model FormationType {
+  id                    String        @id @default(cuid())
+  name                  String        // Ex: "Électricien Basse Tension"
+  category              String?       // Ex: "B0S44-3 BT", "R489 CAT 1B"
+  service               String?       // Ex: "Maintenance", "Production", "Logistique"
+  defaultValidityMonths Int?          // Durée de validité par défaut (null = pas d'expiration)
+  isActive              Boolean       @default(true)
+  
+  // Données pour planification
+  durationHours         Float         @default(7)   // Durée de la formation (heures)
+  durationDays          Int           @default(1)   // Durée en jours
+  minParticipants       Int           @default(1)   // Taille min de session
+  maxParticipants       Int           @default(12)  // Taille max de session
+  trainingMode          String        @default("PRESENTIEL") // PRESENTIEL, DISTANCIEL, MIXTE
+  isLegalObligation     Boolean       @default(false) // Formation obligatoire légalement
+  renewalPriority       Int           @default(5)   // Priorité de renouvellement (1-10, 10 = urgent)
+  
+  // Coûts indicatifs (peuvent être surchargés par TrainingCenter)
+  estimatedCostPerPerson Float?       // Coût estimé par personne (€)
+  estimatedCostPerSession Float?      // Coût estimé par session intra (€)
+  
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  certificates          Certificate[]
+  trainingNeeds         TrainingNeed[]
+  centerOfferings       TrainingCenterOffering[]
+  plannedSessions       TrainingSession[]
+}
+
+// ============================================
+// CERTIFICATS / FORMATIONS OBTENUES
+// ============================================
+
+model Certificate {
+  id              String        @id @default(cuid())
+  employeeId      String
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  formationTypeId String
+  formationType   FormationType @relation(fields: [formationTypeId], references: [id])
+  obtainedDate    DateTime      // Date de formation
+  expiryDate      DateTime?     // Date de fin de validité (null = pas d'expiration)
+  organism        String?       // Organisme de formation
+  details         String?       // Détails supplémentaires (ex: "HOV B2V BR BC")
+  attachmentUrl   String?       // Pièce jointe
+  isArchived      Boolean       @default(false)
+  archivedAt      DateTime?     // Date d'archivage (renouvellement)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  alertLogs AlertLog[]
+}
+
+// ============================================
+// HISTORIQUE DES ALERTES
+// ============================================
+
+model AlertLog {
+  id            String      @id @default(cuid())
+  certificateId String
+  certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
+  alertType     String      // "90_DAYS", "60_DAYS", "30_DAYS", "7_DAYS", "EXPIRED"
+  recipients    String      // Emails séparés par virgule
+  sentAt        DateTime    @default(now())
+}
+
+// ============================================
+// NOTIFICATIONS SYSTÈME
+// ============================================
+
+model Notification {
+  id          String    @id @default(cuid())
+  type        String    // SIGNATURE_REJECTED, SIGNATURE_COMPLETED, SIGNATURE_PENDING, FORMATION_EXPIRED
+  title       String
+  message     String
+  link        String?   // Lien vers la ressource concernée
+  employeeId  String?   // Employé concerné (optionnel)
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+}
+
+// ============================================
+// WORKFLOW SIGNATURE ÉLECTRONIQUE
+// ============================================
+
+model PassportSignature {
+  id                    String    @id @default(cuid())
+  employeeId            String    @unique
+  employee              Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Statut global du workflow
+  status                String    @default("DRAFT") // DRAFT, PENDING_EMPLOYEE, PENDING_MANAGER, COMPLETED, REJECTED
+  
+  // Token sécurisé pour l'employé
+  employeeToken         String    @unique @default(cuid())
+  employeeTokenExpiry   DateTime?
+  
+  // Signature de l'employé
+  employeeSignedAt      DateTime?
+  employeeSignatureImg  String?   // Image signature base64
+  employeeSignatureIP   String?   // IP de signature
+  employeeSignatureName String?   // Nom saisi lors de la signature
+  
+  // Token sécurisé pour le responsable
+  managerToken          String    @unique @default(cuid())
+  managerTokenExpiry    DateTime?
+  
+  // Signature du responsable
+  managerSignedAt       DateTime?
+  managerSignatureImg   String?   // Image signature base64
+  managerSignatureIP    String?   // IP de signature
+  managerSignatureName  String?   // Nom du responsable
+  managerSignatureTitle String?   // Titre du responsable
+  
+  // Email du responsable de site (peut être différent du manager direct)
+  siteManagerEmail      String?
+  siteManagerName       String?
+  
+  // Métadonnées
+  initiatedBy           String?   // ID de l'admin qui a initié
+  initiatedAt           DateTime?
+  completedAt           DateTime?
+  rejectedAt            DateTime?
+  rejectionReason       String?
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+}
+
+// ============================================
+// CENTRES DE FORMATION
+// ============================================
+
+model TrainingCenter {
+  id                String   @id @default(cuid())
+  name              String   // Ex: "AFPA Rouen", "CNAM Paris"
+  code              String?  @unique // Code interne (ex: "AFPA-76")
+  
+  // Coordonnées
+  address           String?
+  city              String?
+  postalCode        String?
+  country           String   @default("France")
+  latitude          Float?   // Pour calcul distance
+  longitude         Float?   // Pour calcul distance
+  
+  // Contact
+  contactName       String?
+  contactEmail      String?
+  contactPhone      String?
+  website           String?
+  
+  // Informations commerciales
+  isPartner         Boolean  @default(false) // Partenaire privilégié
+  discountPercent   Float?   // Remise négociée (%)
+  paymentTerms      String?  // Conditions de paiement
+  notes             String?  // Notes internes
+  
+  // Capacités
+  maxCapacity       Int?     // Capacité max simultanée
+  hasOwnPremises    Boolean  @default(true)  // Dispose de locaux
+  canTravel         Boolean  @default(false) // Peut se déplacer (intra)
+  travelCostPerKm   Float?   // Coût déplacement par km (€)
+  
+  // Évaluation
+  rating            Float?   // Note moyenne (1-5)
+  totalSessions     Int      @default(0) // Nombre de sessions réalisées
+  
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  offerings         TrainingCenterOffering[]
+  availabilities    TrainingCenterAvailability[]
+  sessions          TrainingSession[]
+}
+
+// ============================================
+// OFFRES DES CENTRES (Prix par formation)
+// ============================================
+
+model TrainingCenterOffering {
+  id                String         @id @default(cuid())
+  trainingCenterId  String
+  trainingCenter    TrainingCenter @relation(fields: [trainingCenterId], references: [id], onDelete: Cascade)
+  formationTypeId   String
+  formationType     FormationType  @relation(fields: [formationTypeId], references: [id], onDelete: Cascade)
+  
+  // Tarification
+  pricePerPerson    Float          // Prix par stagiaire (inter)
+  pricePerSession   Float?         // Prix forfait session (intra)
+  minParticipants   Int            @default(1)
+  maxParticipants   Int            @default(12)
+  
+  // Durée spécifique à ce centre (peut différer du standard)
+  durationHours     Float?
+  durationDays      Int?
+  
+  // Modes disponibles
+  availableModes    String         @default("PRESENTIEL") // PRESENTIEL, DISTANCIEL, MIXTE (séparés par virgule)
+  
+  // Certifications
+  certificationCode String?        // Code certification délivrée
+  isOPCOEligible    Boolean        @default(true) // Éligible OPCO
+  
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  @@unique([trainingCenterId, formationTypeId])
+}
+
+// ============================================
+// DISPONIBILITÉS DES CENTRES
+// ============================================
+
+model TrainingCenterAvailability {
+  id               String         @id @default(cuid())
+  trainingCenterId String
+  trainingCenter   TrainingCenter @relation(fields: [trainingCenterId], references: [id], onDelete: Cascade)
+  
+  date             DateTime       // Date de disponibilité
+  startTime        String         @default("09:00") // Heure début
+  endTime          String         @default("17:00") // Heure fin
+  spotsAvailable   Int            @default(12)      // Places disponibles
+  formationTypeId  String?        // Optionnel: formation spécifique
+  
+  isBooked         Boolean        @default(false)   // Déjà réservé
+  sessionId        String?        // Lien vers session si réservé
+  
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  @@index([trainingCenterId, date])
+}
+
+// ============================================
+// ABSENCES PRÉVUES DES EMPLOYÉS
+// ============================================
+
+model EmployeeAbsence {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  startDate   DateTime
+  endDate     DateTime
+  type        String   // CONGE, MALADIE, FORMATION, RTT, AUTRE
+  reason      String?
+  isConfirmed Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([employeeId, startDate, endDate])
+}
+
+// ============================================
+// BESOINS DE FORMATION DÉTECTÉS
+// ============================================
+
+model TrainingNeed {
+  id              String        @id @default(cuid())
+  employeeId      String
+  employee        Employee      @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  formationTypeId String
+  formationType   FormationType @relation(fields: [formationTypeId], references: [id], onDelete: Cascade)
+  
+  // Contexte du besoin
+  certificateId   String?       // Certificat qui expire (si renouvellement)
+  expiryDate      DateTime?     // Date d'expiration
+  daysUntilExpiry Int?          // Jours restants
+  
+  // Priorité calculée
+  priority        Int           @default(5)  // 1-10 (10 = très urgent)
+  priorityReason  String?       // Ex: "Expire dans 15 jours", "Obligation légale"
+  
+  // Statut
+  status          String        @default("PENDING") // PENDING, PLANNED, COMPLETED, CANCELLED
+  plannedSessionId String?      // Session planifiée
+  
+  // Coût estimé
+  estimatedCost   Float?        // Coût formation estimé
+  absenceCost     Float?        // Coût d'absence estimé
+  totalCost       Float?        // Coût total estimé
+  
+  detectedAt      DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  
+  @@index([status, priority])
+  @@index([expiryDate])
+}
+
+// ============================================
+// SESSIONS DE FORMATION PLANIFIÉES
+// ============================================
+
+model TrainingSession {
+  id               String         @id @default(cuid())
+  formationTypeId  String
+  formationType    FormationType  @relation(fields: [formationTypeId], references: [id])
+  trainingCenterId String?
+  trainingCenter   TrainingCenter? @relation(fields: [trainingCenterId], references: [id])
+  
+  // Dates et horaires
+  startDate        DateTime
+  endDate          DateTime
+  startTime        String         @default("09:00")
+  endTime          String         @default("17:00")
+  
+  // Lieu
+  location         String?        // Adresse si différente du centre
+  isIntraCompany   Boolean        @default(false) // Formation dans les locaux entreprise
+  trainingMode     String         @default("PRESENTIEL") // PRESENTIEL, DISTANCIEL, MIXTE
+  
+  // Capacité
+  minParticipants  Int            @default(1)
+  maxParticipants  Int            @default(12)
+  
+  // Coûts
+  trainingCost     Float?         // Coût formation total
+  costPerPerson    Float?         // Coût par personne
+  totalAbsenceCost Float?         // Coût total absence
+  totalCost        Float?         // Coût global (formation + absence)
+  
+  // Statut
+  status           String         @default("DRAFT") // DRAFT, PROPOSED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED
+  convocationsSentAt DateTime?    // Date d'envoi des convocations
+  
+  // Métadonnées scénario
+  scenarioId       String?        // ID du scénario d'origine
+  scenarioRank     Int?           // Rang dans les scénarios (1 = meilleur)
+  savingsVsAlternative Float?     // Économies vs alternative la plus chère
+  
+  // Notes
+  notes            String?
+  cancellationReason String?
+  
+  confirmedAt      DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  
+  attendees        TrainingSessionAttendee[]
+  
+  @@index([status, startDate])
+}
+
+// ============================================
+// PARTICIPANTS AUX SESSIONS
+// ============================================
+
+model TrainingSessionAttendee {
+  id              String          @id @default(cuid())
+  sessionId       String
+  session         TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employee        Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  // Statut de participation
+  status          String          @default("INVITED") // INVITED, CONFIRMED, ATTENDED, ABSENT, CANCELLED
+  
+  // Coûts individuels
+  absenceCost     Float?          // Coût d'absence pour cet employé
+  travelCost      Float?          // Frais de déplacement
+  
+  // Résultat
+  passed          Boolean?        // A validé la formation
+  certificateId   String?         // Certificat généré
+  
+  confirmedAt     DateTime?
+  attendedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  @@unique([sessionId, employeeId])
+}
+
+// ============================================
+// SCÉNARIOS DE PLANIFICATION
+// ============================================
+
+model PlanningScenario {
+  id              String   @id @default(cuid())
+  name            String?  // Ex: "Scénario optimal Q1 2026"
+  
+  // Périmètre
+  periodStart     DateTime
+  periodEnd       DateTime
+  site            String?  // Site concerné (null = tous)
+  department      String?  // Service concerné (null = tous)
+  
+  // Résultats
+  totalTrainingCost   Float?   // Coût total formations
+  totalAbsenceCost    Float?   // Coût total absences
+  totalCost           Float?   // Coût global
+  savingsVsBaseline   Float?   // Économies vs planification naïve
+  coveragePercent     Float?   // % des besoins couverts
+  riskScore           Float?   // Score de risque (0-100)
+  
+  // Données du scénario (JSON)
+  sessionsData        String?  // JSON des sessions proposées
+  constraintsData     String?  // JSON des contraintes appliquées
+  
+  // Statut
+  status              String   @default("DRAFT") // DRAFT, PROPOSED, APPROVED, APPLIED, ARCHIVED
+  
+  generatedAt         DateTime @default(now())
+  approvedAt          DateTime?
+  approvedBy          String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// ============================================
+// AUDIT TRAIL - TRAÇABILITÉ
+// ============================================
+
+model AuditLog {
+  id            String   @id @default(cuid())
+  
+  // Qui
+  userId        String?  // ID de l'utilisateur (null si système)
+  userName      String?  // Nom de l'utilisateur au moment de l'action
+  userEmail     String?  // Email de l'utilisateur
+  
+  // Quoi
+  action        String   // CREATE, UPDATE, DELETE, SIGN, SEND_CONVOCATION, EXPORT, LOGIN, etc.
+  entityType    String   // EMPLOYEE, CERTIFICATE, FORMATION_TYPE, TRAINING_SESSION, CONVOCATION, etc.
+  entityId      String?  // ID de l'entité concernée
+  entityName    String?  // Nom/label de l'entité pour affichage
+  
+  // Détails
+  description   String   // Description lisible de l'action
+  oldValues     String?  // JSON des anciennes valeurs (pour UPDATE/DELETE)
+  newValues     String?  // JSON des nouvelles valeurs (pour CREATE/UPDATE)
+  metadata      String?  // JSON pour données additionnelles
+  
+  // Contexte
+  ipAddress     String?  // Adresse IP
+  userAgent     String?  // Navigateur/client
+  
+  // Timestamp
+  createdAt     DateTime @default(now())
+  
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ============================================
+// CONVOCATIONS
+// ============================================
+
+model Convocation {
+  id                String   @id @default(cuid())
+  formationId       String
+  formationName     String
+  startDate         String   // Format YYYY-MM-DD
+  endDate           String   // Format YYYY-MM-DD
+  startTime         String   // Format HH:MM
+  endTime           String   // Format HH:MM
+  location          String
+  notes             String?
+  status            String   @default("draft") // draft, sent, completed
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  attendees         ConvocationAttendee[]
+  
+  @@index([formationId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ConvocationAttendee {
+  id              String       @id @default(cuid())
+  convocationId   String
+  convocation     Convocation  @relation(fields: [convocationId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employeeName    String
+  employeeEmail   String?
+  createdAt       DateTime     @default(now())
+  
+  @@index([convocationId])
+  @@index([employeeId])
+}
+
+// ============================================
+// RÉFÉRENTIELS - LISTES PERSONNALISABLES
+// ============================================
+
+model ReferenceData {
+  id          String   @id @default(cuid())
+  type        String   // FUNCTION, SERVICE, SITE, TEAM
+  value       String   // La valeur (ex: "Technicien de maintenance", "Production", "Rouen", "Équipe A")
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0) // Pour l'ordre d'affichage
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([type, value])
+  @@index([type, isActive])
+}
