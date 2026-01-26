@@ -33,22 +33,88 @@ async function ensureSchema() {
     "SELECT name FROM sqlite_master WHERE type='table' AND name='User'",
   );
 
-  if (Array.isArray(existing) && existing.length > 0) {
-    return;
+  if (!Array.isArray(existing) || existing.length === 0) {
+    const migrationsDir = path.join(process.cwd(), "prisma", "migrations");
+    const entries = await fs.readdir(migrationsDir, { withFileTypes: true });
+    const migrationFolders = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+
+    for (const folder of migrationFolders) {
+      const sqlPath = path.join(migrationsDir, folder, "migration.sql");
+      const sql = await fs.readFile(sqlPath, "utf8");
+      await runSqlStatements(sql);
+    }
   }
 
-  const migrationsDir = path.join(process.cwd(), "prisma", "migrations");
-  const entries = await fs.readdir(migrationsDir, { withFileTypes: true });
-  const migrationFolders = entries
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort();
+  const getColumns = async (table: string) => {
+    const rows = await prisma.$queryRawUnsafe(
+      `PRAGMA table_info("${table}")`,
+    );
+    const columns = new Set<string>();
+    if (Array.isArray(rows)) {
+      for (const row of rows) {
+        if (row?.name) {
+          columns.add(String(row.name));
+        }
+      }
+    }
+    return columns;
+  };
 
-  for (const folder of migrationFolders) {
-    const sqlPath = path.join(migrationsDir, folder, "migration.sql");
-    const sql = await fs.readFile(sqlPath, "utf8");
-    await runSqlStatements(sql);
-  }
+  const ensureColumns = async (
+    table: string,
+    definitions: Array<{
+      name: string;
+      type: string;
+      notNull?: boolean;
+      defaultValue?: string | number;
+    }>,
+  ) => {
+    const existingColumns = await getColumns(table);
+    for (const column of definitions) {
+      if (existingColumns.has(column.name)) {
+        continue;
+      }
+
+      const parts = [
+        `ALTER TABLE "${table}" ADD COLUMN "${column.name}" ${column.type}`,
+      ];
+
+      if (column.notNull) {
+        parts.push("NOT NULL");
+      }
+
+      if (column.defaultValue !== undefined) {
+        if (typeof column.defaultValue === "number") {
+          parts.push(`DEFAULT ${column.defaultValue}`);
+        } else {
+          parts.push(`DEFAULT '${column.defaultValue}'`);
+        }
+      }
+
+      await prisma.$executeRawUnsafe(`${parts.join(" ")};`);
+    }
+  };
+
+  await ensureColumns("User", [
+    { name: "companyId", type: "TEXT" },
+    { name: "mustChangePassword", type: "BOOLEAN", notNull: true, defaultValue: 0 },
+  ]);
+
+  await ensureColumns("Company", [
+    { name: "signatureEnabled", type: "BOOLEAN", notNull: true, defaultValue: 0 },
+    { name: "signatureImage", type: "TEXT" },
+    { name: "signatureResponsable", type: "TEXT" },
+    { name: "signatureTitre", type: "TEXT" },
+    { name: "trialEndsAt", type: "DATETIME" },
+    { name: "subscriptionStatus", type: "TEXT", notNull: true, defaultValue: "TRIAL" },
+    { name: "subscriptionPlan", type: "TEXT" },
+    { name: "employeeLimit", type: "INTEGER", notNull: true, defaultValue: 50 },
+    { name: "stripeCustomerId", type: "TEXT" },
+    { name: "stripeSubscriptionId", type: "TEXT" },
+  ]);
 }
 
 // Cette route crée l'utilisateur demo si nécessaire
