@@ -12,13 +12,13 @@ export async function POST() {
 
     if (existingDemo) {
       return NextResponse.json(
-        { 
+        {
           success: true,
           message: "Compte démo existe déjà",
           credentials: {
             email: "demo@certpilot.fr",
-            password: "demo123"
-          }
+            password: "demo123",
+          },
         },
         { status: 200 },
       );
@@ -50,7 +50,6 @@ export async function POST() {
       },
     });
 
-
     return NextResponse.json({
       success: true,
       message: "Compte démo créé avec succès (base vide)",
@@ -67,14 +66,4 @@ export async function POST() {
     );
   }
 }
-      message: "Seed completed successfully",
-      admin: { email: admin.email, name: admin.name },
-    });
-  } catch (error) {
-    console.error("Seed error:", error);
-    return NextResponse.json(
-      { error: "Failed to seed database" },
-      { status: 500 },
-    );
-  }
-}
+
