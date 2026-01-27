@@ -1,6 +1,10 @@
 "use client";
 
-import { Building2, Key, Mail, User, UserPlus, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Building2, Key, Users } from "lucide-react";
 import { useState } from "react";
 
 export default function ClientsAdminPage() {
@@ -68,28 +72,21 @@ export default function ClientsAdminPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="space-y-6">
       {/* En-tête */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg">
-            <UserPlus className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Créer un compte client
-            </h1>
-            <p className="text-sm text-gray-700">
-              Configurez un nouvel accès pour votre client
-            </p>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Créer un compte client
+        </h1>
+        <p className="text-gray-600">
+          Configurez un nouvel accès pour votre client
+        </p>
       </div>
 
       {/* Message de succès/erreur */}
       {message && (
         <div
-          className={`mb-6 rounded-xl p-4 shadow-sm ${
+          className={`rounded-xl p-4 ${
             message.type === "success"
               ? "bg-emerald-50 border border-emerald-200"
               : "bg-red-50 border border-red-200"
@@ -106,172 +103,171 @@ export default function ClientsAdminPage() {
       )}
 
       {/* Formulaire */}
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 rounded-2xl bg-white p-8 shadow-xl border border-gray-100"
-      >
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Informations entreprise */}
-        <div className="space-y-4">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <Building2 className="h-5 w-5 text-emerald-500" />
-            Informations entreprise
-          </h3>
-
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
-              <Building2 className="h-4 w-4" />
-              Nom de l&apos;entreprise *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.companyName}
-              onChange={(e) =>
-                setFormData({ ...formData, companyName: e.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
-              placeholder="Acme Industries"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
-              <User className="h-4 w-4" />
-              Nom du contact *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.contactName}
-              onChange={(e) =>
-                setFormData({ ...formData, contactName: e.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
-              placeholder="Jean Dupont"
-            />
-          </div>
-        </div>
-
-        {/* Connexion */}
-        <div className="space-y-4 border-t pt-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <Key className="h-5 w-5 text-emerald-500" />
-            Informations de connexion
-          </h3>
-
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
-              <Mail className="h-4 w-4" />
-              Email *
-            </label>
-            <input
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
-              placeholder="contact@entreprise.fr"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
-              <Key className="h-4 w-4" />
-              Mot de passe temporaire *
-            </label>
-            <div className="flex gap-2">
-              <input
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Building2 className="h-5 w-5 text-[#173B56]" />
+              Informations entreprise
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="companyName">
+                Nom de l&apos;entreprise <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="companyName"
                 type="text"
                 required
-                value={formData.password}
+                value={formData.companyName}
                 onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
+                  setFormData({ ...formData, companyName: e.target.value })
                 }
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none font-mono"
-                placeholder="Générez un mot de passe"
+                placeholder="Acme Industries"
               />
-              <button
-                type="button"
-                onClick={generatePassword}
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:shadow-md transition-all hover:from-emerald-600 hover:to-teal-700"
-              >
-                <Key className="h-4 w-4" />
-                Générer
-              </button>
             </div>
-            <p className="mt-2 flex items-start gap-2 text-xs text-gray-700">
-              <span className="text-amber-500">ℹ️</span>
-              Le client devra changer ce mot de passe à la première connexion
-            </p>
-          </div>
-        </div>
+
+            <div>
+              <Label htmlFor="contactName">
+                Nom du contact <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="contactName"
+                type="text"
+                required
+                value={formData.contactName}
+                onChange={(e) =>
+                  setFormData({ ...formData, contactName: e.target.value })
+                }
+                placeholder="Jean Dupont"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Connexion */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Key className="h-5 w-5 text-[#173B56]" />
+              Informations de connexion
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="email">
+                Email <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                placeholder="contact@entreprise.fr"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="password">
+                Mot de passe temporaire <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id="password"
+                  type="text"
+                  required
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  placeholder="Cliquez sur Générer"
+                  className="font-mono"
+                />
+                <Button
+                  type="button"
+                  variant="success"
+                  onClick={generatePassword}
+                >
+                  <Key className="mr-2 h-4 w-4" />
+                  Générer
+                </Button>
+              </div>
+              <p className="mt-2 text-sm text-slate-500">
+                Le client devra changer ce mot de passe à la première connexion
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Configuration */}
-        <div className="space-y-4 border-t pt-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-            <Users className="h-5 w-5 text-emerald-500" />
-            Configuration
-          </h3>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-[#173B56]" />
+              Configuration
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="employeeLimit">Limite employés</Label>
+                <Input
+                  id="employeeLimit"
+                  type="number"
+                  min="1"
+                  value={formData.employeeLimit}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      employeeLimit: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-900">
-                Limite employés
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.employeeLimit}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    employeeLimit: parseInt(e.target.value),
-                  })
-                }
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
-              />
+              <div>
+                <Label htmlFor="subscriptionMonths">
+                  Durée abonnement (mois)
+                </Label>
+                <Input
+                  id="subscriptionMonths"
+                  type="number"
+                  min="1"
+                  value={formData.subscriptionMonths}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      subscriptionMonths: parseInt(e.target.value),
+                    })
+                  }
+                />
+              </div>
             </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-900">
-                Durée abonnement (mois)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={formData.subscriptionMonths}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    subscriptionMonths: parseInt(e.target.value),
-                  })
-                }
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
-              />
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Bouton de soumission */}
-        <button
+        <Button
           type="submit"
+          variant="success"
+          size="lg"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full"
         >
           {loading ? (
             <>
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               Création en cours...
             </>
           ) : (
-            <>
-              <UserPlus className="h-5 w-5" />
-              Créer le compte client
-            </>
+            "Créer le compte client"
           )}
-        </button>
+        </Button>
       </form>
     </div>
   );
