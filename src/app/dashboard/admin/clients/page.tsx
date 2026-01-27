@@ -72,14 +72,14 @@ export default function ClientsAdminPage() {
       {/* En-tête */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg">
             <UserPlus className="h-6 w-6 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
               Créer un compte client
             </h1>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-700">
               Configurez un nouvel accès pour votre client
             </p>
           </div>
@@ -112,13 +112,13 @@ export default function ClientsAdminPage() {
       >
         {/* Informations entreprise */}
         <div className="space-y-4">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-            <Building2 className="h-5 w-5 text-purple-500" />
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <Building2 className="h-5 w-5 text-emerald-500" />
             Informations entreprise
           </h3>
 
           <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
               <Building2 className="h-4 w-4" />
               Nom de l&apos;entreprise *
             </label>
@@ -129,13 +129,13 @@ export default function ClientsAdminPage() {
               onChange={(e) =>
                 setFormData({ ...formData, companyName: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
               placeholder="Acme Industries"
             />
           </div>
 
           <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
               <User className="h-4 w-4" />
               Nom du contact *
             </label>
@@ -146,7 +146,7 @@ export default function ClientsAdminPage() {
               onChange={(e) =>
                 setFormData({ ...formData, contactName: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
               placeholder="Jean Dupont"
             />
           </div>
@@ -154,13 +154,13 @@ export default function ClientsAdminPage() {
 
         {/* Connexion */}
         <div className="space-y-4 border-t pt-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-            <Key className="h-5 w-5 text-purple-500" />
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <Key className="h-5 w-5 text-emerald-500" />
             Informations de connexion
           </h3>
 
           <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
               <Mail className="h-4 w-4" />
               Email *
             </label>
@@ -171,13 +171,13 @@ export default function ClientsAdminPage() {
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
               placeholder="contact@entreprise.fr"
             />
           </div>
 
           <div>
-            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-900">
               <Key className="h-4 w-4" />
               Mot de passe temporaire *
             </label>
@@ -189,19 +189,19 @@ export default function ClientsAdminPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none font-mono"
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none font-mono"
                 placeholder="Générez un mot de passe"
               />
               <button
                 type="button"
                 onClick={generatePassword}
-                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:shadow-md transition-all hover:from-purple-600 hover:to-purple-700"
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:shadow-md transition-all hover:from-emerald-600 hover:to-teal-700"
               >
                 <Key className="h-4 w-4" />
                 Générer
               </button>
             </div>
-            <p className="mt-2 flex items-start gap-2 text-xs text-gray-500">
+            <p className="mt-2 flex items-start gap-2 text-xs text-gray-700">
               <span className="text-amber-500">ℹ️</span>
               Le client devra changer ce mot de passe à la première connexion
             </p>
@@ -210,14 +210,14 @@ export default function ClientsAdminPage() {
 
         {/* Configuration */}
         <div className="space-y-4 border-t pt-6">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-            <Users className="h-5 w-5 text-purple-500" />
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <Users className="h-5 w-5 text-emerald-500" />
             Configuration
           </h3>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-900">
                 Limite employés
               </label>
               <input
@@ -230,12 +230,12 @@ export default function ClientsAdminPage() {
                     employeeLimit: parseInt(e.target.value),
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
+              <label className="mb-2 block text-sm font-medium text-gray-900">
                 Durée abonnement (mois)
               </label>
               <input
@@ -248,7 +248,7 @@ export default function ClientsAdminPage() {
                     subscriptionMonths: parseInt(e.target.value),
                   })
                 }
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 focus:outline-none"
               />
             </div>
           </div>
@@ -258,7 +258,7 @@ export default function ClientsAdminPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:from-purple-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:from-emerald-600 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
