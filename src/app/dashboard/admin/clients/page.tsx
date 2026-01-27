@@ -59,7 +59,7 @@ export default function ClientsAdminPage() {
       } else {
         setMessage({ type: "error", text: data.error || "Erreur" });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: "error", text: "Erreur serveur" });
     } finally {
       setLoading(false);
@@ -88,7 +88,7 @@ export default function ClientsAdminPage() {
       >
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            Nom de l'entreprise *
+            Nom de l&apos;entreprise *
           </label>
           <input
             type="text"
