@@ -38,8 +38,9 @@ model ContactRequest {
   email           String
   phone           String?
   employeeCount   String?   // "1-50", "51-100", "101-200", "201-500", "500+"
+  plan            String?   // "starter", "business", "enterprise", "corporate"
   message         String?
-  status          String    @default("PENDING") // PENDING, CONTACTED, CONVERTED, REJECTED
+  status          String    @default("NEW") // NEW, CONTACTED, DEMO_DONE, PAYMENT_SENT, CONVERTED, REJECTED
   notes           String?   // Notes internes admin
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

@@ -5,15 +5,31 @@ import {
   Building2,
   CheckCircle2,
   Mail,
+  Package,
   Phone,
   Send,
   User,
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
-export default function ContactPage() {
+// Configuration des plans
+const PLANS = {
+  starter: { name: "Starter", price: 199, employees: "1-50" },
+  business: { name: "Business", price: 349, employees: "51-100" },
+  enterprise: { name: "Enterprise", price: 599, employees: "101-200" },
+  corporate: { name: "Corporate", price: 1199, employees: "201-500" },
+} as const;
+
+type PlanKey = keyof typeof PLANS;
+
+function ContactForm() {
+  const searchParams = useSearchParams();
+  const planParam = searchParams.get("plan") as PlanKey | null;
+  const selectedPlan = planParam && PLANS[planParam] ? PLANS[planParam] : null;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -23,7 +39,8 @@ export default function ContactPage() {
     contactName: "",
     email: "",
     phone: "",
-    employeeCount: "",
+    employeeCount: selectedPlan?.employees || "",
+    plan: planParam || "",
     message: "",
   });
 
@@ -118,6 +135,29 @@ export default function ContactPage() {
               organiser une démo personnalisée de CertPilot.
             </p>
           </div>
+
+          {/* Bandeau offre sélectionnée */}
+          {selectedPlan && (
+            <div className="mb-6 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500">
+                <Package className="h-5 w-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-emerald-800">
+                  Offre {selectedPlan.name} sélectionnée
+                </p>
+                <p className="text-sm text-emerald-600">
+                  {selectedPlan.employees} employés • {selectedPlan.price}€/mois
+                </p>
+              </div>
+              <Link
+                href="/#tarifs"
+                className="text-sm font-medium text-emerald-700 hover:underline"
+              >
+                Changer
+              </Link>
+            </div>
+          )}
 
           {/* Formulaire */}
           <form
@@ -285,5 +325,13 @@ export default function ContactPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Chargement...</div>}>
+      <ContactForm />
+    </Suspense>
   );
 }

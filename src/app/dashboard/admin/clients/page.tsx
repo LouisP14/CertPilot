@@ -5,9 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Building2, Key, Users } from "lucide-react";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-export default function ClientsAdminPage() {
+function ClientsForm() {
+  const searchParams = useSearchParams();
+  
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -22,6 +25,22 @@ export default function ClientsAdminPage() {
     employeeLimit: 50,
     subscriptionMonths: 12,
   });
+
+  // Pré-remplir depuis les paramètres URL (venant de /admin/demandes)
+  useEffect(() => {
+    const email = searchParams.get("email");
+    const company = searchParams.get("company");
+    const name = searchParams.get("name");
+    
+    if (email || company || name) {
+      setFormData((prev) => ({
+        ...prev,
+        email: email || prev.email,
+        companyName: company || prev.companyName,
+        contactName: name || prev.contactName,
+      }));
+    }
+  }, [searchParams]);
 
   const generatePassword = () => {
     const chars =
@@ -270,5 +289,13 @@ export default function ClientsAdminPage() {
         </Button>
       </form>
     </div>
+  );
+}
+
+export default function ClientsAdminPage() {
+  return (
+    <Suspense fallback={<div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>}>
+      <ClientsForm />
+    </Suspense>
   );
 }

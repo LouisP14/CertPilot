@@ -604,7 +604,7 @@ function PricingCard({
       <div className="mt-6 flex-1" />
 
       <Link
-        href="/contact"
+        href={`/contact?plan=${name.toLowerCase()}`}
         className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
           featured
             ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700"

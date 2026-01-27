@@ -22,7 +22,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { companyName, contactName, email, phone, employeeCount, message } =
+    const { companyName, contactName, email, phone, employeeCount, plan, message } =
       body;
 
     // Validation
@@ -47,8 +47,9 @@ export async function POST(request: NextRequest) {
         email: email.toLowerCase(),
         phone: phone || null,
         employeeCount: employeeCount || null,
+        plan: plan || null,
         message: message || null,
-        status: "PENDING",
+        status: "NEW",
       },
     });
 
