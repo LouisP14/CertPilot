@@ -10,7 +10,7 @@ import { Suspense, useEffect, useState } from "react";
 
 function ClientsForm() {
   const searchParams = useSearchParams();
-  
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{
     type: "success" | "error";
@@ -31,7 +31,7 @@ function ClientsForm() {
     const email = searchParams.get("email");
     const company = searchParams.get("company");
     const name = searchParams.get("name");
-    
+
     if (email || company || name) {
       setFormData((prev) => ({
         ...prev,
@@ -294,7 +294,13 @@ function ClientsForm() {
 
 export default function ClientsAdminPage() {
   return (
-    <Suspense fallback={<div className="flex h-64 items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-64 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+        </div>
+      }
+    >
       <ClientsForm />
     </Suspense>
   );

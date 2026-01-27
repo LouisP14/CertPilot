@@ -9,6 +9,8 @@ import {
   Clock,
   CreditCard,
   Eye,
+  ExternalLink,
+  Loader2,
   Mail,
   MessageSquare,
   Package,
@@ -17,11 +19,11 @@ import {
   Send,
   User,
   Users,
-  X,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ContactRequest {
   id: string;
@@ -80,7 +82,10 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const PLAN_CONFIG: Record<string, { name: string; price: number; employees: string }> = {
+const PLAN_CONFIG: Record<
+  string,
+  { name: string; price: number; employees: string }
+> = {
   starter: { name: "Starter", price: 199, employees: "1-50" },
   business: { name: "Business", price: 349, employees: "51-100" },
   enterprise: { name: "Enterprise", price: 599, employees: "101-200" },
@@ -90,9 +95,12 @@ const PLAN_CONFIG: Record<string, { name: string; price: number; employees: stri
 export default function DemandesAdminPage() {
   const [requests, setRequests] = useState<ContactRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(
+    null,
+  );
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
 
   useEffect(() => {
     fetchRequests();
@@ -123,7 +131,7 @@ export default function DemandesAdminPage() {
 
       if (response.ok) {
         setRequests((prev) =>
-          prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
+          prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)),
         );
         if (selectedRequest?.id === id) {
           setSelectedRequest({ ...selectedRequest, status: newStatus });
@@ -136,6 +144,62 @@ export default function DemandesAdminPage() {
     }
   };
 
+  // Créer et copier le lien de paiement Stripe
+  const createPaymentLink = async (request: ContactRequest) => {
+    if (!request.plan) {
+      toast.error("Aucune offre sélectionnée pour ce prospect");
+      return;
+    }
+
+    setSendingPaymentLink(true);
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contactRequestId: request.id,
+          plan: request.plan,
+          customerEmail: request.email,
+          companyName: request.companyName,
+          contactName: request.contactName,
+          employeeCount: request.employeeCount,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Erreur lors de la création du lien");
+      }
+
+      const { url } = await response.json();
+      
+      // Copier le lien dans le presse-papier
+      await navigator.clipboard.writeText(url);
+      toast.success("Lien de paiement copié dans le presse-papier !");
+      
+      // Mettre à jour le statut
+      await updateStatus(request.id, "PAYMENT_SENT");
+      
+      // Ouvrir le client mail avec le lien pré-rempli
+      const subject = encodeURIComponent(`CertPilot - Votre lien de paiement`);
+      const body = encodeURIComponent(
+        `Bonjour ${request.contactName},\n\n` +
+        `Suite à notre échange, voici votre lien de paiement pour l'offre ${PLAN_CONFIG[request.plan].name} :\n\n` +
+        `${url}\n\n` +
+        `Dès votre paiement effectué, vous recevrez automatiquement vos identifiants de connexion.\n\n` +
+        `Cordialement,\n` +
+        `L'équipe CertPilot`
+      );
+      window.open(`mailto:${request.email}?subject=${subject}&body=${body}`, "_blank");
+      
+    } catch (error) {
+      console.error("Erreur:", error);
+      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
+    } finally {
+      setSendingPaymentLink(false);
+    }
+  };
+
   const filteredRequests =
     filterStatus === "ALL"
       ? requests
@@ -145,7 +209,7 @@ export default function DemandesAdminPage() {
     total: requests.length,
     new: requests.filter((r) => r.status === "NEW").length,
     inProgress: requests.filter((r) =>
-      ["CONTACTED", "DEMO_DONE", "PAYMENT_SENT"].includes(r.status)
+      ["CONTACTED", "DEMO_DONE", "PAYMENT_SENT"].includes(r.status),
     ).length,
     converted: requests.filter((r) => r.status === "CONVERTED").length,
   };
@@ -163,7 +227,9 @@ export default function DemandesAdminPage() {
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Demandes de contact</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Demandes de contact
+          </h1>
           <p className="text-gray-600">Gérez les demandes de démonstration</p>
         </div>
         <Button variant="outline" onClick={fetchRequests}>
@@ -264,8 +330,11 @@ export default function DemandesAdminPage() {
               <p className="text-center text-slate-500 py-8">Aucune demande</p>
             ) : (
               filteredRequests.map((request) => {
-                const statusConfig = STATUS_CONFIG[request.status] || STATUS_CONFIG.NEW;
-                const planConfig = request.plan ? PLAN_CONFIG[request.plan] : null;
+                const statusConfig =
+                  STATUS_CONFIG[request.status] || STATUS_CONFIG.NEW;
+                const planConfig = request.plan
+                  ? PLAN_CONFIG[request.plan]
+                  : null;
 
                 return (
                   <div
@@ -290,14 +359,19 @@ export default function DemandesAdminPage() {
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-slate-600">{request.contactName}</p>
+                        <p className="text-sm text-slate-600">
+                          {request.contactName}
+                        </p>
                         <p className="text-xs text-slate-400 mt-1">
-                          {new Date(request.createdAt).toLocaleDateString("fr-FR", {
-                            day: "numeric",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(request.createdAt).toLocaleDateString(
+                            "fr-FR",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            },
+                          )}
                         </p>
                       </div>
                       <span
@@ -328,14 +402,18 @@ export default function DemandesAdminPage() {
                     <Building2 className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="text-sm text-slate-500">Entreprise</p>
-                      <p className="font-medium">{selectedRequest.companyName}</p>
+                      <p className="font-medium">
+                        {selectedRequest.companyName}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="text-sm text-slate-500">Contact</p>
-                      <p className="font-medium">{selectedRequest.contactName}</p>
+                      <p className="font-medium">
+                        {selectedRequest.contactName}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -369,35 +447,43 @@ export default function DemandesAdminPage() {
                       <Users className="h-5 w-5 text-slate-400" />
                       <div>
                         <p className="text-sm text-slate-500">Employés</p>
-                        <p className="font-medium">{selectedRequest.employeeCount}</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedRequest.plan && PLAN_CONFIG[selectedRequest.plan] && (
-                    <div className="flex items-center gap-3">
-                      <Package className="h-5 w-5 text-slate-400" />
-                      <div>
-                        <p className="text-sm text-slate-500">Offre souhaitée</p>
                         <p className="font-medium">
-                          {PLAN_CONFIG[selectedRequest.plan].name} -{" "}
-                          {PLAN_CONFIG[selectedRequest.plan].price}€/mois
+                          {selectedRequest.employeeCount}
                         </p>
                       </div>
                     </div>
                   )}
+                  {selectedRequest.plan &&
+                    PLAN_CONFIG[selectedRequest.plan] && (
+                      <div className="flex items-center gap-3">
+                        <Package className="h-5 w-5 text-slate-400" />
+                        <div>
+                          <p className="text-sm text-slate-500">
+                            Offre souhaitée
+                          </p>
+                          <p className="font-medium">
+                            {PLAN_CONFIG[selectedRequest.plan].name} -{" "}
+                            {PLAN_CONFIG[selectedRequest.plan].price}€/mois
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   <div className="flex items-center gap-3">
                     <Calendar className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="text-sm text-slate-500">Date de demande</p>
                       <p className="font-medium">
-                        {new Date(selectedRequest.createdAt).toLocaleDateString("fr-FR", {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {new Date(selectedRequest.createdAt).toLocaleDateString(
+                          "fr-FR",
+                          {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     </div>
                   </div>
@@ -406,7 +492,9 @@ export default function DemandesAdminPage() {
                 {/* Message */}
                 {selectedRequest.message && (
                   <div className="rounded-lg bg-slate-50 p-4">
-                    <p className="text-sm font-medium text-slate-500 mb-2">Message</p>
+                    <p className="text-sm font-medium text-slate-500 mb-2">
+                      Message
+                    </p>
                     <p className="text-sm text-slate-700 whitespace-pre-wrap">
                       {selectedRequest.message}
                     </p>
@@ -415,12 +503,16 @@ export default function DemandesAdminPage() {
 
                 {/* Actions de statut */}
                 <div>
-                  <p className="text-sm font-medium text-slate-500 mb-3">Changer le statut</p>
+                  <p className="text-sm font-medium text-slate-500 mb-3">
+                    Changer le statut
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                       <Button
                         key={key}
-                        variant={selectedRequest.status === key ? "default" : "outline"}
+                        variant={
+                          selectedRequest.status === key ? "default" : "outline"
+                        }
                         size="sm"
                         disabled={updating === selectedRequest.id}
                         onClick={() => updateStatus(selectedRequest.id, key)}
@@ -433,31 +525,56 @@ export default function DemandesAdminPage() {
                 </div>
 
                 {/* Actions principales */}
-                <div className="flex gap-2 pt-4 border-t">
+                <div className="flex flex-col gap-3 pt-4 border-t">
+                  {/* Bouton Envoyer lien de paiement - toujours visible si plan sélectionné */}
+                  {selectedRequest.plan && selectedRequest.status !== "CONVERTED" && selectedRequest.status !== "REJECTED" && (
+                    <Button 
+                      onClick={() => createPaymentLink(selectedRequest)}
+                      disabled={sendingPaymentLink}
+                      className="w-full bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      {sendingPaymentLink ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <CreditCard className="mr-2 h-4 w-4" />
+                      )}
+                      Envoyer lien de paiement
+                    </Button>
+                  )}
+
                   {selectedRequest.status === "CONVERTED" ? (
-                    <Link href={`/dashboard/admin/clients?email=${selectedRequest.email}&company=${encodeURIComponent(selectedRequest.companyName)}&name=${encodeURIComponent(selectedRequest.contactName)}`} className="flex-1">
+                    <Link
+                      href={`/dashboard/admin/clients?email=${selectedRequest.email}&company=${encodeURIComponent(selectedRequest.companyName)}&name=${encodeURIComponent(selectedRequest.contactName)}`}
+                      className="w-full"
+                    >
                       <Button variant="success" className="w-full">
                         <CheckCircle className="mr-2 h-4 w-4" />
-                        Créer le compte client
+                        Voir le compte client
                       </Button>
                     </Link>
                   ) : (
-                    <>
-                      <a href={`mailto:${selectedRequest.email}`} className="flex-1">
+                    <div className="flex gap-2">
+                      <a
+                        href={`mailto:${selectedRequest.email}`}
+                        className="flex-1"
+                      >
                         <Button variant="outline" className="w-full">
                           <Mail className="mr-2 h-4 w-4" />
                           Envoyer un email
                         </Button>
                       </a>
                       {selectedRequest.phone && (
-                        <a href={`tel:${selectedRequest.phone}`} className="flex-1">
+                        <a
+                          href={`tel:${selectedRequest.phone}`}
+                          className="flex-1"
+                        >
                           <Button variant="outline" className="w-full">
                             <Phone className="mr-2 h-4 w-4" />
                             Appeler
                           </Button>
                         </a>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
               </div>

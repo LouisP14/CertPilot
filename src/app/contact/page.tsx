@@ -330,7 +330,13 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Chargement...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          Chargement...
+        </div>
+      }
+    >
       <ContactForm />
     </Suspense>
   );

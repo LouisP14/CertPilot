@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 // PATCH - Mettre à jour une demande de contact
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -19,7 +19,7 @@ export async function PATCH(
     if (!existingRequest) {
       return NextResponse.json(
         { error: "Demande non trouvée" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -34,10 +34,7 @@ export async function PATCH(
     ];
 
     if (status && !validStatuses.includes(status)) {
-      return NextResponse.json(
-        { error: "Statut invalide" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Statut invalide" }, { status: 400 });
     }
 
     // Mettre à jour la demande
@@ -54,7 +51,7 @@ export async function PATCH(
     console.error("Erreur mise à jour demande:", error);
     return NextResponse.json(
       { error: "Erreur lors de la mise à jour" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -62,11 +59,11 @@ export async function PATCH(
 // GET - Récupérer une demande spécifique
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
-    
+
     const contactRequest = await prisma.contactRequest.findUnique({
       where: { id },
     });
@@ -74,7 +71,7 @@ export async function GET(
     if (!contactRequest) {
       return NextResponse.json(
         { error: "Demande non trouvée" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -83,7 +80,7 @@ export async function GET(
     console.error("Erreur récupération demande:", error);
     return NextResponse.json(
       { error: "Erreur lors de la récupération" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -91,7 +88,7 @@ export async function GET(
 // DELETE - Supprimer une demande
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -105,7 +102,7 @@ export async function DELETE(
     console.error("Erreur suppression demande:", error);
     return NextResponse.json(
       { error: "Erreur lors de la suppression" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
