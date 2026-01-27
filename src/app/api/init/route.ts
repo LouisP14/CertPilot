@@ -146,8 +146,18 @@ async function ensureSchema() {
     { name: "service", type: "TEXT" },
     { name: "durationHours", type: "REAL", notNull: true, defaultValue: 7 },
     { name: "durationDays", type: "INTEGER", notNull: true, defaultValue: 1 },
-    { name: "minParticipants", type: "INTEGER", notNull: true, defaultValue: 1 },
-    { name: "maxParticipants", type: "INTEGER", notNull: true, defaultValue: 12 },
+    {
+      name: "minParticipants",
+      type: "INTEGER",
+      notNull: true,
+      defaultValue: 1,
+    },
+    {
+      name: "maxParticipants",
+      type: "INTEGER",
+      notNull: true,
+      defaultValue: 12,
+    },
     {
       name: "trainingMode",
       type: "TEXT",
@@ -160,7 +170,12 @@ async function ensureSchema() {
       notNull: true,
       defaultValue: 0,
     },
-    { name: "renewalPriority", type: "INTEGER", notNull: true, defaultValue: 5 },
+    {
+      name: "renewalPriority",
+      type: "INTEGER",
+      notNull: true,
+      defaultValue: 5,
+    },
     { name: "estimatedCostPerPerson", type: "REAL" },
     { name: "estimatedCostPerSession", type: "REAL" },
   ]);
@@ -293,6 +308,7 @@ export async function GET() {
         name: "Admin Démo",
         role: "ADMIN",
         companyId: company.id,
+        mustChangePassword: false, // Compte démo, pas de changement requis
       },
     });
 

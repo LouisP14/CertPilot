@@ -64,6 +64,7 @@ async function createDemoData() {
       name: "Marie DURAND",
       role: "ADMIN",
       companyId: company.id,
+      mustChangePassword: false, // Compte démo, pas de changement requis
     },
   });
 
