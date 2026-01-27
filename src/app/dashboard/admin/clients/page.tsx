@@ -1,5 +1,6 @@
 "use client";
 
+import { Building2, Key, Mail, User, UserPlus, Users } from "lucide-react";
 import { useState } from "react";
 
 export default function ClientsAdminPage() {
@@ -45,7 +46,7 @@ export default function ClientsAdminPage() {
       if (res.ok) {
         setMessage({
           type: "success",
-          text: `Client créé ! Email: ${formData.email} / Mot de passe: ${formData.password}`,
+          text: `✅ Client créé avec succès !\n📧 Email: ${formData.email}\n🔑 Mot de passe: ${formData.password}`,
         });
         // Reset form
         setFormData({
@@ -67,145 +68,209 @@ export default function ClientsAdminPage() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold">Créer un compte client</h1>
+    <div className="mx-auto max-w-4xl">
+      {/* En-tête */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg">
+            <UserPlus className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Créer un compte client
+            </h1>
+            <p className="text-sm text-gray-500">
+              Configurez un nouvel accès pour votre client
+            </p>
+          </div>
+        </div>
+      </div>
 
+      {/* Message de succès/erreur */}
       {message && (
         <div
-          className={`mb-4 rounded-lg p-4 ${
+          className={`mb-6 rounded-xl p-4 shadow-sm ${
             message.type === "success"
-              ? "bg-green-50 text-green-800"
-              : "bg-red-50 text-red-800"
+              ? "bg-emerald-50 border border-emerald-200"
+              : "bg-red-50 border border-red-200"
           }`}
         >
-          {message.text}
+          <p
+            className={`whitespace-pre-line text-sm font-medium ${
+              message.type === "success" ? "text-emerald-800" : "text-red-800"
+            }`}
+          >
+            {message.text}
+          </p>
         </div>
       )}
 
+      {/* Formulaire */}
       <form
         onSubmit={handleSubmit}
-        className="space-y-6 rounded-lg bg-white p-6 shadow"
+        className="space-y-6 rounded-2xl bg-white p-8 shadow-xl border border-gray-100"
       >
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Nom de l&apos;entreprise *
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.companyName}
-            onChange={(e) =>
-              setFormData({ ...formData, companyName: e.target.value })
-            }
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-            placeholder="Acme Industries"
-          />
-        </div>
+        {/* Informations entreprise */}
+        <div className="space-y-4">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+            <Building2 className="h-5 w-5 text-purple-500" />
+            Informations entreprise
+          </h3>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Nom du contact *
-          </label>
-          <input
-            type="text"
-            required
-            value={formData.contactName}
-            onChange={(e) =>
-              setFormData({ ...formData, contactName: e.target.value })
-            }
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-            placeholder="Jean Dupont"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Email *
-          </label>
-          <input
-            type="email"
-            required
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-            placeholder="contact@entreprise.fr"
-          />
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-medium text-gray-700">
-            Mot de passe temporaire *
-          </label>
-          <div className="flex gap-2">
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Building2 className="h-4 w-4" />
+              Nom de l&apos;entreprise *
+            </label>
             <input
               type="text"
               required
-              value={formData.password}
+              value={formData.companyName}
               onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
+                setFormData({ ...formData, companyName: e.target.value })
               }
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
-              placeholder="Mot de passe"
-            />
-            <button
-              type="button"
-              onClick={generatePassword}
-              className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200"
-            >
-              Générer
-            </button>
-          </div>
-          <p className="mt-1 text-xs text-gray-500">
-            Le client devra changer ce mot de passe à la première connexion
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
-              Limite employés
-            </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.employeeLimit}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  employeeLimit: parseInt(e.target.value),
-                })
-              }
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              placeholder="Acme Industries"
             />
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium text-gray-700">
-              Durée abonnement (mois)
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+              <User className="h-4 w-4" />
+              Nom du contact *
             </label>
             <input
-              type="number"
-              min="1"
-              value={formData.subscriptionMonths}
+              type="text"
+              required
+              value={formData.contactName}
               onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  subscriptionMonths: parseInt(e.target.value),
-                })
+                setFormData({ ...formData, contactName: e.target.value })
               }
-              className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              placeholder="Jean Dupont"
             />
           </div>
         </div>
 
+        {/* Connexion */}
+        <div className="space-y-4 border-t pt-6">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+            <Key className="h-5 w-5 text-purple-500" />
+            Informations de connexion
+          </h3>
+
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Mail className="h-4 w-4" />
+              Email *
+            </label>
+            <input
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              placeholder="contact@entreprise.fr"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 flex items-center gap-2 text-sm font-medium text-gray-700">
+              <Key className="h-4 w-4" />
+              Mot de passe temporaire *
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                required
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none font-mono"
+                placeholder="Générez un mot de passe"
+              />
+              <button
+                type="button"
+                onClick={generatePassword}
+                className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-3 text-sm font-medium text-white shadow-sm hover:shadow-md transition-all hover:from-purple-600 hover:to-purple-700"
+              >
+                <Key className="h-4 w-4" />
+                Générer
+              </button>
+            </div>
+            <p className="mt-2 flex items-start gap-2 text-xs text-gray-500">
+              <span className="text-amber-500">ℹ️</span>
+              Le client devra changer ce mot de passe à la première connexion
+            </p>
+          </div>
+        </div>
+
+        {/* Configuration */}
+        <div className="space-y-4 border-t pt-6">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+            <Users className="h-5 w-5 text-purple-500" />
+            Configuration
+          </h3>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Limite employés
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.employeeLimit}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    employeeLimit: parseInt(e.target.value),
+                  })
+                }
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Durée abonnement (mois)
+              </label>
+              <input
+                type="number"
+                min="1"
+                value={formData.subscriptionMonths}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    subscriptionMonths: parseInt(e.target.value),
+                  })
+                }
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-colors focus:border-purple-500 focus:ring-2 focus:ring-purple-200 focus:outline-none"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Bouton de soumission */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:from-purple-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Création..." : "Créer le compte client"}
+          {loading ? (
+            <>
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              Création en cours...
+            </>
+          ) : (
+            <>
+              <UserPlus className="h-5 w-5" />
+              Créer le compte client
+            </>
+          )}
         </button>
       </form>
     </div>
