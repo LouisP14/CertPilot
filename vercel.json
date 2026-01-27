@@ -1,9 +1,12 @@
 {
-  "buildCommand": "npx prisma generate && npx prisma db push && npm run build",
+  "buildCommand": "npx prisma generate && npm run build",
   "crons": [
     {
       "path": "/api/cron/check-alerts",
       "schedule": "0 7 * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": false
+  }
 }
