@@ -90,22 +90,22 @@ export function Sidebar({ userRole }: SidebarProps) {
           );
         })}
 
-        {/* Lien Administration pour SUPER_ADMIN uniquement */}
-        {isSuperAdmin && (
+        {/* Lien Administration pour ADMIN et SUPER_ADMIN */}
+        {(userRole === "ADMIN" || userRole === "SUPER_ADMIN") && (
           <>
             <div className="my-4 border-t border-white/10" />
             <Link
-              href="/dashboard/admin"
+              href="/dashboard/admin/clients"
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                pathname === "/dashboard/admin" ||
+                pathname === "/dashboard/admin/clients" ||
                   pathname.startsWith("/dashboard/admin/")
                   ? "bg-purple-500/20 text-purple-400 shadow-lg shadow-purple-500/10"
                   : "text-purple-300/70 hover:bg-white/5 hover:text-purple-300",
               )}
             >
               <ShieldCheck className="h-5 w-5" />
-              Administration
+              Gestion Clients
             </Link>
           </>
         )}
