@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { exec } from "child_process";
+import { NextResponse } from "next/server";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
@@ -13,11 +13,13 @@ export async function GET() {
     console.log("🔧 Création du schéma PostgreSQL...");
 
     // Exécuter prisma db push
-    const { stdout, stderr } = await execAsync("npx prisma db push --accept-data-loss");
-    
+    const { stdout, stderr } = await execAsync(
+      "npx prisma db push --accept-data-loss",
+    );
+
     console.log("✅ Schéma créé !");
     console.log(stdout);
-    
+
     if (stderr) {
       console.warn("Warnings:", stderr);
     }
