@@ -20,23 +20,13 @@ export async function DELETE(
 
     // Supprimer dans l'ordre pour éviter les violations de contraintes
     // Les relations avec onDelete: Cascade gèrent le reste automatiquement
-    
+
     // 1. Supprimer les utilisateurs liés
     await prisma.user.deleteMany({
       where: { companyId: id },
     });
 
-    // 2. Supprimer les demandes de contact
-    await prisma.contactRequest.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 3. Supprimer les logs d'audit
-    await prisma.auditLog.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 4. Supprimer l'entreprise (cascade supprimera le reste)
+    // 2. Supprimer l'entreprise (cascade supprimera PlanningConstraints)
     await prisma.company.delete({
       where: { id },
     });
