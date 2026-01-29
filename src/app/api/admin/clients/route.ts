@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -68,6 +69,21 @@ export async function POST(request: NextRequest) {
         mustChangePassword: true, // Forcer le changement de mdp
       },
     });
+
+    // Envoyer l'email de bienvenue avec les identifiants
+    try {
+      await sendWelcomeEmail({
+        to: email.toLowerCase(),
+        contactName,
+        companyName,
+        plan: plan || "starter",
+        tempPassword: password, // Le mot de passe en clair avant hashage
+      });
+      console.log("✅ Email de bienvenue envoyé à:", email);
+    } catch (emailError) {
+      console.error("❌ Erreur envoi email bienvenue:", emailError);
+      // On ne bloque pas la création si l'email échoue
+    }
 
     return NextResponse.json(
       {
