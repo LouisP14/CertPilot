@@ -5,20 +5,18 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { plan, contactRequestId, customerEmail, companyName, contactName } = body;
+    const { plan, contactRequestId, customerEmail, companyName, contactName } =
+      body;
 
     // Vérifier le plan
     const planConfig = getPlanConfig(plan);
     if (!planConfig) {
-      return NextResponse.json(
-        { error: "Plan invalide" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Plan invalide" }, { status: 400 });
     }
 
     // URLs de redirection
-    const baseUrl = process.env.NEXTAUTH_URL || "https://certpilot-production.up.railway.app";
-    
+    const baseUrl = process.env.NEXTAUTH_URL || "https://www.certpilot.eu";
+
     // Créer la session Stripe Checkout
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -60,7 +58,7 @@ export async function POST(request: NextRequest) {
     console.error("Erreur création session Stripe:", error);
     return NextResponse.json(
       { error: "Erreur lors de la création de la session de paiement" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
