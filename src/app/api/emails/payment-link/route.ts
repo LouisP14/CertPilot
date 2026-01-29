@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     if (!to || !contactName || !companyName || !plan || !paymentUrl) {
       return NextResponse.json(
         { error: "Paramètres manquants" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     console.error("Erreur envoi email paiement:", error);
     return NextResponse.json(
       { error: "Erreur lors de l'envoi de l'email" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
