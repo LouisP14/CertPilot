@@ -32,14 +32,11 @@ export async function POST(request: NextRequest) {
     event = stripe.webhooks.constructEvent(
       body,
       signature,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      process.env.STRIPE_WEBHOOK_SECRET!,
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
-    return NextResponse.json(
-      { error: "Signature invalide" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Signature invalide" }, { status: 400 });
   }
 
   console.log("Webhook reçu:", event.type);
@@ -82,7 +79,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
   console.log("Checkout completed:", session.id);
 
   const metadata = session.metadata || {};
-  const { contactRequestId, plan, companyName, contactName, employeeLimit } = metadata;
+  const { contactRequestId, plan, companyName, contactName, employeeLimit } =
+    metadata;
   const customerEmail = session.customer_email;
   const stripeCustomerId = session.customer as string;
   const stripeSubscriptionId = session.subscription as string;
@@ -99,7 +97,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   if (existingUser) {
     console.log("Utilisateur existe déjà:", customerEmail);
-    
+
     // Mettre à jour l'abonnement de la company existante
     if (existingUser.companyId) {
       await prisma.company.update({
@@ -150,12 +148,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Mettre à jour la demande de contact si elle existe
   if (contactRequestId) {
-    await prisma.contactRequest.update({
-      where: { id: contactRequestId },
-      data: { status: "CONVERTED" },
-    }).catch(() => {
-      console.log("ContactRequest non trouvé:", contactRequestId);
-    });
+    await prisma.contactRequest
+      .update({
+        where: { id: contactRequestId },
+        data: { status: "CONVERTED" },
+      })
+      .catch(() => {
+        console.log("ContactRequest non trouvé:", contactRequestId);
+      });
   }
 
   // TODO: Envoyer email de bienvenue avec les identifiants
@@ -172,7 +172,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   console.log("Facture payée:", invoice.id);
 
   // Récupérer le subscription_id depuis les lignes de facture
-  const subscriptionId = invoice.lines?.data?.[0]?.subscription as string | null;
+  const subscriptionId = invoice.lines?.data?.[0]?.subscription as
+    | string
+    | null;
   if (!subscriptionId) return;
 
   // Mettre à jour le statut de l'abonnement
@@ -194,7 +196,9 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   console.log("Paiement échoué:", invoice.id);
 
   // Récupérer le subscription_id depuis les lignes de facture
-  const subscriptionId = invoice.lines?.data?.[0]?.subscription as string | null;
+  const subscriptionId = invoice.lines?.data?.[0]?.subscription as
+    | string
+    | null;
   if (!subscriptionId) return;
 
   const company = await prisma.company.findFirst({

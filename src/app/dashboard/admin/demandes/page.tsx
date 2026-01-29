@@ -9,7 +9,6 @@ import {
   Clock,
   CreditCard,
   Eye,
-  ExternalLink,
   Loader2,
   Mail,
   MessageSquare,
@@ -172,29 +171,33 @@ export default function DemandesAdminPage() {
       }
 
       const { url } = await response.json();
-      
+
       // Copier le lien dans le presse-papier
       await navigator.clipboard.writeText(url);
       toast.success("Lien de paiement copié dans le presse-papier !");
-      
+
       // Mettre à jour le statut
       await updateStatus(request.id, "PAYMENT_SENT");
-      
+
       // Ouvrir le client mail avec le lien pré-rempli
       const subject = encodeURIComponent(`CertPilot - Votre lien de paiement`);
       const body = encodeURIComponent(
         `Bonjour ${request.contactName},\n\n` +
-        `Suite à notre échange, voici votre lien de paiement pour l'offre ${PLAN_CONFIG[request.plan].name} :\n\n` +
-        `${url}\n\n` +
-        `Dès votre paiement effectué, vous recevrez automatiquement vos identifiants de connexion.\n\n` +
-        `Cordialement,\n` +
-        `L'équipe CertPilot`
+          `Suite à notre échange, voici votre lien de paiement pour l'offre ${PLAN_CONFIG[request.plan].name} :\n\n` +
+          `${url}\n\n` +
+          `Dès votre paiement effectué, vous recevrez automatiquement vos identifiants de connexion.\n\n` +
+          `Cordialement,\n` +
+          `L'équipe CertPilot`,
       );
-      window.open(`mailto:${request.email}?subject=${subject}&body=${body}`, "_blank");
-      
+      window.open(
+        `mailto:${request.email}?subject=${subject}&body=${body}`,
+        "_blank",
+      );
     } catch (error) {
       console.error("Erreur:", error);
-      toast.error(error instanceof Error ? error.message : "Une erreur est survenue");
+      toast.error(
+        error instanceof Error ? error.message : "Une erreur est survenue",
+      );
     } finally {
       setSendingPaymentLink(false);
     }
@@ -527,20 +530,22 @@ export default function DemandesAdminPage() {
                 {/* Actions principales */}
                 <div className="flex flex-col gap-3 pt-4 border-t">
                   {/* Bouton Envoyer lien de paiement - toujours visible si plan sélectionné */}
-                  {selectedRequest.plan && selectedRequest.status !== "CONVERTED" && selectedRequest.status !== "REJECTED" && (
-                    <Button 
-                      onClick={() => createPaymentLink(selectedRequest)}
-                      disabled={sendingPaymentLink}
-                      className="w-full bg-emerald-600 hover:bg-emerald-700"
-                    >
-                      {sendingPaymentLink ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <CreditCard className="mr-2 h-4 w-4" />
-                      )}
-                      Envoyer lien de paiement
-                    </Button>
-                  )}
+                  {selectedRequest.plan &&
+                    selectedRequest.status !== "CONVERTED" &&
+                    selectedRequest.status !== "REJECTED" && (
+                      <Button
+                        onClick={() => createPaymentLink(selectedRequest)}
+                        disabled={sendingPaymentLink}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        {sendingPaymentLink ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <CreditCard className="mr-2 h-4 w-4" />
+                        )}
+                        Envoyer lien de paiement
+                      </Button>
+                    )}
 
                   {selectedRequest.status === "CONVERTED" ? (
                     <Link

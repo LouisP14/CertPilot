@@ -1,8 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Mail, ArrowRight } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ArrowRight, CheckCircle2, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -30,10 +36,12 @@ function SuccessContent() {
             <div className="flex items-start gap-3">
               <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
               <div>
-                <h3 className="font-medium text-blue-900">Vérifiez vos emails</h3>
+                <h3 className="font-medium text-blue-900">
+                  Vérifiez vos emails
+                </h3>
                 <p className="text-sm text-blue-700 mt-1">
-                  Vous allez recevoir un email avec vos identifiants de connexion 
-                  dans les prochaines minutes.
+                  Vous allez recevoir un email avec vos identifiants de
+                  connexion dans les prochaines minutes.
                 </p>
               </div>
             </div>
@@ -76,11 +84,13 @@ function SuccessContent() {
 
 export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center">
-        <div className="animate-pulse text-gray-500">Chargement...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center">
+          <div className="animate-pulse text-gray-500">Chargement...</div>
+        </div>
+      }
+    >
       <SuccessContent />
     </Suspense>
   );
