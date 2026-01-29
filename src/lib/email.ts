@@ -1,36 +1,12 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-// Configuration du transporteur SMTP
-// OVH Zimbra: utiliser port 465 avec secure=true, ou port 587 avec secure=false
-const smtpPort = parseInt(process.env.SMTP_PORT || "465");
-const smtpSecure =
-  process.env.SMTP_SECURE === "false" ? false : smtpPort === 465;
+// Client Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "ssl0.ovh.net",
-  port: smtpPort,
-  secure: smtpSecure,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-  connectionTimeout: 10000, // 10 secondes pour la connexion
-  greetingTimeout: 10000,
-  socketTimeout: 30000, // 30 secondes pour les opérations
-  tls: {
-    rejectUnauthorized: false, // Accepter les certificats auto-signés
-  },
-});
-
-// Vérifier la connexion SMTP au démarrage (optionnel)
-transporter
-  .verify()
-  .then(() => {
-    console.log("✅ SMTP connecté:", process.env.SMTP_HOST, "port", smtpPort);
-  })
-  .catch((err) => {
-    console.error("❌ SMTP erreur:", err.message);
-  });
+// Adresse d'envoi - sera no-reply@certpilot.eu une fois le domaine vérifié
+// En attendant, on utilise onboarding@resend.dev
+const FROM_EMAIL =
+  process.env.EMAIL_FROM || "CertPilot <onboarding@resend.dev>";
 
 // Email 1 : Confirmation de demande de contact
 export async function sendContactConfirmation(params: {
@@ -48,8 +24,8 @@ export async function sendContactConfirmation(params: {
     corporate: "Corporate (1199€/mois)",
   };
 
-  const mailOptions = {
-    from: `"${process.env.SMTP_FROM_NAME || "CertPilot"}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+  await resend.emails.send({
+    from: FROM_EMAIL,
     to,
     subject: "Demande reçue - CertPilot",
     html: `
@@ -115,9 +91,7 @@ Notre équipe commerciale va étudier votre demande et vous recontactera dans le
 À très bientôt,
 L'équipe CertPilot
     `,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 }
 
 // Email 2 : Envoi du lien de paiement Stripe
@@ -137,8 +111,8 @@ export async function sendPaymentLink(params: {
     corporate: "Corporate - 1199€/mois",
   };
 
-  const mailOptions = {
-    from: `"${process.env.SMTP_FROM_NAME || "CertPilot"}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+  await resend.emails.send({
+    from: FROM_EMAIL,
     to,
     subject: `Votre lien de paiement CertPilot - ${companyName}`,
     html: `
@@ -216,9 +190,7 @@ Une fois le paiement effectué, votre compte sera activé instantanément et vou
 Cordialement,
 L'équipe CertPilot
     `,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 }
 
 // Email 3 : Bienvenue + Identifiants après paiement
@@ -238,8 +210,8 @@ export async function sendWelcomeEmail(params: {
     corporate: "Corporate",
   };
 
-  const mailOptions = {
-    from: `"${process.env.SMTP_FROM_NAME || "CertPilot"}" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+  await resend.emails.send({
+    from: FROM_EMAIL,
     to,
     subject: `🎉 Bienvenue sur CertPilot - Vos identifiants`,
     html: `
@@ -349,7 +321,5 @@ Excellente gestion avec CertPilot !
 L'équipe CertPilot
 www.certpilot.eu
     `,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 }
