@@ -155,7 +155,7 @@ function ClientsContent() {
   const handleDeleteClient = async (clientId: string, clientName: string) => {
     if (
       !confirm(
-        `Êtes-vous sûr de vouloir supprimer le client "${clientName}" ?\n\nCette action supprimera également tous les utilisateurs et données associés.`
+        `Êtes-vous sûr de vouloir supprimer le client "${clientName}" ?\n\nCette action supprimera également tous les utilisateurs et données associés.`,
       )
     ) {
       return;
@@ -449,7 +449,9 @@ function ClientsContent() {
               ) : clients.length === 0 ? (
                 <div className="rounded-lg border-2 border-dashed border-gray-200 p-8 text-center">
                   <Users className="mx-auto h-12 w-12 text-gray-300" />
-                  <p className="mt-2 text-gray-500">Aucun client pour le moment</p>
+                  <p className="mt-2 text-gray-500">
+                    Aucun client pour le moment
+                  </p>
                   <p className="text-sm text-gray-400">
                     Créez votre premier client ci-dessus
                   </p>
@@ -543,4 +545,3 @@ export default function ClientsAdminPage() {
     </Suspense>
   );
 }
-

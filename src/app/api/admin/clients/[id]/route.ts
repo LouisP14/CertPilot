@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 // DELETE - Supprimer un client (company) et toutes ses données
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -16,17 +16,13 @@ export async function DELETE(
         _count: {
           select: {
             users: true,
-            employees: true,
           },
         },
       },
     });
 
     if (!company) {
-      return NextResponse.json(
-        { error: "Client non trouvé" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Client non trouvé" }, { status: 404 });
     }
 
     // Supprimer toutes les données liées dans l'ordre
@@ -112,7 +108,7 @@ export async function DELETE(
     console.error("Erreur suppression client:", error);
     return NextResponse.json(
       { error: "Erreur lors de la suppression du client" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -120,7 +116,7 @@ export async function DELETE(
 // GET - Obtenir les détails d'un client
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -137,21 +133,11 @@ export async function GET(
             createdAt: true,
           },
         },
-        _count: {
-          select: {
-            employees: true,
-            formations: true,
-            sessions: true,
-          },
-        },
       },
     });
 
     if (!company) {
-      return NextResponse.json(
-        { error: "Client non trouvé" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Client non trouvé" }, { status: 404 });
     }
 
     return NextResponse.json(company);
@@ -159,7 +145,7 @@ export async function GET(
     console.error("Erreur récupération client:", error);
     return NextResponse.json(
       { error: "Erreur lors de la récupération du client" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
