@@ -132,23 +132,23 @@ export async function POST(request: NextRequest) {
     >`
       SELECT 
         tco.id,
-        tco.pricePerPerson,
-        tco.pricePerSession,
-        tco.minParticipants,
-        tco.maxParticipants,
-        tco.durationDays,
-        tco.isActive,
-        tc.id as centerId,
-        tc.name as centerName,
-        tc.city as centerCity,
-        tc.isPartner,
-        tc.discountPercent,
-        tc.canTravel
-      FROM TrainingCenterOffering tco
-      JOIN TrainingCenter tc ON tco.trainingCenterId = tc.id
-      WHERE tco.formationTypeId = ${formationTypeId}
-        AND tco.isActive = 1
-        AND tc.isActive = 1
+        tco."pricePerPerson",
+        tco."pricePerSession",
+        tco."minParticipants",
+        tco."maxParticipants",
+        tco."durationDays",
+        tco."isActive",
+        tc.id as "centerId",
+        tc.name as "centerName",
+        tc.city as "centerCity",
+        tc."isPartner",
+        tc."discountPercent",
+        tc."canTravel"
+      FROM "TrainingCenterOffering" tco
+      JOIN "TrainingCenter" tc ON tco."trainingCenterId" = tc.id
+      WHERE tco."formationTypeId" = ${formationTypeId}
+        AND tco."isActive" = true
+        AND tc."isActive" = true
     `;
 
     const nbEmployees = employees.length;

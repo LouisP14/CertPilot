@@ -16,8 +16,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // SQLite: utiliser une requête raw pour la recherche insensible à la casse
-    const lowerQuery = `%${query.toLowerCase()}%`;
+    // PostgreSQL: recherche insensible à la casse avec ILIKE
+    const searchPattern = `%${query}%`;
 
     const employees = await prisma.$queryRaw<
       Array<{
@@ -29,17 +29,17 @@ export async function GET(request: NextRequest) {
         department: string;
       }>
     >`
-      SELECT id, firstName, lastName, employeeId, position, department
-      FROM Employee
-      WHERE isActive = 1
+      SELECT id, "firstName", "lastName", "employeeId", position, department
+      FROM "Employee"
+      WHERE "isActive" = true
       AND (
-        LOWER(firstName) LIKE ${lowerQuery}
-        OR LOWER(lastName) LIKE ${lowerQuery}
-        OR LOWER(employeeId) LIKE ${lowerQuery}
-        OR LOWER(position) LIKE ${lowerQuery}
-        OR LOWER(department) LIKE ${lowerQuery}
+        "firstName" ILIKE ${searchPattern}
+        OR "lastName" ILIKE ${searchPattern}
+        OR "employeeId" ILIKE ${searchPattern}
+        OR position ILIKE ${searchPattern}
+        OR department ILIKE ${searchPattern}
       )
-      ORDER BY lastName ASC
+      ORDER BY "lastName" ASC
       LIMIT 10
     `;
 
