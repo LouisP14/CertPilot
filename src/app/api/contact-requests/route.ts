@@ -1,3 +1,4 @@
+import { sendContactConfirmation } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -59,6 +60,21 @@ export async function POST(request: NextRequest) {
         status: "NEW",
       },
     });
+
+    // Envoyer email de confirmation au prospect
+    try {
+      if (plan) {
+        await sendContactConfirmation({
+          to: email.toLowerCase(),
+          contactName,
+          companyName,
+          plan,
+        });
+      }
+    } catch (emailError) {
+      console.error("Erreur envoi email confirmation:", emailError);
+      // Ne pas bloquer la création de la demande si l'email échoue
+    }
 
     return NextResponse.json(contactRequest, { status: 201 });
   } catch (error) {

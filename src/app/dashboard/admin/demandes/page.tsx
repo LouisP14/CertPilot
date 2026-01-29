@@ -172,27 +172,29 @@ export default function DemandesAdminPage() {
 
       const { url } = await response.json();
 
+      // Envoyer l'email avec le lien de paiement
+      const emailResponse = await fetch("/api/emails/payment-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: request.email,
+          contactName: request.contactName,
+          companyName: request.companyName,
+          plan: request.plan,
+          paymentUrl: url,
+        }),
+      });
+
+      if (!emailResponse.ok) {
+        throw new Error("Erreur lors de l'envoi de l'email");
+      }
+
       // Copier le lien dans le presse-papier
       await navigator.clipboard.writeText(url);
-      toast.success("Lien de paiement copié dans le presse-papier !");
+      toast.success("Email envoyé et lien copié dans le presse-papier !");
 
       // Mettre à jour le statut
       await updateStatus(request.id, "PAYMENT_SENT");
-
-      // Ouvrir le client mail avec le lien pré-rempli
-      const subject = encodeURIComponent(`CertPilot - Votre lien de paiement`);
-      const body = encodeURIComponent(
-        `Bonjour ${request.contactName},\n\n` +
-          `Suite à notre échange, voici votre lien de paiement pour l'offre ${PLAN_CONFIG[request.plan].name} :\n\n` +
-          `${url}\n\n` +
-          `Dès votre paiement effectué, vous recevrez automatiquement vos identifiants de connexion.\n\n` +
-          `Cordialement,\n` +
-          `L'équipe CertPilot`,
-      );
-      window.open(
-        `mailto:${request.email}?subject=${subject}&body=${body}`,
-        "_blank",
-      );
     } catch (error) {
       console.error("Erreur:", error);
       toast.error(

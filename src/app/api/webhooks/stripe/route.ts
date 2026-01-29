@@ -158,8 +158,22 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       });
   }
 
-  // TODO: Envoyer email de bienvenue avec les identifiants
-  // Pour l'instant, on log les infos
+  // Envoyer email de bienvenue avec les identifiants
+  try {
+    const { sendWelcomeEmail } = await import("@/lib/email");
+    await sendWelcomeEmail({
+      to: customerEmail,
+      contactName: contactName || customerEmail.split("@")[0],
+      companyName: companyName || customerEmail.split("@")[0],
+      plan: plan,
+      tempPassword: tempPassword,
+    });
+    console.log("Email de bienvenue envoyé à:", customerEmail);
+  } catch (emailError) {
+    console.error("Erreur envoi email bienvenue:", emailError);
+  }
+
+  // Log pour le debug
   console.log("=== NOUVEAU CLIENT ===");
   console.log("Email:", customerEmail);
   console.log("Mot de passe temporaire:", tempPassword);
