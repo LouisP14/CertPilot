@@ -12,88 +12,31 @@ export async function DELETE(
     // Vérifier que l'entreprise existe
     const company = await prisma.company.findUnique({
       where: { id },
-      include: {
-        _count: {
-          select: {
-            users: true,
-          },
-        },
-      },
     });
 
     if (!company) {
       return NextResponse.json({ error: "Client non trouvé" }, { status: 404 });
     }
 
-    // Supprimer toutes les données liées dans l'ordre
-    // 1. Supprimer les enregistrements dépendants d'Employee
-    await prisma.employeeFormation.deleteMany({
-      where: { employee: { companyId: id } },
-    });
-
-    await prisma.trainingNeed.deleteMany({
-      where: { employee: { companyId: id } },
-    });
-
-    await prisma.sessionParticipant.deleteMany({
-      where: { employee: { companyId: id } },
-    });
-
-    // 2. Supprimer les employés
-    await prisma.employee.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 3. Supprimer les sessions et leurs participants
-    await prisma.sessionParticipant.deleteMany({
-      where: { session: { companyId: id } },
-    });
-
-    await prisma.session.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 4. Supprimer les formations
-    await prisma.formation.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 5. Supprimer les demandes de contact
-    await prisma.contactRequest.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 6. Supprimer les centres de formation
-    await prisma.trainingCenter.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 7. Supprimer les sites
-    await prisma.site.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 8. Supprimer les services
-    await prisma.service.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 9. Supprimer les équipes
-    await prisma.team.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 10. Supprimer les logs d'audit
-    await prisma.auditLog.deleteMany({
-      where: { companyId: id },
-    });
-
-    // 11. Supprimer les utilisateurs
+    // Supprimer dans l'ordre pour éviter les violations de contraintes
+    // Les relations avec onDelete: Cascade gèrent le reste automatiquement
+    
+    // 1. Supprimer les utilisateurs liés
     await prisma.user.deleteMany({
       where: { companyId: id },
     });
 
-    // 12. Finalement, supprimer l'entreprise
+    // 2. Supprimer les demandes de contact
+    await prisma.contactRequest.deleteMany({
+      where: { companyId: id },
+    });
+
+    // 3. Supprimer les logs d'audit
+    await prisma.auditLog.deleteMany({
+      where: { companyId: id },
+    });
+
+    // 4. Supprimer l'entreprise (cascade supprimera le reste)
     await prisma.company.delete({
       where: { id },
     });
