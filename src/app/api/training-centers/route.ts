@@ -10,8 +10,14 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    // Filtrer par companyId sauf pour les super admins
+    const whereClause: any = { isActive: true };
+    if (session.user.role !== "SUPER_ADMIN" && session.user.companyId) {
+      whereClause.companyId = session.user.companyId;
+    }
+
     const trainingCenters = await prisma.trainingCenter.findMany({
-      where: { isActive: true },
+      where: whereClause,
       include: {
         offerings: {
           include: { formationType: true },
@@ -110,6 +116,7 @@ export async function POST(request: NextRequest) {
         hasOwnPremises: hasOwnPremises !== false,
         canTravel: canTravel || false,
         travelCostPerKm: travelCostPerKm ? parseFloat(travelCostPerKm) : null,
+        companyId: session.user.companyId, // Ajouter le companyId
       },
     });
 

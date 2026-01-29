@@ -1,10 +1,20 @@
+import { auth } from "@/lib/auth";
 import { sendContactConfirmation } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET - Récupérer toutes les demandes (admin only)
+// GET - Récupérer toutes les demandes (SUPER_ADMIN only)
 export async function GET() {
   try {
+    // Vérifier que l'utilisateur est SUPER_ADMIN
+    const session = await auth();
+    if (!session || session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Accès non autorisé" },
+        { status: 403 },
+      );
+    }
+
     const requests = await prisma.contactRequest.findMany({
       orderBy: { createdAt: "desc" },
     });

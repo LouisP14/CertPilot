@@ -90,8 +90,8 @@ export function Sidebar({ userRole }: SidebarProps) {
           );
         })}
 
-        {/* Lien Administration pour ADMIN et SUPER_ADMIN */}
-        {(userRole === "ADMIN" || userRole === "SUPER_ADMIN") && (
+        {/* Lien Administration pour SUPER_ADMIN uniquement */}
+        {isSuperAdmin && (
           <>
             <div className="my-4 border-t border-white/10" />
             <Link

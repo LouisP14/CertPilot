@@ -1,11 +1,29 @@
+import { auth } from "@/lib/auth";
 import { sendWelcomeEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
-// POST - Créer un compte client (admin only)
+// Configuration des plans
+const PLAN_CONFIGS: Record<string, { name: string; employeeLimit: number }> = {
+  starter: { name: "Starter", employeeLimit: 50 },
+  business: { name: "Business", employeeLimit: 100 },
+  enterprise: { name: "Enterprise", employeeLimit: 200 },
+  corporate: { name: "Corporate", employeeLimit: 500 },
+};
+
+// POST - Créer un compte client (SUPER_ADMIN only)
 export async function POST(request: NextRequest) {
   try {
+    // Vérifier que l'utilisateur est SUPER_ADMIN
+    const session = await auth();
+    if (!session || session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Accès non autorisé" },
+        { status: 403 },
+      );
+    }
+
     const body = await request.json();
     const {
       companyName,
@@ -13,7 +31,6 @@ export async function POST(request: NextRequest) {
       email,
       password,
       plan,
-      employeeLimit,
       subscriptionMonths,
     } = body;
 
@@ -46,14 +63,18 @@ export async function POST(request: NextRequest) {
       subscriptionEndsAt.getMonth() + (subscriptionMonths || 12),
     );
 
+    // Obtenir la configuration du plan
+    const selectedPlan = plan?.toLowerCase() || "business";
+    const planConfig = PLAN_CONFIGS[selectedPlan] || PLAN_CONFIGS.business;
+
     // Créer l'entreprise
     const company = await prisma.company.create({
       data: {
         name: companyName,
         adminEmail: email.toLowerCase(),
         subscriptionStatus: "ACTIVE",
-        subscriptionPlan: plan || "Starter",
-        employeeLimit: employeeLimit || 50,
+        subscriptionPlan: planConfig.name,
+        employeeLimit: planConfig.employeeLimit,
         trialEndsAt: null, // Pas de trial, abonnement direct
       },
     });
@@ -76,7 +97,7 @@ export async function POST(request: NextRequest) {
         to: email.toLowerCase(),
         contactName,
         companyName,
-        plan: plan || "starter",
+        plan: selectedPlan,
         tempPassword: password, // Le mot de passe en clair avant hashage
       });
       console.log("✅ Email de bienvenue envoyé à:", email);
@@ -110,9 +131,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET - Liste des entreprises/clients (admin only)
+// GET - Liste des entreprises/clients (SUPER_ADMIN only)
 export async function GET() {
   try {
+    // Vérifier que l'utilisateur est SUPER_ADMIN
+    const session = await auth();
+    if (!session || session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Accès non autorisé" },
+        { status: 403 },
+      );
+    }
+
     const companies = await prisma.company.findMany({
       include: {
         users: {

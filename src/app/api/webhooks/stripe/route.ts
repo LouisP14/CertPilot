@@ -165,7 +165,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       to: customerEmail,
       contactName: contactName || customerEmail.split("@")[0],
       companyName: companyName || customerEmail.split("@")[0],
-      plan: plan,
+      plan: plan?.toLowerCase() || "starter",
       tempPassword: tempPassword,
     });
     console.log("Email de bienvenue envoyé à:", customerEmail);

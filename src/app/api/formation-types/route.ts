@@ -10,8 +10,21 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    // Filtrer par companyId - SÉCURITÉ: si pas de companyId, ne rien retourner
+    const whereClause: { isActive: boolean; companyId?: string } = {
+      isActive: true,
+    };
+    if (session.user.role === "SUPER_ADMIN") {
+      // Super admin voit tout
+    } else if (session.user.companyId) {
+      whereClause.companyId = session.user.companyId;
+    } else {
+      // Pas de companyId = pas d'accès aux données
+      return NextResponse.json([]);
+    }
+
     const formationTypes = await prisma.formationType.findMany({
-      where: { isActive: true },
+      where: whereClause,
       orderBy: { name: "asc" },
     });
 
@@ -50,6 +63,7 @@ export async function POST(request: NextRequest) {
         defaultValidityMonths: defaultValidityMonths
           ? parseInt(defaultValidityMonths)
           : null,
+        companyId: session.user.companyId, // Ajouter le companyId
       },
     });
 

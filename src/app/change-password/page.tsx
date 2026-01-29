@@ -76,7 +76,7 @@ export default function ChangePasswordPage() {
           <h2 className="mb-2 text-center text-xl font-bold text-slate-900">
             Changement de mot de passe requis
           </h2>
-          <p className="mb-6 text-center text-sm text-slate-600">
+          <p className="mb-6 text-center text-sm text-slate-700">
             Pour des raisons de sécurité, vous devez définir un nouveau mot de
             passe avant de continuer.
           </p>
@@ -89,11 +89,11 @@ export default function ChangePasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <label className="mb-2 block text-sm font-medium text-slate-800">
                 Nouveau mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
@@ -101,7 +101,7 @@ export default function ChangePasswordPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, newPassword: e.target.value })
                   }
-                  className="w-full rounded-lg border border-slate-300 py-3 pr-10 pl-10 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-lg border border-slate-300 py-3 pr-10 pl-10 text-sm text-slate-900 placeholder:text-slate-500 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   placeholder="Minimum 8 caractères"
                 />
                 <button
@@ -119,11 +119,11 @@ export default function ChangePasswordPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
+              <label className="mb-2 block text-sm font-medium text-slate-800">
                 Confirmer le mot de passe
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                 <input
                   type={showConfirm ? "text" : "password"}
                   required
@@ -134,7 +134,7 @@ export default function ChangePasswordPage() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full rounded-lg border border-slate-300 py-3 pr-10 pl-10 text-sm transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-lg border border-slate-300 py-3 pr-10 pl-10 text-sm text-slate-900 placeholder:text-slate-500 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   placeholder="Confirmez votre mot de passe"
                 />
                 <button
@@ -164,4 +164,3 @@ export default function ChangePasswordPage() {
     </div>
   );
 }
-

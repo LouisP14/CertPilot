@@ -92,6 +92,8 @@ export default function EmployeeSignPage() {
     if (!signatureImage || !signatureName || !acceptTerms) return;
 
     setSigning(true);
+    setError(null); // Clear any previous errors
+
     try {
       const response = await fetch(`/api/signature/employee/${token}`, {
         method: "POST",
@@ -106,6 +108,7 @@ export default function EmployeeSignPage() {
 
       if (!response.ok) {
         setError(result.error);
+        setSigning(false);
         return;
       }
 
@@ -183,7 +186,10 @@ export default function EmployeeSignPage() {
   if (!data) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <div
+      className="notranslate min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8"
+      translate="no"
+    >
       <div className="mx-auto max-w-3xl px-4">
         {/* Header */}
         <div className="mb-6 overflow-hidden rounded-2xl bg-white shadow-lg">

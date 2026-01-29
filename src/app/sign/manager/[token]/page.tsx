@@ -235,7 +235,10 @@ export default function ManagerSignPage() {
   if (!data) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
+    <div
+      className="notranslate min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8"
+      translate="no"
+    >
       <div className="mx-auto max-w-3xl px-4">
         {/* Header */}
         <div className="mb-6 overflow-hidden rounded-2xl bg-white shadow-lg">

@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -75,6 +75,9 @@ model Company {
 
   // Relations
   users                 User[]
+  employees             Employee[]
+  formationTypes        FormationType[]
+  trainingCenters       TrainingCenter[]
   planningConstraints   PlanningConstraints?
 }
 
@@ -143,6 +146,10 @@ model Employee {
   contractType       String?       // CDI, CDD, Interim, etc.
   workingHoursPerDay Float         @default(7) // Heures travaillées/jour
   
+  // Isolation par entreprise
+  companyId          String?
+  company            Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
@@ -177,6 +184,10 @@ model FormationType {
   // Coûts indicatifs (peuvent être surchargés par TrainingCenter)
   estimatedCostPerPerson Float?       // Coût estimé par personne (€)
   estimatedCostPerSession Float?      // Coût estimé par session intra (€)
+  
+  // Isolation par entreprise
+  companyId             String?
+  company               Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
   
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
@@ -326,6 +337,11 @@ model TrainingCenter {
   totalSessions     Int      @default(0) // Nombre de sessions réalisées
   
   isActive          Boolean  @default(true)
+  
+  // Isolation par entreprise
+  companyId         String?
+  company           Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   

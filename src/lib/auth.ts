@@ -72,3 +72,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "jwt",
   },
 });
+
+// Helper pour obtenir le companyId de l'utilisateur connecté
+export async function getCompanyId() {
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    throw new Error("CompanyId non trouvé dans la session");
+  }
+  return session.user.companyId;
+}
+
+// Helper pour vérifier si l'utilisateur a accès à une ressource
+export async function checkCompanyAccess(resourceCompanyId: string | null) {
+  const session = await auth();
+  if (!session?.user) {
+    return false;
+  }
+
+  // Les super admins ont accès à tout
+  if (session.user.role === "SUPER_ADMIN") {
+    return true;
+  }
+
+  return session.user.companyId === resourceCompanyId;
+}

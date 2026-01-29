@@ -53,7 +53,7 @@ function ClientsContent() {
     contactName: "",
     email: "",
     password: "",
-    employeeLimit: 50,
+    plan: "business" as "starter" | "business" | "enterprise" | "corporate",
     subscriptionMonths: 12,
   });
 
@@ -137,7 +137,7 @@ function ClientsContent() {
           contactName: "",
           email: "",
           password: "",
-          employeeLimit: 50,
+          plan: "business",
           subscriptionMonths: 12,
         });
         // Rafraîchir la liste des clients
@@ -353,19 +353,35 @@ function ClientsContent() {
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <Label htmlFor="employeeLimit">Limite employés</Label>
-                      <Input
-                        id="employeeLimit"
-                        type="number"
-                        min="1"
-                        value={formData.employeeLimit}
+                      <Label htmlFor="plan">Offre</Label>
+                      <select
+                        id="plan"
+                        value={formData.plan}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            employeeLimit: parseInt(e.target.value),
+                            plan: e.target.value as
+                              | "starter"
+                              | "business"
+                              | "enterprise"
+                              | "corporate",
                           })
                         }
-                      />
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="starter">
+                          Starter - 199€/mois (1-50 employés)
+                        </option>
+                        <option value="business">
+                          Business - 349€/mois (51-100 employés)
+                        </option>
+                        <option value="enterprise">
+                          Enterprise - 599€/mois (101-200 employés)
+                        </option>
+                        <option value="corporate">
+                          Corporate - 1199€/mois (201-500 employés)
+                        </option>
+                      </select>
                     </div>
                     <div>
                       <Label htmlFor="subscriptionMonths">

@@ -23,44 +23,60 @@ export function SignaturePad({
   const [hasDrawn, setHasDrawn] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [mode, setMode] = useState<"draw" | "upload">("draw");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Redimensionner le canvas pour qu'il s'adapte au conteneur
   useEffect(() => {
-    const resizeCanvas = () => {
-      const canvas = canvasRef.current;
-      const container = containerRef.current;
-      if (!canvas || !container) return;
+    // Attendre que le composant soit monté
+    const timer = setTimeout(() => {
+      const resizeCanvas = () => {
+        const canvas = canvasRef.current;
+        const container = containerRef.current;
+        if (!canvas || !container) return;
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
 
-      // Sauvegarder le contenu actuel
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        // Sauvegarder le contenu actuel seulement si initialisé
+        let imageData: ImageData | null = null;
+        if (isInitialized && canvas.width > 0 && canvas.height > 0) {
+          try {
+            imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          } catch {
+            imageData = null;
+          }
+        }
 
-      // Redimensionner le canvas
-      const containerWidth = container.clientWidth - 8; // -8 pour le padding
-      canvas.width = Math.max(containerWidth, 300);
-      canvas.height = 150;
+        // Redimensionner le canvas
+        const containerWidth = container.clientWidth - 8; // -8 pour le padding
+        canvas.width = Math.max(containerWidth, 300);
+        canvas.height = 150;
 
-      // Restaurer les paramètres du contexte
-      ctx.strokeStyle = "#1e3a8a";
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
+        // Restaurer les paramètres du contexte
+        ctx.strokeStyle = "#1e3a8a";
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
 
-      // Restaurer le contenu si possible
-      if (imageData.width > 0 && imageData.height > 0) {
-        ctx.putImageData(imageData, 0, 0);
-      } else {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    };
+        // Restaurer le contenu si possible
+        if (imageData && imageData.width > 0 && imageData.height > 0) {
+          ctx.putImageData(imageData, 0, 0);
+        } else {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
 
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-    return () => window.removeEventListener("resize", resizeCanvas);
-  }, []);
+        setIsInitialized(true);
+      };
+
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+
+      return () => window.removeEventListener("resize", resizeCanvas);
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [isInitialized]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

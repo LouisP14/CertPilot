@@ -87,11 +87,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get("employeeId");
 
-    const where: { isArchived: boolean; employeeId?: string } = {
+    const where: any = {
       isArchived: false,
     };
+
     if (employeeId) {
       where.employeeId = employeeId;
+    }
+
+    // Filtrer par companyId via l'employé (sauf pour super admins)
+    if (session.user.role !== "SUPER_ADMIN" && session.user.companyId) {
+      where.employee = {
+        companyId: session.user.companyId,
+      };
     }
 
     const certificates = await prisma.certificate.findMany({

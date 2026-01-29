@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import {
   AlertTriangle,
@@ -18,11 +19,30 @@ import { FormationCoverage } from "./formation-coverage";
 import { ServiceCoverage } from "./service-coverage";
 
 async function getStats() {
+  const session = await auth();
+
+  // Créer le filtre par companyId
+  // IMPORTANT: Si pas de companyId et pas SUPER_ADMIN, utiliser un ID impossible pour ne rien retourner
+  const companyFilter: { companyId?: string } = {};
+  if (session?.user?.role === "SUPER_ADMIN") {
+    // Super admin voit tout - pas de filtre
+  } else if (session?.user?.companyId) {
+    // Utilisateur normal avec une company
+    companyFilter.companyId = session.user.companyId;
+  } else {
+    // Utilisateur sans company - ne devrait rien voir
+    companyFilter.companyId = "no-company-access";
+  }
+
   const [employeeCount, certificateCount, formationTypeCount] =
     await Promise.all([
-      prisma.employee.count({ where: { isActive: true } }),
-      prisma.certificate.count({ where: { isArchived: false } }),
-      prisma.formationType.count({ where: { isActive: true } }),
+      prisma.employee.count({ where: { isActive: true, ...companyFilter } }),
+      prisma.certificate.count({
+        where: { isArchived: false, employee: companyFilter },
+      }),
+      prisma.formationType.count({
+        where: { isActive: true, ...companyFilter },
+      }),
     ]);
 
   // Get certificates expiring soon
@@ -40,9 +60,11 @@ async function getStats() {
         },
         employee: {
           isActive: true,
+          ...companyFilter,
         },
         formationType: {
           isActive: true,
+          ...companyFilter,
         },
       },
     }),
@@ -56,9 +78,11 @@ async function getStats() {
         },
         employee: {
           isActive: true,
+          ...companyFilter,
         },
         formationType: {
           isActive: true,
+          ...companyFilter,
         },
       },
     }),
@@ -74,9 +98,11 @@ async function getStats() {
       },
       employee: {
         isActive: true,
+        ...companyFilter,
       },
       formationType: {
         isActive: true,
+        ...companyFilter,
       },
     },
     include: {
@@ -96,14 +122,23 @@ async function getStats() {
     rejectedSignatures,
     toSendCount,
   ] = await Promise.all([
-    prisma.passportSignature.count({ where: { status: "PENDING_EMPLOYEE" } }),
-    prisma.passportSignature.count({ where: { status: "PENDING_MANAGER" } }),
-    prisma.passportSignature.count({ where: { status: "COMPLETED" } }),
-    prisma.passportSignature.count({ where: { status: "REJECTED" } }),
+    prisma.passportSignature.count({
+      where: { status: "PENDING_EMPLOYEE", employee: companyFilter },
+    }),
+    prisma.passportSignature.count({
+      where: { status: "PENDING_MANAGER", employee: companyFilter },
+    }),
+    prisma.passportSignature.count({
+      where: { status: "COMPLETED", employee: companyFilter },
+    }),
+    prisma.passportSignature.count({
+      where: { status: "REJECTED", employee: companyFilter },
+    }),
     // Employés sans signature initiée ou en brouillon
     prisma.employee.count({
       where: {
         isActive: true,
+        ...companyFilter,
         OR: [
           { passportSignature: null },
           { passportSignature: { status: "DRAFT" } },
@@ -114,7 +149,7 @@ async function getStats() {
 
   // Couverture par type de formation
   const formationTypes = await prisma.formationType.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ...companyFilter },
     select: {
       id: true,
       name: true,
@@ -470,4 +505,3 @@ function StatsCard({
 
   return content;
 }
-
