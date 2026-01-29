@@ -37,44 +37,16 @@ export default function MentionsLegales() {
             </h2>
             <div className="mt-4 space-y-2">
               <p>
-                <strong>Raison sociale :</strong> CertPilot SAS
-              </p>
-              <p>
-                <strong>Forme juridique :</strong> Société par Actions
-                Simplifiée (SAS)
-              </p>
-              <p>
-                <strong>Capital social :</strong> 10 000 €
-              </p>
-              <p>
-                <strong>Siège social :</strong> 123 Avenue de la Formation,
-                75001 Paris, France
-              </p>
-              <p>
-                <strong>RCS :</strong> Paris B 123 456 789
-              </p>
-              <p>
-                <strong>SIRET :</strong> 123 456 789 00012
-              </p>
-              <p>
-                <strong>Numéro de TVA intracommunautaire :</strong> FR12
-                123456789
-              </p>
-              <p>
-                <strong>Directeur de la publication :</strong> [Nom du
-                dirigeant]
+                <strong>Raison sociale :</strong> CertPilot
               </p>
               <p>
                 <strong>Email :</strong>{" "}
                 <a
-                  href="mailto:contact@certpilot.fr"
+                  href="mailto:contact@certpilot.eu"
                   className="text-emerald-600 hover:underline"
                 >
-                  contact@certpilot.fr
+                  contact@certpilot.eu
                 </a>
-              </p>
-              <p>
-                <strong>Téléphone :</strong> +33 (0)1 23 45 67 89
               </p>
             </div>
           </section>

@@ -52,20 +52,15 @@ export default function CGV() {
             </h2>
             <div className="mt-4 space-y-2">
               <p>
-                <strong>CertPilot SAS</strong>
+                <strong>CertPilot</strong>
               </p>
-              <p>Société par Actions Simplifiée au capital de 10 000 €</p>
-              <p>Siège social : 123 Avenue de la Formation, 75001 Paris</p>
-              <p>RCS Paris B 123 456 789</p>
-              <p>SIRET : 123 456 789 00012</p>
-              <p>TVA intracommunautaire : FR12 123456789</p>
               <p>
                 Email :{" "}
                 <a
-                  href="mailto:facturation@certpilot.fr"
+                  href="mailto:contact@certpilot.eu"
                   className="text-emerald-600 hover:underline"
                 >
-                  facturation@certpilot.fr
+                  contact@certpilot.eu
                 </a>
               </p>
             </div>
@@ -365,10 +360,10 @@ export default function CGV() {
               <li>
                 Email :{" "}
                 <a
-                  href="mailto:support@certpilot.fr"
+                  href="mailto:contact@certpilot.eu"
                   className="text-emerald-600 hover:underline"
                 >
-                  support@certpilot.fr
+                  contact@certpilot.eu
                 </a>
               </li>
               <li>Formulaire de contact dans l&apos;application</li>

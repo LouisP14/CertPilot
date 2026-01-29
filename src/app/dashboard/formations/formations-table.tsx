@@ -341,3 +341,4 @@ export function FormationsTable({ formations }: FormationsTableProps) {
     </div>
   );
 }
+

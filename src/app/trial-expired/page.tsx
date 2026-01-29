@@ -133,7 +133,7 @@ export default function TrialExpiredPage() {
             Besoin d&apos;une solution personnalisée ou plus de 500 employés ?
           </p>
           <Link
-            href="mailto:contact@certpilot.fr"
+            href="mailto:contact@certpilot.eu"
             className="inline-flex items-center gap-2 font-semibold text-[#173B56] hover:underline"
           >
             Contactez notre équipe commerciale
@@ -151,3 +151,4 @@ export default function TrialExpiredPage() {
     </div>
   );
 }
+

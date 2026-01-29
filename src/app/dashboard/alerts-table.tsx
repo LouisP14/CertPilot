@@ -376,3 +376,4 @@ export function AlertsTable({ certificates }: { certificates: Certificate[] }) {
     </div>
   );
 }
+

@@ -46,3 +46,4 @@ export default async function CalendarPage() {
     <CalendarPageClient groupedCertificates={grouped} services={services} />
   );
 }
+

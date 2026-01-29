@@ -206,3 +206,4 @@ export function SettingsAccordion({ company }: SettingsAccordionProps) {
     </div>
   );
 }
+

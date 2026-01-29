@@ -233,3 +233,4 @@ export function FormationCoverage({ formations }: FormationCoverageProps) {
     </Card>
   );
 }
+

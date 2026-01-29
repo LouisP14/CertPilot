@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Erreur envoi email paiement:", error);
-    const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
+    const errorMessage =
+      error instanceof Error ? error.message : "Erreur inconnue";
     return NextResponse.json(
       { error: `Erreur lors de l'envoi de l'email: ${errorMessage}` },
       { status: 500 },

@@ -57,16 +57,15 @@ export default function Confidentialite() {
             </h2>
             <div className="mt-4 space-y-2">
               <p>
-                <strong>CertPilot SAS</strong>
+                <strong>CertPilot</strong>
               </p>
-              <p>123 Avenue de la Formation, 75001 Paris, France</p>
               <p>
                 Email DPO :{" "}
                 <a
-                  href="mailto:dpo@certpilot.fr"
+                  href="mailto:contact@certpilot.eu"
                   className="text-emerald-600 hover:underline"
                 >
-                  dpo@certpilot.fr
+                  contact@certpilot.eu
                 </a>
               </p>
             </div>
@@ -295,10 +294,10 @@ export default function Confidentialite() {
             <p className="mt-4">
               Pour exercer ces droits, contactez notre DPO à{" "}
               <a
-                href="mailto:dpo@certpilot.fr"
+                href="mailto:contact@certpilot.eu"
                 className="text-emerald-600 hover:underline"
               >
-                dpo@certpilot.fr
+                contact@certpilot.eu
               </a>
             </p>
             <p className="mt-2">
@@ -357,16 +356,13 @@ export default function Confidentialite() {
               <p>
                 <strong>Délégué à la Protection des Données (DPO)</strong>
               </p>
-              <p className="mt-2">CertPilot SAS</p>
-              <p>123 Avenue de la Formation</p>
-              <p>75001 Paris, France</p>
               <p className="mt-2">
                 Email :{" "}
                 <a
-                  href="mailto:dpo@certpilot.fr"
+                  href="mailto:contact@certpilot.eu"
                   className="text-emerald-600 hover:underline"
                 >
-                  dpo@certpilot.fr
+                  contact@certpilot.eu
                 </a>
               </p>
             </div>

@@ -11,7 +11,6 @@ import {
   GraduationCap,
   Mail,
   PenTool,
-  Phone,
   Shield,
   Sparkles,
   Users,
@@ -379,20 +378,13 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-white/60">
+            <div className="mt-12 flex items-center justify-center text-white/60">
               <a
-                href="mailto:contact@certpilot.fr"
+                href="mailto:contact@certpilot.eu"
                 className="flex items-center gap-2 transition-colors hover:text-white"
               >
                 <Mail className="h-5 w-5" />
-                contact@certpilot.fr
-              </a>
-              <a
-                href="tel:+33123456789"
-                className="flex items-center gap-2 transition-colors hover:text-white"
-              >
-                <Phone className="h-5 w-5" />
-                01 23 45 67 89
+                contact@certpilot.eu
               </a>
             </div>
           </div>
@@ -468,29 +460,20 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-[#173B56]">Contact</h4>
               <div className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
-                <p>CertPilot SAS</p>
-                <p>123 Avenue de la Formation</p>
-                <p>75001 Paris, France</p>
                 <a
-                  href="mailto:contact@certpilot.fr"
+                  href="mailto:contact@certpilot.eu"
                   className="hover:text-[#173B56]"
                 >
-                  contact@certpilot.fr
-                </a>
-                <a href="tel:+33123456789" className="hover:text-[#173B56]">
-                  01 23 45 67 89
+                  contact@certpilot.eu
                 </a>
               </div>
             </div>
           </div>
 
           {/* Bottom bar */}
-          <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 sm:flex-row">
+          <div className="mt-10 flex flex-col items-center justify-center border-t border-slate-200 pt-8">
             <p className="text-sm text-slate-500">
-              © {new Date().getFullYear()} CertPilot SAS. Tous droits réservés.
-            </p>
-            <p className="text-xs text-slate-400">
-              RCS Paris B 123 456 789 • TVA FR12 123456789
+              © {new Date().getFullYear()} CertPilot. Tous droits réservés.
             </p>
           </div>
         </div>

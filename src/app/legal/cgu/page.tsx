@@ -331,17 +331,15 @@ export default function CGU() {
             </p>
             <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
               <p>
-                <strong>CertPilot SAS</strong>
+                <strong>CertPilot</strong>
               </p>
-              <p className="mt-2">123 Avenue de la Formation</p>
-              <p>75001 Paris, France</p>
               <p className="mt-2">
                 Email :{" "}
                 <a
-                  href="mailto:contact@certpilot.fr"
+                  href="mailto:contact@certpilot.eu"
                   className="text-emerald-600 hover:underline"
                 >
-                  contact@certpilot.fr
+                  contact@certpilot.eu
                 </a>
               </p>
             </div>

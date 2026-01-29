@@ -1,15 +1,36 @@
 import nodemailer from "nodemailer";
 
 // Configuration du transporteur SMTP
+// OVH Zimbra: utiliser port 465 avec secure=true, ou port 587 avec secure=false
+const smtpPort = parseInt(process.env.SMTP_PORT || "465");
+const smtpSecure =
+  process.env.SMTP_SECURE === "false" ? false : smtpPort === 465;
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "ssl0.ovh.net",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: process.env.SMTP_SECURE === "true", // false pour port 587
+  port: smtpPort,
+  secure: smtpSecure,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
   },
+  connectionTimeout: 10000, // 10 secondes pour la connexion
+  greetingTimeout: 10000,
+  socketTimeout: 30000, // 30 secondes pour les opérations
+  tls: {
+    rejectUnauthorized: false, // Accepter les certificats auto-signés
+  },
 });
+
+// Vérifier la connexion SMTP au démarrage (optionnel)
+transporter
+  .verify()
+  .then(() => {
+    console.log("✅ SMTP connecté:", process.env.SMTP_HOST, "port", smtpPort);
+  })
+  .catch((err) => {
+    console.error("❌ SMTP erreur:", err.message);
+  });
 
 // Email 1 : Confirmation de demande de contact
 export async function sendContactConfirmation(params: {
