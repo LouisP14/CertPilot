@@ -16,10 +16,20 @@ export async function GET() {
     }
 
     if (existingAdmin) {
+      // Réinitialiser le mot de passe pour être sûr
+      const hashedPassword = await bcrypt.hash("admin123", 10);
+      await prisma.user.update({
+        where: { email: "admin@certpilot.fr" },
+        data: { 
+          password: hashedPassword,
+          role: "SUPER_ADMIN",
+        },
+      });
+      
       return NextResponse.json({
         success: true,
-        status: "already_exists",
-        message: "Base de données déjà initialisée",
+        status: "password_reset",
+        message: "Mot de passe admin réinitialisé",
         credentials: {
           email: "admin@certpilot.fr",
           password: "admin123",
@@ -27,20 +37,26 @@ export async function GET() {
       });
     }
 
-    // Créer l'entreprise principale CertPilot
-    const company = await prisma.company.create({
-      data: {
-        id: "certpilot-main",
-        name: "CertPilot",
-        alertThresholds: "90,60,30,7",
-        adminEmail: "admin@certpilot.fr",
-        subscriptionStatus: "ACTIVE",
-        subscriptionPlan: "Enterprise",
-        employeeLimit: 500,
-      },
+    // Vérifier si la company existe
+    let company = await prisma.company.findFirst({
+      where: { id: "certpilot-main" },
     });
 
-    console.log("✅ Entreprise créée:", company.name);
+    if (!company) {
+      // Créer l'entreprise principale CertPilot
+      company = await prisma.company.create({
+        data: {
+          id: "certpilot-main",
+          name: "CertPilot",
+          alertThresholds: "90,60,30,7",
+          adminEmail: "admin@certpilot.fr",
+          subscriptionStatus: "ACTIVE",
+          subscriptionPlan: "Enterprise",
+          employeeLimit: 500,
+        },
+      });
+      console.log("✅ Entreprise créée:", company.name);
+    }
 
     // Créer l'utilisateur SUPER_ADMIN
     const hashedPassword = await bcrypt.hash("admin123", 10);
