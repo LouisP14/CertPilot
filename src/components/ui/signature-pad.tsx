@@ -241,7 +241,7 @@ export function SignaturePad({
           disabled={disabled}
         >
           <Pen className="mr-2 h-4 w-4" />
-          <span translate="no">Dessiner</span>
+          Dessiner
         </Button>
         <Button
           type="button"
@@ -251,7 +251,7 @@ export function SignaturePad({
           disabled={disabled}
         >
           <Upload className="mr-2 h-4 w-4" />
-          <span translate="no">Importer</span>
+          Importer
         </Button>
       </div>
 
