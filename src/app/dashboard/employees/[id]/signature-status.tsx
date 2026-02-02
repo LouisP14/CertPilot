@@ -194,19 +194,6 @@ export function SignatureStatus({
               <p className="text-amber-600 mt-1 text-xs">
                 Le lien expire après 7 jours
               </p>
-              {/* Lien pour tests (à retirer en prod) */}
-              <div className="mt-2 p-2 bg-amber-100 rounded text-xs">
-                <p className="font-medium text-amber-800">
-                  🔧 Lien de test (dev) :
-                </p>
-                <a
-                  href={`/sign/employee/${signature.employeeToken}`}
-                  target="_blank"
-                  className="text-blue-600 underline break-all"
-                >
-                  /sign/employee/{signature.employeeToken}
-                </a>
-              </div>
             </div>
           )}
 
@@ -225,19 +212,6 @@ export function SignatureStatus({
                   {signature.siteManagerName || signature.siteManagerEmail}
                 </strong>
               </p>
-              {/* Lien pour tests (à retirer en prod) */}
-              <div className="mt-2 p-2 bg-blue-100 rounded text-xs">
-                <p className="font-medium text-blue-800">
-                  🔧 Lien de test (dev) :
-                </p>
-                <a
-                  href={`/sign/manager/${signature.managerToken}`}
-                  target="_blank"
-                  className="text-blue-600 underline break-all"
-                >
-                  /sign/manager/{signature.managerToken}
-                </a>
-              </div>
             </div>
           )}
 

@@ -1,4 +1,5 @@
 import { auditSign } from "@/lib/audit";
+import { sendManagerSignatureLink } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -173,29 +174,15 @@ export async function POST(
       "EMPLOYEE",
     );
 
-    // TODO: Envoyer email au responsable
-    console.log(`
-    ========================================
-    📧 EMAIL AU RESPONSABLE (SIMULATION)
-    ========================================
-    À: ${signature.siteManagerEmail}
-    Objet: Contre-signature requise - Passeport ${signature.employee.lastName}
-    
-    Bonjour${signature.siteManagerName ? ` ${signature.siteManagerName}` : ""},
-    
-    ${signature.employee.firstName} ${signature.employee.lastName} a signé son passeport formation.
-    En tant que responsable, vous devez le contre-signer pour validation.
-    
-    Cliquez sur le lien ci-dessous :
-    
-    ${process.env.NEXTAUTH_URL || "http://localhost:3000"}/sign/manager/${updated.managerToken}
-    
-    Ce lien expire le ${managerTokenExpiry.toLocaleDateString("fr-FR")}.
-    
-    Cordialement,
-    L'équipe RH
-    ========================================
-    `);
+    if (signature.siteManagerEmail) {
+      await sendManagerSignatureLink({
+        to: signature.siteManagerEmail,
+        managerName: signature.siteManagerName,
+        employeeName: `${signature.employee.firstName} ${signature.employee.lastName}`,
+        token: updated.managerToken,
+        expiresAt: managerTokenExpiry,
+      });
+    }
 
     return NextResponse.json({
       success: true,

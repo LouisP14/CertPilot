@@ -10,6 +10,14 @@ const resend = process.env.RESEND_API_KEY
 const FROM_EMAIL =
   process.env.EMAIL_FROM || "CertPilot <onboarding@resend.dev>";
 
+function getAppBaseUrl() {
+  const base =
+    process.env.APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    "https://certpilot.eu";
+  return base.replace(/\/$/, "");
+}
+
 // Helper pour vérifier si l'envoi d'emails est disponible
 export function isEmailEnabled() {
   return resend !== null;
@@ -182,6 +190,31 @@ export async function sendPaymentLink(params: {
                 <li>Vos identifiants vous seront envoyés automatiquement après paiement</li>
               </ul>
             </div>
+
+            // Email : Lien de signature pour l'employé
+            export async function sendEmployeeSignatureLink(params: {
+              to: string;
+              employeeName: string;
+              token: string;
+              expiresAt: Date;
+            }) {
+              const { to, employeeName, token, expiresAt } = params;
+              const link = `${getAppBaseUrl()}/sign/employee/${token}`;
+
+              await sendEmail({
+                from: FROM_EMAIL,
+                to,
+                subject: "Signature requise - Passeport Formation",
+                html: `
+                  <p>Bonjour ${employeeName},</p>
+                  <p>Votre passeport formation est prêt à être signé.</p>
+                  <p>
+                    <a href="${link}">Cliquez ici pour signer électroniquement</a>
+                  </p>
+                  <p>Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.</p>
+                  <p>Cordialement,<br><strong>L'équipe CertPilot</strong></p>
+                `,
+                text: `Bonjour ${employeeName},
             
             <p>Une fois le paiement effectué, votre compte sera <strong>activé instantanément</strong> et vous recevrez vos identifiants de connexion par email.</p>
             
@@ -189,6 +222,34 @@ export async function sendPaymentLink(params: {
             
             <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe CertPilot</strong></p>
           </div>
+              });
+            }
+
+            // Email : Lien de contre-signature pour le responsable
+            export async function sendManagerSignatureLink(params: {
+              to: string;
+              managerName?: string | null;
+              employeeName: string;
+              token: string;
+              expiresAt: Date;
+            }) {
+              const { to, managerName, employeeName, token, expiresAt } = params;
+              const link = `${getAppBaseUrl()}/sign/manager/${token}`;
+
+              await sendEmail({
+                from: FROM_EMAIL,
+                to,
+                subject: `Contre-signature requise - Passeport ${employeeName}`,
+                html: `
+                  <p>Bonjour${managerName ? ` ${managerName}` : ""},</p>
+                  <p>${employeeName} a signé son passeport formation.</p>
+                  <p>
+                    <a href="${link}">Cliquez ici pour contre-signer</a>
+                  </p>
+                  <p>Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.</p>
+                  <p>Cordialement,<br><strong>L'équipe CertPilot</strong></p>
+                `,
+                text: `Bonjour${managerName ? ` ${managerName}` : ""},
           <div class="footer">
             <p>CertPilot - Gestion des habilitations et formations réglementaires</p>
             <p>Ce mail a été envoyé à ${to}</p>
@@ -196,6 +257,8 @@ export async function sendPaymentLink(params: {
         </div>
       </body>
       </html>
+              });
+            }
     `,
     text: `
 Bonjour ${contactName},

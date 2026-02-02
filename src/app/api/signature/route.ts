@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { sendEmployeeSignatureLink } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -127,34 +128,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Envoyer email à l'employé avec le lien de signature
-    // En attendant, on simule l'envoi
-    console.log(`
-    ========================================
-    📧 EMAIL DE SIGNATURE (SIMULATION)
-    ========================================
-    À: ${employee.email}
-    Objet: Signature requise - Passeport Formation
-    
-    Bonjour ${employee.firstName},
-    
-    Votre passeport formation est prêt à être signé.
-    Cliquez sur le lien ci-dessous pour signer électroniquement :
-    
-    ${process.env.NEXTAUTH_URL || "http://localhost:3000"}/sign/employee/${signature.employeeToken}
-    
-    Ce lien expire le ${tokenExpiry.toLocaleDateString("fr-FR")}.
-    
-    Cordialement,
-    L'équipe RH
-    ========================================
-    `);
+    await sendEmployeeSignatureLink({
+      to: employee.email,
+      employeeName: employee.firstName,
+      token: signature.employeeToken,
+      expiresAt: tokenExpiry,
+    });
 
     return NextResponse.json({
       success: true,
       message: "Demande de signature envoyée",
       signatureId: signature.id,
-      employeeToken: signature.employeeToken, // Pour les tests, retirer en prod
     });
   } catch (error) {
     console.error("POST signature error:", error);
