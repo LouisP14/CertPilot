@@ -12,9 +12,7 @@ const FROM_EMAIL =
 
 function getAppBaseUrl() {
   const base =
-    process.env.APP_URL ||
-    process.env.NEXTAUTH_URL ||
-    "https://certpilot.eu";
+    process.env.APP_URL || process.env.NEXTAUTH_URL || "https://certpilot.eu";
   return base.replace(/\/$/, "");
 }
 
@@ -168,19 +166,15 @@ export async function sendPaymentLink(params: {
           </div>
           <div class="content">
             <p>Bonjour ${contactName},</p>
-            
             <p>Suite à notre échange, voici votre lien de paiement sécurisé pour <strong>${companyName}</strong>.</p>
-            
             <div class="price-box">
               <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">Offre sélectionnée</div>
               <div style="font-size: 20px; font-weight: bold; color: #1f2937; margin-bottom: 10px;">${planNames[plan]}</div>
               <div class="price">${plan === "starter" ? "199" : plan === "business" ? "349" : plan === "enterprise" ? "599" : "1199"}€<span style="font-size: 16px;">/mois</span></div>
             </div>
-            
             <div style="text-align: center;">
               <a href="${paymentUrl}" class="button">🔒 Procéder au paiement</a>
             </div>
-            
             <div class="info-box">
               <strong>ℹ️ Informations importantes :</strong>
               <ul style="margin: 10px 0; padding-left: 20px;">
@@ -190,66 +184,10 @@ export async function sendPaymentLink(params: {
                 <li>Vos identifiants vous seront envoyés automatiquement après paiement</li>
               </ul>
             </div>
-
-            // Email : Lien de signature pour l'employé
-            export async function sendEmployeeSignatureLink(params: {
-              to: string;
-              employeeName: string;
-              token: string;
-              expiresAt: Date;
-            }) {
-              const { to, employeeName, token, expiresAt } = params;
-              const link = `${getAppBaseUrl()}/sign/employee/${token}`;
-
-              await sendEmail({
-                from: FROM_EMAIL,
-                to,
-                subject: "Signature requise - Passeport Formation",
-                html: `
-                  <p>Bonjour ${employeeName},</p>
-                  <p>Votre passeport formation est prêt à être signé.</p>
-                  <p>
-                    <a href="${link}">Cliquez ici pour signer électroniquement</a>
-                  </p>
-                  <p>Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.</p>
-                  <p>Cordialement,<br><strong>L'équipe CertPilot</strong></p>
-                `,
-                text: `Bonjour ${employeeName},
-            
             <p>Une fois le paiement effectué, votre compte sera <strong>activé instantanément</strong> et vous recevrez vos identifiants de connexion par email.</p>
-            
             <p>Des questions ? N'hésitez pas à nous contacter !</p>
-            
             <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe CertPilot</strong></p>
           </div>
-              });
-            }
-
-            // Email : Lien de contre-signature pour le responsable
-            export async function sendManagerSignatureLink(params: {
-              to: string;
-              managerName?: string | null;
-              employeeName: string;
-              token: string;
-              expiresAt: Date;
-            }) {
-              const { to, managerName, employeeName, token, expiresAt } = params;
-              const link = `${getAppBaseUrl()}/sign/manager/${token}`;
-
-              await sendEmail({
-                from: FROM_EMAIL,
-                to,
-                subject: `Contre-signature requise - Passeport ${employeeName}`,
-                html: `
-                  <p>Bonjour${managerName ? ` ${managerName}` : ""},</p>
-                  <p>${employeeName} a signé son passeport formation.</p>
-                  <p>
-                    <a href="${link}">Cliquez ici pour contre-signer</a>
-                  </p>
-                  <p>Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.</p>
-                  <p>Cordialement,<br><strong>L'équipe CertPilot</strong></p>
-                `,
-                text: `Bonjour${managerName ? ` ${managerName}` : ""},
           <div class="footer">
             <p>CertPilot - Gestion des habilitations et formations réglementaires</p>
             <p>Ce mail a été envoyé à ${to}</p>
@@ -257,8 +195,6 @@ export async function sendPaymentLink(params: {
         </div>
       </body>
       </html>
-              });
-            }
     `,
     text: `
 Bonjour ${contactName},
@@ -274,6 +210,75 @@ Une fois le paiement effectué, votre compte sera activé instantanément et vou
 Cordialement,
 L'équipe CertPilot
     `,
+  });
+}
+
+// Email : Lien de signature pour l'employé
+export async function sendEmployeeSignatureLink(params: {
+  to: string;
+  employeeName: string;
+  token: string;
+  expiresAt: Date;
+}) {
+  const { to, employeeName, token, expiresAt } = params;
+  const link = `${getAppBaseUrl()}/sign/employee/${token}`;
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: "Signature requise - Passeport Formation",
+    html: `
+      <p>Bonjour ${employeeName},</p>
+      <p>Votre passeport formation est prêt à être signé.</p>
+      <p>
+        <a href="${link}">Cliquez ici pour signer électroniquement</a>
+      </p>
+      <p>Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.</p>
+      <p>Cordialement,<br><strong>L'équipe CertPilot</strong></p>
+    `,
+    text: `Bonjour ${employeeName},
+
+Votre passeport formation est prêt à être signé.
+Lien : ${link}
+Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.
+
+Cordialement,
+L'équipe CertPilot`,
+  });
+}
+
+// Email : Lien de contre-signature pour le responsable
+export async function sendManagerSignatureLink(params: {
+  to: string;
+  managerName?: string | null;
+  employeeName: string;
+  token: string;
+  expiresAt: Date;
+}) {
+  const { to, managerName, employeeName, token, expiresAt } = params;
+  const link = `${getAppBaseUrl()}/sign/manager/${token}`;
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: `Contre-signature requise - Passeport ${employeeName}`,
+    html: `
+      <p>Bonjour${managerName ? ` ${managerName}` : ""},</p>
+      <p>${employeeName} a signé son passeport formation.</p>
+      <p>
+        <a href="${link}">Cliquez ici pour contre-signer</a>
+      </p>
+      <p>Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.</p>
+      <p>Cordialement,<br><strong>L'équipe CertPilot</strong></p>
+    `,
+    text: `Bonjour${managerName ? ` ${managerName}` : ""},
+
+${employeeName} a signé son passeport formation.
+Lien : ${link}
+Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.
+
+Cordialement,
+L'équipe CertPilot`,
   });
 }
 
