@@ -1,3 +1,4 @@
+import { auditCreate, auditDelete } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -15,12 +16,15 @@ export async function GET(request: NextRequest) {
 
     // Filtrer par companyId de l'utilisateur connecté
     const companyId = session.user.companyId;
+    if (!companyId) {
+      return NextResponse.json([], { status: 200 });
+    }
     const where: {
       type?: string;
       isActive?: boolean;
       companyId?: string | null;
     } = {
-      companyId: companyId || undefined,
+      companyId,
     };
     if (type) where.type = type;
 
@@ -59,6 +63,9 @@ export async function POST(request: NextRequest) {
     }
 
     const companyId = session.user.companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    }
 
     // Vérifier si la valeur existe déjà pour cette entreprise
     const existing = await prisma.referenceData.findFirst({
@@ -85,24 +92,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Audit trail
-    try {
-      await prisma.auditLog.create({
-        data: {
-          userId: session.user.id,
-          userName: session.user.name || "Administrateur",
-          userEmail: session.user.email,
-          companyId: session.user.companyId,
-          action: "CREATE",
-          entityType: "REFERENCE",
-          entityId: reference.id,
-          entityName: value.trim(),
-          description: `Ajout ${type}: ${value.trim()}`,
-        },
-      });
-    } catch (auditError) {
-      console.error("Erreur lors de la création de l'audit log:", auditError);
-      // On continue même si l'audit échoue
-    }
+    await auditCreate(
+      "REFERENCE",
+      reference.id,
+      value.trim(),
+      { type, value: value.trim() },
+      {
+        id: session.user.id,
+        name: session.user.name || "Administrateur",
+        email: session.user.email || undefined,
+        companyId: session.user.companyId,
+      },
+    );
 
     return NextResponse.json(reference);
   } catch (error: unknown) {
@@ -131,10 +132,13 @@ export async function DELETE(request: NextRequest) {
     }
 
     const companyId = session.user.companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    }
 
     // Récupérer les infos avant suppression pour l'audit
-    const reference = await prisma.referenceData.findUnique({
-      where: { id },
+    const reference = await prisma.referenceData.findFirst({
+      where: { id, companyId },
     });
 
     if (!reference) {
@@ -144,34 +148,23 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Vérifier que la référence appartient à l'entreprise
-    if (reference.companyId !== companyId) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
-    }
-
     await prisma.referenceData.delete({
       where: { id },
     });
 
     // Audit trail
-    try {
-      await prisma.auditLog.create({
-        data: {
-          userId: session.user.id,
-          userName: session.user.name || "Administrateur",
-          userEmail: session.user.email,
-          companyId: session.user.companyId,
-          action: "DELETE",
-          entityType: "REFERENCE",
-          entityId: id,
-          entityName: reference.value,
-          description: `Suppression ${reference.type}: ${reference.value}`,
-        },
-      });
-    } catch (auditError) {
-      console.error("Erreur lors de la création de l'audit log:", auditError);
-      // On continue même si l'audit échoue
-    }
+    await auditDelete(
+      "REFERENCE",
+      id,
+      reference.value,
+      { type: reference.type, value: reference.value },
+      {
+        id: session.user.id,
+        name: session.user.name || "Administrateur",
+        email: session.user.email || undefined,
+        companyId: session.user.companyId,
+      },
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {

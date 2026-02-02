@@ -38,7 +38,16 @@ export async function GET(request: NextRequest) {
       : undefined;
 
     // IMPORTANT: Tous les utilisateurs voient uniquement les logs de leur entreprise
-    const companyId = session.user.companyId || "no-company-access";
+    const companyId = session.user.companyId;
+    if (!companyId) {
+      return NextResponse.json({
+        logs: [],
+        total: 0,
+        page,
+        limit,
+        totalPages: 0,
+      });
+    }
 
     const result = await getAuditLogs({
       entityType: entityType || undefined,

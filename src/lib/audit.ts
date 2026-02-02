@@ -29,6 +29,7 @@ export type AuditEntityType =
   | "CONVOCATION"
   | "SIGNATURE"
   | "COMPANY"
+  | "REFERENCE"
   | "USER"
   | "SETTINGS"
   | "PLANNING_CONSTRAINTS"
