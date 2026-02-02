@@ -19,7 +19,10 @@ function generatePassword(): string {
 export async function POST(request: NextRequest) {
   if (!stripe) {
     console.error("Webhook: Stripe non configuré");
-    return NextResponse.json({ error: "Stripe non configuré" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Stripe non configuré" },
+      { status: 500 },
+    );
   }
 
   const body = await request.text();
