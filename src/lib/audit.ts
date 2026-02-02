@@ -492,6 +492,7 @@ export function getEntityIcon(entityType: AuditEntityType): string {
     CONVOCATION: "Mail",
     SIGNATURE: "PenTool",
     COMPANY: "Building",
+    REFERENCE: "List",
     USER: "UserCog",
     SETTINGS: "Settings",
     PLANNING_CONSTRAINTS: "Shield",
