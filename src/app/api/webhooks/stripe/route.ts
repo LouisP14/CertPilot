@@ -17,6 +17,11 @@ function generatePassword(): string {
 
 // POST - Webhook Stripe
 export async function POST(request: NextRequest) {
+  if (!stripe) {
+    console.error("Webhook: Stripe non configuré");
+    return NextResponse.json({ error: "Stripe non configuré" }, { status: 500 });
+  }
+
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get("stripe-signature");
