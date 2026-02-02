@@ -95,12 +95,13 @@ export async function GET(request: NextRequest) {
       where.employeeId = employeeId;
     }
 
-    // Filtrer par companyId via l'employé (sauf pour super admins)
-    if (session.user.role !== "SUPER_ADMIN" && session.user.companyId) {
-      where.employee = {
-        companyId: session.user.companyId,
-      };
+    // Filtrer par companyId via l'employé
+    if (!session.user.companyId) {
+      return NextResponse.json([]);
     }
+    where.employee = {
+      companyId: session.user.companyId,
+    };
 
     const certificates = await prisma.certificate.findMany({
       where,

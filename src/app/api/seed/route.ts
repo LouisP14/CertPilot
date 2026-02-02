@@ -16,7 +16,7 @@ async function createAccounts() {
       message: "Les comptes existent déjà",
       accounts: [
         { email: "admin@certpilot.fr", password: "Admin2026!" },
-        { email: "demo@certpilot.fr", password: "demo123" },
+        { email: "demo@certpilot.fr", password: "demo123!" },
       ],
     });
   }
@@ -57,7 +57,7 @@ async function createAccounts() {
     },
   });
 
-  const demoPassword = await bcrypt.hash("demo123", 10);
+  const demoPassword = await bcrypt.hash("demo123!", 10);
   await prisma.user.create({
     data: {
       email: "demo@certpilot.fr",
@@ -80,7 +80,7 @@ async function createAccounts() {
       },
       {
         email: "demo@certpilot.fr",
-        password: "demo123",
+        password: "demo123!",
         usage: "Compte pour démos clients (base vide)",
       },
     ],

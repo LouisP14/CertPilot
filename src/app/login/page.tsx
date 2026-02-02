@@ -31,10 +31,10 @@ export default function LoginPage() {
         const data = await res.json();
         if (data.status === "seeded") {
           setInitStatus(
-            "Base initialisée ! Utilisez demo@certpilot.fr / demo123",
+            "Base initialisée ! Utilisez demo@certpilot.fr / demo123!",
           );
           setEmail("demo@certpilot.fr");
-          setPassword("demo123");
+          setPassword("demo123!");
         }
       } catch (e) {
         console.log("Init check:", e);
@@ -277,4 +277,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

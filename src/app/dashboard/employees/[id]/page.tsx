@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import {
@@ -62,8 +63,9 @@ async function getEmployee(id: string) {
 }
 
 async function getFormationTypes() {
+  const companyFilter = await getCompanyFilter();
   return prisma.formationType.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ...companyFilter },
     orderBy: { name: "asc" },
   });
 }

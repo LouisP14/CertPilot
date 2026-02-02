@@ -1,11 +1,14 @@
+import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import CalendarPageClient from "./calendar-page-client";
 
 async function getCertificatesCalendar() {
+  const companyFilter = await getCompanyFilter();
   const certificates = await prisma.certificate.findMany({
     where: {
       isArchived: false,
       expiryDate: { not: null },
+      employee: companyFilter,
     },
     include: {
       employee: true,
@@ -46,4 +49,3 @@ export default async function CalendarPage() {
     <CalendarPageClient groupedCertificates={grouped} services={services} />
   );
 }
-

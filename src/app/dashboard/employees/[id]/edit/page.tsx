@@ -1,3 +1,4 @@
+import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { EmployeeForm } from "../../new/page";
@@ -29,8 +30,9 @@ async function getEmployee(id: string) {
 }
 
 async function getEmployees() {
+  const companyFilter = await getCompanyFilter();
   return prisma.employee.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ...companyFilter },
     select: { id: true, firstName: true, lastName: true },
     orderBy: { lastName: "asc" },
   });

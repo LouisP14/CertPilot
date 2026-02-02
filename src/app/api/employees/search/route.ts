@@ -5,10 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    const companyId = session.user.companyId;
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("q") || "";
 
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // PostgreSQL: recherche insensible à la casse avec ILIKE
+    // SQLite: recherche insensible à la casse avec LIKE
     const searchPattern = `%${query}%`;
 
     const employees = await prisma.$queryRaw<
@@ -32,12 +33,13 @@ export async function GET(request: NextRequest) {
       SELECT id, "firstName", "lastName", "employeeId", position, department
       FROM "Employee"
       WHERE "isActive" = true
+      AND "companyId" = ${companyId}
       AND (
-        "firstName" ILIKE ${searchPattern}
-        OR "lastName" ILIKE ${searchPattern}
-        OR "employeeId" ILIKE ${searchPattern}
-        OR position ILIKE ${searchPattern}
-        OR department ILIKE ${searchPattern}
+        "firstName" LIKE ${searchPattern}
+        OR "lastName" LIKE ${searchPattern}
+        OR "employeeId" LIKE ${searchPattern}
+        OR position LIKE ${searchPattern}
+        OR department LIKE ${searchPattern}
       )
       ORDER BY "lastName" ASC
       LIMIT 10

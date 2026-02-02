@@ -19,12 +19,13 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status;
     if (formationTypeId) where.formationTypeId = formationTypeId;
 
-    // Filtrer par companyId via formationType (sauf pour super admins)
-    if (session.user.role !== "SUPER_ADMIN" && session.user.companyId) {
-      where.formationType = {
-        companyId: session.user.companyId,
-      };
+    // Filtrer par companyId via formationType
+    if (!session.user.companyId) {
+      return NextResponse.json([]);
     }
+    where.formationType = {
+      companyId: session.user.companyId,
+    };
 
     const sessions = await prisma.trainingSession.findMany({
       where,

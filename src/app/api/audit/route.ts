@@ -4,10 +4,16 @@
  */
 
 import { AuditAction, AuditEntityType, getAuditLogs } from "@/lib/audit";
+import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
     const searchParams = request.nextUrl.searchParams;
 
     // Parsing des paramètres
@@ -31,11 +37,15 @@ export async function GET(request: NextRequest) {
         })()
       : undefined;
 
+    // IMPORTANT: Tous les utilisateurs voient uniquement les logs de leur entreprise
+    const companyId = session.user.companyId || "no-company-access";
+
     const result = await getAuditLogs({
       entityType: entityType || undefined,
       entityId: entityId || undefined,
       action: action || undefined,
       userId: userId || undefined,
+      companyId,
       search: search || undefined,
       startDate,
       endDate,

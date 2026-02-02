@@ -17,6 +17,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -124,15 +125,14 @@ export function Sidebar({ userRole }: SidebarProps) {
 
       {/* Footer */}
       <div className="relative z-10 border-t border-white/10 p-3">
-        <form action="/api/auth/signout" method="POST">
-          <button
-            type="submit"
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/60 transition-all duration-200 hover:bg-white/5 hover:text-white"
-          >
-            <LogOut className="h-5 w-5" />
-            Déconnexion
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/60 transition-all duration-200 hover:bg-white/5 hover:text-white"
+        >
+          <LogOut className="h-5 w-5" />
+          Déconnexion
+        </button>
       </div>
     </div>
   );

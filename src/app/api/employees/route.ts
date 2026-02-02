@@ -10,18 +10,14 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    // Filtrer par companyId - SÉCURITÉ: si pas de companyId, ne rien retourner
-    const whereClause: { isActive: boolean; companyId?: string } = {
-      isActive: true,
-    };
-    if (session.user.role === "SUPER_ADMIN") {
-      // Super admin voit tout
-    } else if (session.user.companyId) {
-      whereClause.companyId = session.user.companyId;
-    } else {
-      // Pas de companyId = pas d'accès aux données
+    // Filtrer par companyId - SÉCURITÉ: chaque utilisateur ne voit que ses données
+    if (!session.user.companyId) {
       return NextResponse.json([]);
     }
+    const whereClause = {
+      isActive: true,
+      companyId: session.user.companyId,
+    };
 
     const employees = await prisma.employee.findMany({
       where: whereClause,
@@ -81,33 +77,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if employeeId already exists (dans la même companyId)
-    const whereUnique: any = { employeeId };
-    if (session.user.role !== "SUPER_ADMIN" && session.user.companyId) {
-      // Pour les non super admins, vérifier aussi le companyId
-      const existingEmployee = await prisma.employee.findFirst({
-        where: {
-          employeeId,
-          companyId: session.user.companyId,
-        },
-      });
+    if (!session.user.companyId) {
+      return NextResponse.json(
+        { error: "CompanyId manquant" },
+        { status: 400 },
+      );
+    }
 
-      if (existingEmployee) {
-        return NextResponse.json(
-          { error: "Ce matricule existe déjà" },
-          { status: 400 },
-        );
-      }
-    } else {
-      const existingEmployee = await prisma.employee.findUnique({
-        where: whereUnique,
-      });
+    const existingEmployee = await prisma.employee.findFirst({
+      where: {
+        employeeId,
+        companyId: session.user.companyId,
+      },
+    });
 
-      if (existingEmployee) {
-        return NextResponse.json(
-          { error: "Ce matricule existe déjà" },
-          { status: 400 },
-        );
-      }
+    if (existingEmployee) {
+      return NextResponse.json(
+        { error: "Ce matricule existe déjà" },
+        { status: 400 },
+      );
     }
 
     const employee = await prisma.employee.create({

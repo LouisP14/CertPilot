@@ -20,12 +20,12 @@ export async function GET() {
       const hashedPassword = await bcrypt.hash("admin123", 10);
       await prisma.user.update({
         where: { email: "admin@certpilot.fr" },
-        data: { 
+        data: {
           password: hashedPassword,
           role: "SUPER_ADMIN",
         },
       });
-      
+
       return NextResponse.json({
         success: true,
         status: "password_reset",

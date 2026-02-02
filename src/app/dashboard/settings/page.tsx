@@ -1,8 +1,15 @@
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { SettingsAccordion } from "./settings-accordion";
 
 async function getCompany() {
-  return prisma.company.findFirst();
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    return null;
+  }
+  return prisma.company.findUnique({
+    where: { id: session.user.companyId },
+  });
 }
 
 export default async function SettingsPage() {
@@ -23,4 +30,3 @@ export default async function SettingsPage() {
     />
   );
 }
-

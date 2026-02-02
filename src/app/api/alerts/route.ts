@@ -9,6 +9,12 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    // Vérifier companyId
+    if (!session.user.companyId) {
+      return NextResponse.json([]);
+    }
+    const companyId = session.user.companyId;
+
     const now = new Date();
     const in90Days = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
@@ -16,6 +22,7 @@ export async function GET() {
     const certificates = await prisma.certificate.findMany({
       where: {
         isArchived: false,
+        employee: { companyId },
         expiryDate: {
           not: null,
           lte: in90Days,

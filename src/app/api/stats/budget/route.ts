@@ -1,10 +1,28 @@
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    // Vérifier companyId
+    if (!session.user.companyId) {
+      return NextResponse.json({
+        yearlyBudget: null,
+        yearlySpent: 0,
+        monthlyData: [],
+        topFormations: [],
+      });
+    }
+    const companyId = session.user.companyId;
+
     // Récupérer les contraintes de planification
-    const company = await prisma.company.findFirst({
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
       include: {
         planningConstraints: true,
       },
@@ -24,6 +42,7 @@ export async function GET() {
     // Récupérer les sessions avec leurs coûts pour l'année
     const sessions = await prisma.trainingSession.findMany({
       where: {
+        formationType: { companyId },
         startDate: {
           gte: startOfYear,
           lte: endOfYear,

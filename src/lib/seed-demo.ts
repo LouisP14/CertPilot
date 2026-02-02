@@ -27,7 +27,7 @@ export async function seedDemoDataIfNeeded() {
 }
 
 async function createDemoData() {
-  const hashedPassword = await bcrypt.hash("demo123", 10);
+  const hashedPassword = await bcrypt.hash("demo123!", 10);
 
   // Créer l'entreprise
   const company = await prisma.company.create({
@@ -379,7 +379,7 @@ async function createDemoData() {
   }
 
   console.log("📊 Données de démo créées:");
-  console.log(`   👤 1 admin: demo@certpilot.fr / demo123`);
+  console.log(`   👤 1 admin: demo@certpilot.fr / demo123!`);
   console.log(`   🏢 1 entreprise: Acme Industries`);
   console.log(`   📋 ${formationTypes.length} formations`);
   console.log(`   👥 ${employees.length} employés`);

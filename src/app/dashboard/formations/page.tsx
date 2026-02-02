@@ -1,12 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { GraduationCap } from "lucide-react";
 import { AddFormationTypeDialog } from "./add-formation-dialog";
 import { FormationsTable } from "./formations-table";
 
 async function getFormationTypes() {
+  const companyFilter = await getCompanyFilter();
   return prisma.formationType.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ...companyFilter },
     include: {
       _count: {
         select: { certificates: true },
@@ -63,4 +65,3 @@ export default async function FormationsPage() {
     </div>
   );
 }
-

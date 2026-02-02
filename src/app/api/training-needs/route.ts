@@ -10,11 +10,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    // Vérifier companyId
+    if (!session.user.companyId) {
+      return NextResponse.json([]);
+    }
+    const companyId = session.user.companyId;
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status"); // PENDING, PLANNED, COMPLETED, CANCELLED
     const formationTypeId = searchParams.get("formationTypeId");
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = {
+      employee: { companyId },
+    };
     if (status) where.status = status;
     if (formationTypeId) where.formationTypeId = formationTypeId;
 

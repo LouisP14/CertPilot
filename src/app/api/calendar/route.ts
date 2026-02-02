@@ -10,6 +10,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    // Vérifier companyId
+    if (!session.user.companyId) {
+      return NextResponse.json({
+        sessions: [],
+        expirations: [],
+        constraints: null,
+      });
+    }
+    const companyId = session.user.companyId;
+
     const { searchParams } = new URL(request.url);
     const year = parseInt(
       searchParams.get("year") || new Date().getFullYear().toString(),
@@ -35,6 +45,7 @@ export async function GET(request: NextRequest) {
     // 1. Sessions de formation planifiées
     const sessions = await prisma.trainingSession.findMany({
       where: {
+        formationType: { companyId },
         startDate: {
           gte: startDate,
           lte: endDate,
@@ -81,6 +92,7 @@ export async function GET(request: NextRequest) {
     const expirations = await prisma.certificate.findMany({
       where: {
         isArchived: false,
+        employee: { companyId },
         expiryDate: {
           gte: startDate,
           lte: endDate,

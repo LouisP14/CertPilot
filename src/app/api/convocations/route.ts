@@ -6,7 +6,21 @@ import { NextResponse } from "next/server";
 // GET - Récupérer les convocations sauvegardées
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    // IMPORTANT: Filtrer par companyId - chaque utilisateur ne voit que ses données
+    if (!session.user.companyId) {
+      return NextResponse.json([]);
+    }
+    const whereClause = {
+      companyId: session.user.companyId,
+    };
+
     const convocations = await prisma.convocation.findMany({
+      where: whereClause,
       include: {
         attendees: true,
       },
@@ -46,6 +60,11 @@ export async function GET() {
 // POST - Créer une nouvelle convocation (brouillon uniquement - pas d'envoi d'email)
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await request.json();
     const {
       formationId,
@@ -60,7 +79,7 @@ export async function POST(request: Request) {
       status = "draft",
     } = body;
 
-    // Créer la convocation avec ses participants
+    // Créer la convocation avec ses participants ET le companyId
     const convocation = await prisma.convocation.create({
       data: {
         formationId,
@@ -72,6 +91,7 @@ export async function POST(request: Request) {
         location,
         notes,
         status,
+        companyId: session.user.companyId,
         attendees: {
           create: employees.map(
             (emp: { id: string; name: string; email: string | null }) => ({

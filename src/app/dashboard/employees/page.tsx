@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getCertificateStatus } from "@/lib/utils";
 import { Plus } from "lucide-react";
@@ -6,8 +7,9 @@ import Link from "next/link";
 import { EmployeesList } from "./employees-list";
 
 async function getEmployees() {
+  const companyFilter = await getCompanyFilter();
   const employees = await prisma.employee.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ...companyFilter },
     include: {
       manager: true,
       certificates: {
@@ -77,4 +79,3 @@ export default async function EmployeesPage() {
     </div>
   );
 }
-

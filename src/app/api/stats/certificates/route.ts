@@ -9,6 +9,16 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    // Vérifier companyId
+    if (!session.user.companyId) {
+      return NextResponse.json({
+        expiredCount: 0,
+        expiringCount: 0,
+        totalNeeds: 0,
+      });
+    }
+    const companyId = session.user.companyId;
+
     const now = new Date();
     const in90Days = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
@@ -23,6 +33,7 @@ export async function GET() {
           },
           employee: {
             isActive: true,
+            companyId,
           },
           formationType: {
             isActive: true,
@@ -39,6 +50,7 @@ export async function GET() {
           },
           employee: {
             isActive: true,
+            companyId,
           },
           formationType: {
             isActive: true,
@@ -48,6 +60,7 @@ export async function GET() {
       prisma.trainingNeed.count({
         where: {
           status: { in: ["PENDING", "PLANNED"] },
+          employee: { companyId },
         },
       }),
     ]);

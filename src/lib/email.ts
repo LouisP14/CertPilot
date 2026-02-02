@@ -1,12 +1,33 @@
 import { Resend } from "resend";
 
-// Client Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Client Resend - créé seulement si la clé API est présente
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 
 // Adresse d'envoi - sera no-reply@certpilot.eu une fois le domaine vérifié
 // En attendant, on utilise onboarding@resend.dev
 const FROM_EMAIL =
   process.env.EMAIL_FROM || "CertPilot <onboarding@resend.dev>";
+
+// Helper pour vérifier si l'envoi d'emails est disponible
+export function isEmailEnabled() {
+  return resend !== null;
+}
+
+// Helper pour envoyer un email de manière sécurisée
+async function sendEmail(
+  params: Parameters<typeof Resend.prototype.emails.send>[0],
+) {
+  if (!resend) {
+    console.warn(
+      "[email] RESEND_API_KEY non configuré - email non envoyé:",
+      params.to,
+    );
+    return { data: null, error: { message: "Email non configuré" } };
+  }
+  return resend.emails.send(params);
+}
 
 // Email 1 : Confirmation de demande de contact
 export async function sendContactConfirmation(params: {
@@ -24,7 +45,7 @@ export async function sendContactConfirmation(params: {
     corporate: "Corporate (1199€/mois)",
   };
 
-  await resend.emails.send({
+  await sendEmail({
     from: FROM_EMAIL,
     to,
     subject: "Demande reçue - CertPilot",
@@ -111,7 +132,7 @@ export async function sendPaymentLink(params: {
     corporate: "Corporate - 1199€/mois",
   };
 
-  await resend.emails.send({
+  await sendEmail({
     from: FROM_EMAIL,
     to,
     subject: `Votre lien de paiement CertPilot - ${companyName}`,
@@ -210,7 +231,7 @@ export async function sendWelcomeEmail(params: {
     corporate: "Corporate",
   };
 
-  await resend.emails.send({
+  await sendEmail({
     from: FROM_EMAIL,
     to,
     subject: `🎉 Bienvenue sur CertPilot - Vos identifiants`,

@@ -13,7 +13,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type"); // FUNCTION, SERVICE, SITE, TEAM
 
-    const where: { type?: string; isActive?: boolean } = {};
+    // Filtrer par companyId de l'utilisateur connecté
+    const companyId = session.user.companyId;
+    const where: {
+      type?: string;
+      isActive?: boolean;
+      companyId?: string | null;
+    } = {
+      companyId: companyId || undefined,
+    };
     if (type) where.type = type;
 
     const references = await prisma.referenceData.findMany({
@@ -35,7 +43,8 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session || session.user?.role !== "ADMIN") {
+    const role = session?.user?.role;
+    if (!session || (role !== "ADMIN" && role !== "SUPER_ADMIN")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
@@ -49,11 +58,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Vérifier si la valeur existe déjà
+    const companyId = session.user.companyId;
+
+    // Vérifier si la valeur existe déjà pour cette entreprise
     const existing = await prisma.referenceData.findFirst({
       where: {
         type,
         value: value.trim(),
+        companyId,
       },
     });
 
@@ -68,6 +80,7 @@ export async function POST(request: NextRequest) {
       data: {
         type,
         value: value.trim(),
+        companyId,
       },
     });
 
@@ -78,6 +91,7 @@ export async function POST(request: NextRequest) {
           userId: session.user.id,
           userName: session.user.name || "Administrateur",
           userEmail: session.user.email,
+          companyId: session.user.companyId,
           action: "CREATE",
           entityType: "REFERENCE",
           entityId: reference.id,
@@ -104,7 +118,8 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session || session.user?.role !== "ADMIN") {
+    const role = session?.user?.role;
+    if (!session || (role !== "ADMIN" && role !== "SUPER_ADMIN")) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
@@ -114,6 +129,8 @@ export async function DELETE(request: NextRequest) {
     if (!id) {
       return NextResponse.json({ error: "ID requis" }, { status: 400 });
     }
+
+    const companyId = session.user.companyId;
 
     // Récupérer les infos avant suppression pour l'audit
     const reference = await prisma.referenceData.findUnique({
@@ -127,6 +144,11 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    // Vérifier que la référence appartient à l'entreprise
+    if (reference.companyId !== companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    }
+
     await prisma.referenceData.delete({
       where: { id },
     });
@@ -138,6 +160,7 @@ export async function DELETE(request: NextRequest) {
           userId: session.user.id,
           userName: session.user.name || "Administrateur",
           userEmail: session.user.email,
+          companyId: session.user.companyId,
           action: "DELETE",
           entityType: "REFERENCE",
           entityId: id,

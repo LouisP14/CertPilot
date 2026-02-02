@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { auth } from "@/lib/auth";
+import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import {
   AlertTriangle,
@@ -19,20 +19,7 @@ import { FormationCoverage } from "./formation-coverage";
 import { ServiceCoverage } from "./service-coverage";
 
 async function getStats() {
-  const session = await auth();
-
-  // Créer le filtre par companyId
-  // IMPORTANT: Si pas de companyId et pas SUPER_ADMIN, utiliser un ID impossible pour ne rien retourner
-  const companyFilter: { companyId?: string } = {};
-  if (session?.user?.role === "SUPER_ADMIN") {
-    // Super admin voit tout - pas de filtre
-  } else if (session?.user?.companyId) {
-    // Utilisateur normal avec une company
-    companyFilter.companyId = session.user.companyId;
-  } else {
-    // Utilisateur sans company - ne devrait rien voir
-    companyFilter.companyId = "no-company-access";
-  }
+  const companyFilter = await getCompanyFilter();
 
   const [employeeCount, certificateCount, formationTypeCount] =
     await Promise.all([
@@ -183,7 +170,7 @@ async function getStats() {
 
   // Conformité par service : les employés ont-ils les formations requises pour leur service ?
   const employees = await prisma.employee.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ...companyFilter },
     select: {
       id: true,
       firstName: true,

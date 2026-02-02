@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -79,6 +79,7 @@ model Company {
   formationTypes        FormationType[]
   trainingCenters       TrainingCenter[]
   planningConstraints   PlanningConstraints?
+  referenceData         ReferenceData[]
 }
 
 // ============================================
@@ -599,6 +600,7 @@ model AuditLog {
   userId        String?  // ID de l'utilisateur (null si système)
   userName      String?  // Nom de l'utilisateur au moment de l'action
   userEmail     String?  // Email de l'utilisateur
+  companyId     String?  // ID de l'entreprise (pour isolation des données)
   
   // Quoi
   action        String   // CREATE, UPDATE, DELETE, SIGN, SEND_CONVOCATION, EXPORT, LOGIN, etc.
@@ -623,6 +625,7 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+  @@index([companyId])
 }
 
 // ============================================
@@ -640,6 +643,7 @@ model Convocation {
   location          String
   notes             String?
   status            String   @default("draft") // draft, sent, completed
+  companyId         String?  // ID de l'entreprise (pour isolation des données)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   
@@ -649,6 +653,7 @@ model Convocation {
   @@index([formationId])
   @@index([status])
   @@index([createdAt])
+  @@index([companyId])
 }
 
 model ConvocationAttendee {
@@ -677,6 +682,11 @@ model ReferenceData {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@unique([type, value])
+  // Isolation par entreprise
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id])
+  
+  @@unique([type, value, companyId])
   @@index([type, isActive])
+  @@index([companyId])
 }

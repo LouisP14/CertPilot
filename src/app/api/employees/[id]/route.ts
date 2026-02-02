@@ -9,14 +9,17 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
 
     const employee = await prisma.employee.findUnique({
-      where: { id },
+      where: {
+        id,
+        companyId: session.user.companyId, // Isolation par entreprise
+      },
       include: {
         manager: {
           select: { id: true, firstName: true, lastName: true },
@@ -51,18 +54,22 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     // Vérifier que l'utilisateur est admin
-    if (session.user?.role !== "ADMIN") {
+    if (
+      session.user?.role !== "ADMIN" &&
+      session.user?.role !== "SUPER_ADMIN"
+    ) {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent modifier les employés" },
         { status: 403 },
       );
     }
 
+    const companyId = session.user.companyId;
     const { id } = await params;
     const body = await request.json();
     const {
@@ -83,8 +90,10 @@ export async function PUT(
       medicalCheckupDate,
     } = body;
 
-    // Récupérer l'employé actuel pour l'audit
-    const currentEmployee = await prisma.employee.findUnique({ where: { id } });
+    // Récupérer l'employé actuel pour l'audit - avec vérification companyId
+    const currentEmployee = await prisma.employee.findUnique({
+      where: { id, companyId },
+    });
     if (!currentEmployee) {
       return NextResponse.json(
         { error: "Employé non trouvé" },
@@ -92,10 +101,11 @@ export async function PUT(
       );
     }
 
-    // Check if employeeId is already used by another employee
+    // Check if employeeId is already used by another employee in the same company
     const existingEmployee = await prisma.employee.findFirst({
       where: {
         employeeId,
+        companyId,
         NOT: { id },
       },
     });
@@ -108,7 +118,7 @@ export async function PUT(
     }
 
     const employee = await prisma.employee.update({
-      where: { id },
+      where: { id, companyId },
       data: {
         firstName,
         lastName,
@@ -170,20 +180,28 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    const companyId = session.user.companyId;
     const { id } = await params;
 
-    // Récupérer l'employé pour l'audit avant suppression
+    // Récupérer l'employé pour l'audit avant suppression - avec vérification companyId
     const employeeToDelete = await prisma.employee.findUnique({
-      where: { id },
+      where: { id, companyId },
     });
+
+    if (!employeeToDelete) {
+      return NextResponse.json(
+        { error: "Employé non trouvé" },
+        { status: 404 },
+      );
+    }
 
     // Soft delete - just mark as inactive
     await prisma.employee.update({
-      where: { id },
+      where: { id, companyId },
       data: { isActive: false },
     });
 

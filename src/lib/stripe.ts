@@ -1,16 +1,16 @@
 import Stripe from "stripe";
 
-// Vérifier que la clé Stripe existe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error(
-    "STRIPE_SECRET_KEY n'est pas définie dans les variables d'environnement",
-  );
-}
+// Initialisation du client Stripe - seulement si la clé est présente
+export const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-12-15.clover",
+    })
+  : null;
 
-// Initialisation du client Stripe
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-12-15.clover",
-});
+// Helper pour vérifier si Stripe est configuré
+export function isStripeEnabled() {
+  return stripe !== null;
+}
 
 // Configuration des plans CertPilot
 export const STRIPE_PLANS = {

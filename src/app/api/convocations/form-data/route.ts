@@ -1,12 +1,28 @@
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 // GET - Récupérer les formations et employés pour le formulaire de convocation
 export async function GET() {
   try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    // Vérifier companyId
+    if (!session.user.companyId) {
+      return NextResponse.json({
+        formations: [],
+        employees: [],
+        companyName: "Entreprise",
+      });
+    }
+    const companyId = session.user.companyId;
+
     const [formations, employees, company] = await Promise.all([
       prisma.formationType.findMany({
-        where: { isActive: true },
+        where: { isActive: true, companyId },
         select: {
           id: true,
           name: true,
@@ -15,7 +31,7 @@ export async function GET() {
         orderBy: { name: "asc" },
       }),
       prisma.employee.findMany({
-        where: { isActive: true },
+        where: { isActive: true, companyId },
         select: {
           id: true,
           firstName: true,
@@ -25,7 +41,8 @@ export async function GET() {
         },
         orderBy: { lastName: "asc" },
       }),
-      prisma.company.findFirst({
+      prisma.company.findUnique({
+        where: { id: companyId },
         select: { name: true },
       }),
     ]);

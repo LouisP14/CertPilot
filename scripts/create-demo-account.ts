@@ -48,7 +48,7 @@ async function createDemoAccount() {
     }
 
     // Créer l'utilisateur
-    const hashedPassword = await bcrypt.hash("demo123", 10);
+    const hashedPassword = await bcrypt.hash("demo123!", 10);
     const user = await prisma.user.create({
       data: {
         email: "demo@certpilot.fr",
@@ -61,7 +61,7 @@ async function createDemoAccount() {
     });
 
     console.log("✅ Compte démo créé:", user.email);
-    console.log("   Connexion: demo@certpilot.fr / demo123");
+    console.log("   Connexion: demo@certpilot.fr / demo123!");
   } catch (error) {
     console.error("❌ Erreur:", error);
   } finally {

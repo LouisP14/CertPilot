@@ -9,23 +9,35 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
+    // Vérifier companyId
+    if (!session.user.companyId) {
+      return NextResponse.json({
+        totalEmployees: 0,
+        totalCertificates: 0,
+        expiringThisMonth: 0,
+        expired: 0,
+      });
+    }
+    const companyId = session.user.companyId;
+
     const now = new Date();
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     // Total employés actifs
     const totalEmployees = await prisma.employee.count({
-      where: { isActive: true },
+      where: { isActive: true, companyId },
     });
 
     // Total formations actives (non archivées)
     const totalCertificates = await prisma.certificate.count({
-      where: { isArchived: false },
+      where: { isArchived: false, employee: { companyId } },
     });
 
     // Formations expirant ce mois
     const expiringThisMonth = await prisma.certificate.count({
       where: {
         isArchived: false,
+        employee: { companyId },
         expiryDate: {
           not: null,
           gte: now,
@@ -38,6 +50,7 @@ export async function GET() {
     const expired = await prisma.certificate.count({
       where: {
         isArchived: false,
+        employee: { companyId },
         expiryDate: {
           not: null,
           lt: now,

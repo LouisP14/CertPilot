@@ -40,6 +40,7 @@ export interface AuditLogInput {
   userId?: string | null;
   userName?: string | null;
   userEmail?: string | null;
+  companyId?: string | null;
 
   // Quoi
   action: AuditAction;
@@ -63,11 +64,27 @@ export interface AuditLogInput {
  */
 export async function createAuditLog(input: AuditLogInput) {
   try {
+    let companyId = input.companyId ?? null;
+    if (!companyId && (input.userId || input.userEmail)) {
+      try {
+        const user = await prisma.user.findUnique({
+          where: input.userId
+            ? { id: input.userId }
+            : { email: input.userEmail as string },
+          select: { companyId: true },
+        });
+        companyId = user?.companyId ?? null;
+      } catch (lookupError) {
+        console.warn("[AUDIT] Impossible de résoudre companyId:", lookupError);
+      }
+    }
+
     const log = await prisma.auditLog.create({
       data: {
         userId: input.userId,
         userName: input.userName,
         userEmail: input.userEmail,
+        companyId,
         action: input.action,
         entityType: input.entityType,
         entityId: input.entityId,
@@ -96,12 +113,18 @@ export async function auditCreate(
   entityId: string,
   entityName: string,
   newValues: Record<string, unknown>,
-  user?: { id?: string; name?: string; email?: string } | null,
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    companyId?: string | null;
+  } | null,
 ) {
   return createAuditLog({
     userId: user?.id,
     userName: user?.name,
     userEmail: user?.email,
+    companyId: user?.companyId,
     action: "CREATE",
     entityType,
     entityId,
@@ -120,7 +143,12 @@ export async function auditUpdate(
   entityName: string,
   oldValues: Record<string, unknown>,
   newValues: Record<string, unknown>,
-  user?: { id?: string; name?: string; email?: string } | null,
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    companyId?: string | null;
+  } | null,
 ) {
   // Calculer les champs modifiés
   const changedFields = Object.keys(newValues).filter(
@@ -131,6 +159,7 @@ export async function auditUpdate(
     userId: user?.id,
     userName: user?.name,
     userEmail: user?.email,
+    companyId: user?.companyId,
     action: "UPDATE",
     entityType,
     entityId,
@@ -150,12 +179,18 @@ export async function auditDelete(
   entityId: string,
   entityName: string,
   oldValues: Record<string, unknown>,
-  user?: { id?: string; name?: string; email?: string } | null,
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    companyId?: string | null;
+  } | null,
 ) {
   return createAuditLog({
     userId: user?.id,
     userName: user?.name,
     userEmail: user?.email,
+    companyId: user?.companyId,
     action: "DELETE",
     entityType,
     entityId,
@@ -173,8 +208,10 @@ export async function auditSign(
   entityName: string,
   signataire: string,
   typeSignature: "EMPLOYEE" | "MANAGER",
+  companyId?: string | null,
 ) {
   return createAuditLog({
+    companyId,
     action: "SIGN",
     entityType: "SIGNATURE",
     entityId: employeeId,
@@ -192,12 +229,18 @@ export async function auditSendConvocation(
   employeeName: string,
   sessionInfo: string,
   email: string,
-  user?: { id?: string; name?: string; email?: string } | null,
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    companyId?: string | null;
+  } | null,
 ) {
   return createAuditLog({
     userId: user?.id,
     userName: user?.name,
     userEmail: user?.email,
+    companyId: user?.companyId,
     action: "SEND_CONVOCATION",
     entityType: "CONVOCATION",
     entityId: employeeId,
@@ -214,12 +257,18 @@ export async function auditExportPdf(
   entityType: AuditEntityType,
   entityId: string,
   entityName: string,
-  user?: { id?: string; name?: string; email?: string } | null,
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    companyId?: string | null;
+  } | null,
 ) {
   return createAuditLog({
     userId: user?.id,
     userName: user?.name,
     userEmail: user?.email,
+    companyId: user?.companyId,
     action: "EXPORT_PDF",
     entityType,
     entityId,
@@ -237,12 +286,18 @@ export async function auditPlanSession(
   sessionType: "INTER" | "INTRA",
   participants: number,
   date: string,
-  user?: { id?: string; name?: string; email?: string } | null,
+  user?: {
+    id?: string;
+    name?: string;
+    email?: string;
+    companyId?: string | null;
+  } | null,
 ) {
   return createAuditLog({
     userId: user?.id,
     userName: user?.name,
     userEmail: user?.email,
+    companyId: user?.companyId,
     action: "PLAN_SESSION",
     entityType: "TRAINING_SESSION",
     entityId: sessionId,
@@ -260,6 +315,7 @@ export async function getAuditLogs(options?: {
   entityId?: string;
   action?: AuditAction;
   userId?: string;
+  companyId?: string;
   startDate?: Date;
   endDate?: Date;
   search?: string;
@@ -271,6 +327,7 @@ export async function getAuditLogs(options?: {
     entityId,
     action,
     userId,
+    companyId,
     startDate,
     endDate,
     search,
@@ -284,6 +341,7 @@ export async function getAuditLogs(options?: {
   if (entityId) where.entityId = entityId;
   if (action) where.action = action;
   if (userId) where.userId = userId;
+  if (companyId) where.companyId = companyId;
 
   if (startDate || endDate) {
     where.createdAt = {};
@@ -329,9 +387,23 @@ export async function getAuditLogs(options?: {
 export async function getEntityHistory(
   entityType: AuditEntityType,
   entityId: string,
+  companyId?: string,
 ) {
+  const where: {
+    entityType: AuditEntityType;
+    entityId: string;
+    companyId?: string;
+  } = {
+    entityType,
+    entityId,
+  };
+
+  if (companyId) {
+    where.companyId = companyId;
+  }
+
   const logs = await prisma.auditLog.findMany({
-    where: { entityType, entityId },
+    where,
     orderBy: { createdAt: "desc" },
   });
 
