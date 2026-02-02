@@ -44,32 +44,41 @@ const INITIAL_DATA = {
 async function seedReferences() {
   console.log("🌱 Ajout des données de référence...");
 
-  for (const [type, values] of Object.entries(INITIAL_DATA)) {
-    for (const value of values) {
-      try {
-        await prisma.referenceData.upsert({
-          where: {
-            type_value: {
+  // Récupérer toutes les companies pour créer les références pour chacune
+  const companies = await prisma.company.findMany();
+
+  for (const company of companies) {
+    console.log(`\n📁 Company: ${company.name}`);
+
+    for (const [type, values] of Object.entries(INITIAL_DATA)) {
+      for (const value of values) {
+        try {
+          await prisma.referenceData.upsert({
+            where: {
+              type_value_companyId: {
+                type,
+                value,
+                companyId: company.id,
+              },
+            },
+            update: {},
+            create: {
               type,
               value,
+              isActive: true,
+              sortOrder: 0,
+              companyId: company.id,
             },
-          },
-          update: {},
-          create: {
-            type,
-            value,
-            isActive: true,
-            sortOrder: 0,
-          },
-        });
-        console.log(`✅ ${type}: ${value}`);
-      } catch (error) {
-        console.log(`⚠️  ${type}: ${value} existe déjà`);
+          });
+          console.log(`✅ ${type}: ${value}`);
+        } catch (error) {
+          console.log(`⚠️  ${type}: ${value} existe déjà`);
+        }
       }
     }
   }
 
-  console.log("✨ Terminé !");
+  console.log("\n✨ Terminé !");
 }
 
 seedReferences()
