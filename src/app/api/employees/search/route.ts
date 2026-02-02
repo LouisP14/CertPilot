@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json([]);
     }
 
-    // SQLite: recherche insensible à la casse avec LIKE
+    // PostgreSQL: recherche insensible à la casse avec ILIKE
     const searchPattern = `%${query}%`;
 
     const employees = await prisma.$queryRaw<
@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
       WHERE "isActive" = true
       AND "companyId" = ${companyId}
       AND (
-        "firstName" LIKE ${searchPattern}
-        OR "lastName" LIKE ${searchPattern}
-        OR "employeeId" LIKE ${searchPattern}
-        OR position LIKE ${searchPattern}
-        OR department LIKE ${searchPattern}
+        "firstName" ILIKE ${searchPattern}
+        OR "lastName" ILIKE ${searchPattern}
+        OR "employeeId" ILIKE ${searchPattern}
+        OR position ILIKE ${searchPattern}
+        OR department ILIKE ${searchPattern}
       )
       ORDER BY "lastName" ASC
       LIMIT 10
