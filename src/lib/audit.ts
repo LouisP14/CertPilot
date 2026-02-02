@@ -428,6 +428,7 @@ function getEntityLabel(entityType: AuditEntityType): string {
     CONVOCATION: "la convocation",
     SIGNATURE: "la signature",
     COMPANY: "l'entreprise",
+    REFERENCE: "le référentiel",
     USER: "l'utilisateur",
     SETTINGS: "les paramètres",
     PLANNING_CONSTRAINTS: "les contraintes de planification",
