@@ -86,6 +86,12 @@ export async function POST(request: Request) {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASSWORD,
         },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+        tls: {
+          rejectUnauthorized: false,
+        },
       });
 
       // Préparer le buffer du PDF si fourni
@@ -94,8 +100,13 @@ export async function POST(request: Request) {
       // Envoyer un email à chaque employé
       const emailPromises = employeesWithEmail.map(
         (employee: { name: string; email: string }) => {
+          const fromEmail =
+            process.env.SMTP_FROM ||
+            process.env.SMTP_USER ||
+            company.adminEmail ||
+            "no-reply@certpilot.eu";
           const mailOptions: nodemailer.SendMailOptions = {
-            from: `"${company.name} - Service RH" <${company.adminEmail}>`,
+            from: `"${company.name} - Service RH" <${fromEmail}>`,
             to: employee.email,
             subject: `Convocation - ${formationName}`,
             html: `
