@@ -83,6 +83,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!session.user.companyId) {
+      return NextResponse.json({ error: "Company non définie" }, { status: 400 });
+    }
+    const companyId = session.user.companyId;
+
     const body = await request.json();
     const { horizonDays = 90 } = body; // Horizon de détection (défaut: 90 jours)
 
@@ -100,6 +105,7 @@ export async function POST(request: NextRequest) {
         },
         employee: {
           isActive: true,
+          companyId,
         },
       },
       include: {
@@ -130,11 +136,23 @@ export async function POST(request: NextRequest) {
     const existingNeeds = await prisma.trainingNeed.findMany({
       where: {
         status: { in: ["PENDING", "PLANNED"] },
+        employee: { companyId },
       },
       select: {
         employeeId: true,
         formationTypeId: true,
         certificateId: true,
+      },
+    });
+
+    const expiringCertificateIds = expiringCertificates.map((c) => c.id);
+
+    // Nettoyer les besoins obsolètes (certificat supprimé ou hors horizon)
+    await prisma.trainingNeed.deleteMany({
+      where: {
+        status: "PENDING",
+        certificateId: { not: null, notIn: expiringCertificateIds },
+        employee: { companyId },
       },
     });
 
@@ -216,7 +234,11 @@ export async function POST(request: NextRequest) {
 
     // 5. Mettre à jour les jours restants pour les besoins existants
     const pendingNeeds = await prisma.trainingNeed.findMany({
-      where: { status: "PENDING", expiryDate: { not: null } },
+      where: {
+        status: "PENDING",
+        expiryDate: { not: null },
+        employee: { companyId },
+      },
       include: {
         employee: { select: { hourlyCost: true } },
         formationType: {
