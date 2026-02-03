@@ -2,7 +2,7 @@ import { auditSendConvocation } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 export async function POST(request: Request) {
   try {
@@ -66,9 +66,9 @@ export async function POST(request: Request) {
       },
     );
 
-    // Vérifier si SMTP est configuré
-    const smtpConfigured = process.env.SMTP_USER && process.env.SMTP_PASSWORD;
-    console.log("SMTP configuré:", smtpConfigured ? "Oui" : "Non");
+    // Vérifier si Resend est configuré
+    const resendConfigured = !!process.env.RESEND_API_KEY;
+    console.log("Resend configuré:", resendConfigured ? "Oui" : "Non");
 
     let emailsSent = 0;
     const employeesWithEmail = employeesWithEmails.filter(
@@ -76,37 +76,28 @@ export async function POST(request: Request) {
     );
     console.log("Employés avec email:", employeesWithEmail.length);
 
-    if (smtpConfigured && employeesWithEmail.length > 0) {
-      // Configurer le transporteur email
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || "smtp.gmail.com",
-        port: parseInt(process.env.SMTP_PORT || "587"),
-        secure: process.env.SMTP_SECURE === "true",
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
-        },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-        tls: {
-          rejectUnauthorized: false,
-        },
-      });
+    if (resendConfigured && employeesWithEmail.length > 0) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      const fromEmail =
+        process.env.EMAIL_FROM || "CertPilot <onboarding@resend.dev>";
 
       // Préparer le buffer du PDF si fourni
       const pdfBuffer = pdfBase64 ? Buffer.from(pdfBase64, "base64") : null;
 
       // Envoyer un email à chaque employé
       const emailPromises = employeesWithEmail.map(
-        (employee: { name: string; email: string }) => {
-          const fromEmail =
-            process.env.SMTP_FROM ||
-            process.env.SMTP_USER ||
-            company.adminEmail ||
-            "no-reply@certpilot.eu";
-          const mailOptions: nodemailer.SendMailOptions = {
-            from: `"${company.name} - Service RH" <${fromEmail}>`,
+        async (employee: { name: string; email: string }) => {
+          const emailData: {
+            from: string;
+            to: string;
+            subject: string;
+            html: string;
+            attachments?: Array<{
+              filename: string;
+              content: Buffer;
+            }>;
+          } = {
+            from: fromEmail,
             to: employee.email,
             subject: `Convocation - ${formationName}`,
             html: `
@@ -148,16 +139,15 @@ export async function POST(request: Request) {
 
           // Ajouter le PDF en pièce jointe si fourni
           if (pdfBuffer) {
-            mailOptions.attachments = [
+            emailData.attachments = [
               {
                 filename: `Convocation_${formationName.replace(/[^a-zA-Z0-9]/g, "_")}_${employee.name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
                 content: pdfBuffer,
-                contentType: "application/pdf",
               },
             ];
           }
 
-          return transporter.sendMail(mailOptions);
+          return resend.emails.send(emailData);
         },
       );
 
@@ -199,10 +189,10 @@ export async function POST(request: Request) {
 
     // Message de retour
     let message = "";
-    if (smtpConfigured && emailsSent > 0) {
+    if (resendConfigured && emailsSent > 0) {
       message = `${emailsSent} email(s) envoyé(s) avec succès`;
-    } else if (!smtpConfigured) {
-      message = `Convocations enregistrées (${employees.length} participant(s)). Note: SMTP non configuré, emails non envoyés.`;
+    } else if (!resendConfigured) {
+      message = `Convocations enregistrées (${employees.length} participant(s)). Note: Resend non configuré, emails non envoyés.`;
     } else {
       message = `Convocations enregistrées pour ${employees.length} participant(s) (aucun n'a d'email)`;
     }
@@ -277,7 +267,7 @@ export async function POST(request: Request) {
       success: true,
       message,
       emailsSent,
-      smtpConfigured,
+      resendConfigured,
     });
   } catch (error) {
     console.error("Erreur lors de l'envoi des convocations:", error);
