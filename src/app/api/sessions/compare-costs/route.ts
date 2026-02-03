@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     // 4. Calculer le coût d'absence total
     const absenceCostDetails = employees.map((emp) => {
-      const hourlyCost = emp.hourlyCost || 25; // Défaut 25€/h
+      const hourlyCost = emp.hourlyCost ?? 0;
       const cost = durationHours * hourlyCost;
       return {
         employeeId: emp.id,

@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
 
       const attendeesData = employeeIds.map((employeeId: string) => {
         const emp = employees.find((e) => e.id === employeeId);
-        const hourlyCost = emp?.hourlyCost || 25;
+        const hourlyCost = emp?.hourlyCost ?? 0;
         const absenceCost = durationHours * hourlyCost;
 
         return {

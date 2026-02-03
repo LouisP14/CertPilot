@@ -435,7 +435,7 @@ export default function PlanningModal({
                     </div>
                     <div className="text-right text-sm">
                       <p className="font-medium text-gray-700">
-                        {need.employee.hourlyCost || 25} €/h
+                        {need.employee.hourlyCost ?? 0} €/h
                       </p>
                       <Badge
                         className={`text-xs ${
@@ -1206,4 +1206,3 @@ export default function PlanningModal({
     </div>
   );
 }
-
