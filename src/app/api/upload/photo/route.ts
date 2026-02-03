@@ -58,8 +58,6 @@ export async function POST(request: NextRequest) {
     const uploadDir =
       process.env.UPLOADS_DIR ||
       path.join(process.cwd(), "public", "uploads", "photos");
-    const publicBaseUrl =
-      process.env.PUBLIC_UPLOADS_BASE_URL || "/uploads/photos";
 
     await mkdir(uploadDir, { recursive: true });
     const filePath = path.join(uploadDir, fileName);
@@ -68,7 +66,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     await writeFile(filePath, buffer);
 
-    const photoUrl = `${publicBaseUrl.replace(/\/$/, "")}/${fileName}`;
+    // Utiliser l'API route pour servir les images (fonctionne en prod)
+    const photoUrl = `/api/uploads/photos/${fileName}`;
     return NextResponse.json({ url: photoUrl });
   } catch (error) {
     console.error("Upload error:", error);
