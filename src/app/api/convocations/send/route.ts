@@ -142,7 +142,7 @@ export async function POST(request: Request) {
             emailData.attachments = [
               {
                 filename: `Convocation_${formationName.replace(/[^a-zA-Z0-9]/g, "_")}_${employee.name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
-                content: pdfBuffer,
+                content: pdfBuffer.toString('base64'),
               },
             ];
           }

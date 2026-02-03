@@ -84,7 +84,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (!session.user.companyId) {
-      return NextResponse.json({ error: "Company non définie" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Company non définie" },
+        { status: 400 },
+      );
     }
     const companyId = session.user.companyId;
 
