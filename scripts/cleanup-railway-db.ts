@@ -60,14 +60,15 @@ async function main() {
   const adminCompany = companies.find(
     (c) => c.id === "certpilot-main" || c.name === "CertPilot",
   );
-  const demoCompany = companies.find(
-    (c) =>
-      c.id === "demo-company" ||
-      c.id === "entreprise de démonstration" ||
-      c.name === "Demo Entreprise" ||
-      c.name === "Démo Entreprise" ||
-      c.name === "Entreprise Démo",
-  );
+  const demoCompany =
+    companies.find((c) => c.id === "demo-company") ||
+    companies.find(
+      (c) =>
+        c.id === "entreprise de démonstration" ||
+        c.name === "Demo Entreprise" ||
+        c.name === "Démo Entreprise" ||
+        c.name === "Entreprise Démo",
+    );
 
   const oldCompanies = companies.filter(
     (c) => c.id !== adminCompany?.id && c.id !== demoCompany?.id,

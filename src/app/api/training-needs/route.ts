@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
       const durationHours =
         cert.formationType.durationHours ||
         (cert.formationType.durationDays || 1) * 7;
-      const hourlyCost = cert.employee.hourlyCost || 25; // Défaut 25€/h
+      const hourlyCost = cert.employee.hourlyCost ?? 0;
       const estimatedCost = cert.formationType.estimatedCostPerPerson || 0;
       const absenceCost = durationHours * hourlyCost;
       const totalCost = estimatedCost + absenceCost;
@@ -217,6 +217,16 @@ export async function POST(request: NextRequest) {
     // 5. Mettre à jour les jours restants pour les besoins existants
     const pendingNeeds = await prisma.trainingNeed.findMany({
       where: { status: "PENDING", expiryDate: { not: null } },
+      include: {
+        employee: { select: { hourlyCost: true } },
+        formationType: {
+          select: {
+            durationHours: true,
+            durationDays: true,
+            estimatedCostPerPerson: true,
+          },
+        },
+      },
     });
 
     for (const need of pendingNeeds) {
@@ -245,9 +255,24 @@ export async function POST(request: NextRequest) {
           priorityReason = `Expire dans ${Math.ceil(daysUntilExpiry / 30)} mois`;
         }
 
+        const durationHours =
+          need.formationType.durationHours ||
+          (need.formationType.durationDays || 1) * 7;
+        const hourlyCost = need.employee.hourlyCost ?? 0;
+        const estimatedCost = need.formationType.estimatedCostPerPerson || 0;
+        const absenceCost = durationHours * hourlyCost;
+        const totalCost = estimatedCost + absenceCost;
+
         await prisma.trainingNeed.update({
           where: { id: need.id },
-          data: { daysUntilExpiry, priority, priorityReason },
+          data: {
+            daysUntilExpiry,
+            priority,
+            priorityReason,
+            estimatedCost,
+            absenceCost,
+            totalCost,
+          },
         });
       }
     }

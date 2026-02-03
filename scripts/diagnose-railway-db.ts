@@ -18,6 +18,11 @@ async function main() {
   );
   console.log("USERS", users.rows);
 
+  const companies = await client.query(
+    'select id, name, "adminEmail", "subscriptionPlan", "subscriptionStatus" from "Company" order by "createdAt" asc',
+  );
+  console.log("COMPANIES", companies.rows);
+
   const audit = await client.query(
     'select "companyId", count(*)::int as count from "AuditLog" group by "companyId" order by count desc',
   );

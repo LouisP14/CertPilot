@@ -50,23 +50,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Créer le dossier si nécessaire
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "photos");
-    await mkdir(uploadDir, { recursive: true });
-
     // Générer un nom de fichier unique
     const extension = file.name.split(".").pop() || "jpg";
     const fileName = `${employeeId}-${Date.now()}.${extension}`;
+
+    // Stockage local (prévu pour Railway avec volume)
+    const uploadDir =
+      process.env.UPLOADS_DIR ||
+      path.join(process.cwd(), "public", "uploads", "photos");
+    const publicBaseUrl =
+      process.env.PUBLIC_UPLOADS_BASE_URL || "/uploads/photos";
+
+    await mkdir(uploadDir, { recursive: true });
     const filePath = path.join(uploadDir, fileName);
 
-    // Convertir le fichier en buffer et l'écrire
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     await writeFile(filePath, buffer);
 
-    // Retourner le chemin relatif pour la base de données
-    const photoUrl = `/uploads/photos/${fileName}`;
-
+    const photoUrl = `${publicBaseUrl.replace(/\/$/, "")}/${fileName}`;
     return NextResponse.json({ url: photoUrl });
   } catch (error) {
     console.error("Upload error:", error);
