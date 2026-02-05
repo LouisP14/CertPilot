@@ -242,27 +242,36 @@ function ContactForm() {
                 />
               </div>
 
-              {/* Nombre d'employés */}
-              <div className="md:col-span-2">
-                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
-                  <Users className="h-4 w-4 text-slate-400" />
-                  Nombre d&apos;employés à gérer
-                </label>
-                <select
-                  value={formData.employeeCount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, employeeCount: e.target.value })
-                  }
-                  className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                >
-                  <option value="">Sélectionnez une tranche</option>
-                  <option value="1-50">1 à 50 employés</option>
-                  <option value="51-100">51 à 100 employés</option>
-                  <option value="101-200">101 à 200 employés</option>
-                  <option value="201-500">201 à 500 employés</option>
-                  <option value="500+">Plus de 500 employés</option>
-                </select>
-              </div>
+              {/* Nombre d'employés - affiché en lecture seule si un plan est sélectionné */}
+              {!selectedPlan && (
+                <div className="md:col-span-2">
+                  <label className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
+                    <Users className="h-4 w-4 text-slate-400" />
+                    Nombre d&apos;employés à gérer
+                  </label>
+                  <select
+                    value={formData.employeeCount}
+                    onChange={(e) => {
+                      const count = e.target.value;
+                      // Auto-sélectionner le plan correspondant
+                      let plan = "";
+                      if (count === "1-50") plan = "starter";
+                      else if (count === "51-100") plan = "business";
+                      else if (count === "101-200") plan = "enterprise";
+                      else if (count === "201-500") plan = "corporate";
+                      setFormData({ ...formData, employeeCount: count, plan });
+                    }}
+                    className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  >
+                    <option value="">Sélectionnez une tranche</option>
+                    <option value="1-50">1 à 50 employés</option>
+                    <option value="51-100">51 à 100 employés</option>
+                    <option value="101-200">101 à 200 employés</option>
+                    <option value="201-500">201 à 500 employés</option>
+                    <option value="500+">Plus de 500 employés</option>
+                  </select>
+                </div>
+              )}
 
               {/* Message */}
               <div className="md:col-span-2">
@@ -341,4 +350,3 @@ export default function ContactPage() {
     </Suspense>
   );
 }
-
