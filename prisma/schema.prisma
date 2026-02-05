@@ -80,6 +80,7 @@ model Company {
   trainingCenters       TrainingCenter[]
   planningConstraints   PlanningConstraints?
   referenceData         ReferenceData[]
+  notifications         Notification[]
 }
 
 // ============================================
@@ -246,6 +247,8 @@ model Notification {
   message     String
   link        String?   // Lien vers la ressource concernée
   employeeId  String?   // Employé concerné (optionnel)
+  companyId   String?   // Isolation par entreprise
+  company     Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   isRead      Boolean   @default(false)
   createdAt   DateTime  @default(now())
 }

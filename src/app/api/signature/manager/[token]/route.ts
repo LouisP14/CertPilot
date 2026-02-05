@@ -112,7 +112,13 @@ export async function POST(
       where: { managerToken: token },
       include: {
         employee: {
-          select: { id: true, firstName: true, lastName: true, email: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            companyId: true,
+          },
         },
       },
     });
@@ -168,6 +174,7 @@ export async function POST(
           message: `Le passeport de ${signature.employee.firstName} ${signature.employee.lastName} a été rejeté. Raison : ${rejectionReason || "Non spécifié"}`,
           link: `/dashboard/employees/${signature.employee.id}`,
           employeeId: signature.employee.id,
+          companyId: signature.employee.companyId,
         },
       });
 
@@ -233,6 +240,7 @@ export async function POST(
         message: `Le passeport de ${signature.employee.firstName} ${signature.employee.lastName} a été validé par ${signatureName}.`,
         link: `/dashboard/employees/${signature.employee.id}`,
         employeeId: signature.employee.id,
+        companyId: signature.employee.companyId,
       },
     });
 

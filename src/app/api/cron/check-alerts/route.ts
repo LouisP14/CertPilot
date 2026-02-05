@@ -353,6 +353,7 @@ export async function GET(request: NextRequest) {
         title: "Alertes habilitations envoyées",
         message: `${alertsToSend.length} alerte(s) envoyée(s) à ${company.adminEmail}`,
         link: "/dashboard/formations",
+        companyId: company.id,
       },
     });
 

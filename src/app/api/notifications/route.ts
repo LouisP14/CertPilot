@@ -10,12 +10,15 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    // Purger les notifications lues de plus de 7 jours
+    const companyId = session.user?.companyId;
+
+    // Purger les notifications lues de plus de 7 jours (filtrées par entreprise)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     await prisma.notification.deleteMany({
       where: {
+        companyId,
         isRead: true,
         createdAt: { lt: sevenDaysAgo },
       },
@@ -27,11 +30,13 @@ export async function GET() {
 
     await prisma.notification.deleteMany({
       where: {
+        companyId,
         createdAt: { lt: thirtyDaysAgo },
       },
     });
 
     const notifications = await prisma.notification.findMany({
+      where: { companyId },
       orderBy: { createdAt: "desc" },
       take: 20,
     });
@@ -57,14 +62,16 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { notificationId, markAllRead } = body;
 
+    const companyId = session.user?.companyId;
+
     if (markAllRead) {
       await prisma.notification.updateMany({
-        where: { isRead: false },
+        where: { companyId, isRead: false },
         data: { isRead: true },
       });
     } else if (notificationId) {
       await prisma.notification.update({
-        where: { id: notificationId },
+        where: { id: notificationId, companyId },
         data: { isRead: true },
       });
     }
