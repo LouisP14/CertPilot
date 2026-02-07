@@ -143,7 +143,10 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           {/* Mobile logo cliquable */}
           <div className="lg:hidden mb-10 text-center">
-            <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 mb-2 group"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#173B56] group-hover:bg-[#1e4a6b] transition-colors">
                 <Shield className="h-6 w-6 text-white" />
               </div>

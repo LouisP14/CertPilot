@@ -5,10 +5,8 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
-// Adresse d'envoi - sera no-reply@certpilot.eu une fois le domaine vérifié
-// En attendant, on utilise onboarding@resend.dev
-const FROM_EMAIL =
-  process.env.EMAIL_FROM || "CertPilot <onboarding@resend.dev>";
+// Adresse d'envoi depuis le domaine vérifié certpilot.eu
+const FROM_EMAIL = process.env.EMAIL_FROM || "CertPilot <contact@certpilot.eu>";
 
 function getAppBaseUrl() {
   const base =

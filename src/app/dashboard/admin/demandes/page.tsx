@@ -16,9 +16,9 @@ import {
   Phone,
   RefreshCw,
   Send,
+  Trash2,
   User,
   Users,
-  Trash2,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -208,7 +208,11 @@ export default function DemandesAdminPage() {
   };
 
   const deleteRequest = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.")) {
+    if (
+      !confirm(
+        "Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.",
+      )
+    ) {
       return;
     }
     setDeleting(id);
@@ -640,4 +644,3 @@ export default function DemandesAdminPage() {
     </div>
   );
 }
-
