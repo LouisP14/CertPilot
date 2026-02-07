@@ -7,8 +7,3 @@ startCommand = "npx prisma db push --accept-data-loss && npm start"
 healthcheckPath = "/"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-
-[deploy.cronSchedule]
-# Vérification des alertes d'expiration tous les jours à 7h UTC
-# Pour activer, créer un cron service Railway séparé qui appelle :
-# curl https://www.certpilot.eu/api/cron/check-alerts?secret=$CRON_SECRET
