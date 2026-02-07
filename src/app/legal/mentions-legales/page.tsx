@@ -55,21 +55,20 @@ export default function MentionsLegales() {
             <h2 className="text-xl font-bold text-[#173B56]">2. Hébergeur</h2>
             <div className="mt-4 space-y-2">
               <p>
-                <strong>Raison sociale :</strong> Vercel Inc.
+                <strong>Raison sociale :</strong> Railway Corporation
               </p>
               <p>
-                <strong>Adresse :</strong> 340 S Lemon Ave #4133, Walnut, CA
-                91789, USA
+                <strong>Adresse :</strong> San Francisco, CA, USA
               </p>
               <p>
                 <strong>Site web :</strong>{" "}
                 <a
-                  href="https://vercel.com"
+                  href="https://railway.app"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-emerald-600 hover:underline"
                 >
-                  https://vercel.com
+                  https://railway.app
                 </a>
               </p>
             </div>

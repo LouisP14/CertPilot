@@ -2,7 +2,19 @@ import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ToastContainer } from "@/components/ui/toast";
 import { auth } from "@/lib/auth";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Tableau de bord",
+    template: "%s | CertPilot",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function DashboardLayout({
   children,
@@ -31,4 +43,3 @@ export default async function DashboardLayout({
     </div>
   );
 }
-

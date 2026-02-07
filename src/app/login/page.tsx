@@ -71,7 +71,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Panneau gauche - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-gradient-to-br from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 items-center justify-center bg-linear-to-br from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] relative overflow-hidden">
         {/* Motifs décoratifs */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />

@@ -185,7 +185,7 @@ export default function Confidentialite() {
               </li>
               <li>
                 <strong>Nos sous-traitants techniques</strong> : hébergement
-                (Vercel), base de données, envoi d&apos;emails
+                (Railway), base de données, envoi d&apos;emails
               </li>
               <li>
                 <strong>Les autorités</strong> : en cas d&apos;obligation légale
@@ -247,7 +247,7 @@ export default function Confidentialite() {
             <p className="mt-4">
               Certaines de nos infrastructures techniques peuvent être situées
               hors de l&apos;Union Européenne (notamment aux États-Unis pour
-              l&apos;hébergement Vercel).
+              l&apos;hébergement Railway).
             </p>
             <p className="mt-2">
               Ces transferts sont encadrés par des garanties appropriées :

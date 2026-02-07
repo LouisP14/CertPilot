@@ -1,5 +1,16 @@
 import { ArrowRight, CheckCircle2, Clock } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Période d'essai expirée",
+  description:
+    "Votre période d'essai CertPilot est arrivée à son terme. Choisissez un plan pour continuer.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function TrialExpiredPage() {
   const plans = [
@@ -151,4 +162,3 @@ export default function TrialExpiredPage() {
     </div>
   );
 }
-

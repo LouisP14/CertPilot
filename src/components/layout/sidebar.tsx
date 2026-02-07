@@ -46,7 +46,7 @@ export function Sidebar({ userRole }: SidebarProps) {
   const isSuperAdmin = userRole === "SUPER_ADMIN";
 
   return (
-    <div className="flex h-full w-64 flex-col bg-gradient-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] relative overflow-hidden">
+    <div className="flex h-full w-64 flex-col bg-linear-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] relative overflow-hidden">
       {/* Motifs décoratifs subtils */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl" />

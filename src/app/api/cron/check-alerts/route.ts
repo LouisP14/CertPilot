@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-// Cette API doit être appelée quotidiennement (via Vercel CRON, GitHub Actions, ou un service externe)
+// Cette API doit être appelée quotidiennement (via Railway CRON, GitHub Actions, ou un service externe)
 // GET /api/cron/check-alerts?secret=VOTRE_SECRET_CRON
 
 export async function GET(request: NextRequest) {

@@ -688,7 +688,7 @@ export default function PlanningModal({
                               selectedEmployees.length >
                                 centerComp.offering.maxParticipants && (
                                 <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-red-700">
-                                  <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                                  <AlertTriangle className="h-5 w-5 shrink-0" />
                                   <div className="text-sm">
                                     <p className="font-medium">
                                       Capacité dépassée
@@ -940,7 +940,7 @@ export default function PlanningModal({
                 selectedEmployees.length >
                   selectedCenter.offering.maxParticipants && (
                   <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-4 text-red-700">
-                    <AlertTriangle className="h-6 w-6 flex-shrink-0" />
+                    <AlertTriangle className="h-6 w-6 shrink-0" />
                     <div>
                       <p className="font-semibold">Capacité dépassée !</p>
                       <p className="text-sm">
@@ -1091,7 +1091,7 @@ export default function PlanningModal({
                         }`}
                       >
                         <AlertTriangle
-                          className={`h-4 w-4 flex-shrink-0 ${
+                          className={`h-4 w-4 shrink-0 ${
                             warning.severity === "danger"
                               ? "text-red-500"
                               : "text-orange-500"

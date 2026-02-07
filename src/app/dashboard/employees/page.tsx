@@ -3,8 +3,11 @@ import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getCertificateStatus } from "@/lib/utils";
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { EmployeesList } from "./employees-list";
+
+export const metadata: Metadata = { title: "Employés" };
 
 async function getEmployees() {
   const companyFilter = await getCompanyFilter();

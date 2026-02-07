@@ -1,12 +1,13 @@
 {
   "buildCommand": "npx prisma generate && npm run build",
-  "crons": [
-    {
-      "path": "/api/cron/check-alerts",
-      "schedule": "0 7 * * *"
-    }
-  ],
-  "git": {
-    "deploymentEnabled": false
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS"
+  },
+  "deploy": {
+    "startCommand": "npx prisma db push --accept-data-loss && npm start",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
   }
 }

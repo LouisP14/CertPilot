@@ -12,7 +12,9 @@ const FROM_EMAIL =
 
 function getAppBaseUrl() {
   const base =
-    process.env.APP_URL || process.env.NEXTAUTH_URL || "https://certpilot.eu";
+    process.env.APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    "https://www.certpilot.eu";
   return base.replace(/\/$/, "");
 }
 

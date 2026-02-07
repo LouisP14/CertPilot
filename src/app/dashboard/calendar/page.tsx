@@ -1,6 +1,9 @@
 import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import type { Metadata } from "next";
 import CalendarPageClient from "./calendar-page-client";
+
+export const metadata: Metadata = { title: "Calendrier" };
 
 async function getCertificatesCalendar() {
   const companyFilter = await getCompanyFilter();

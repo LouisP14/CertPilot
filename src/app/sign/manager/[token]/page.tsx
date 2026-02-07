@@ -159,7 +159,7 @@ export default function ManagerSignPage() {
   // États d'erreur
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
           <Loader2 className="mx-auto h-12 w-12 animate-spin text-blue-600" />
           <p className="mt-4 text-gray-600">Chargement du passeport...</p>
@@ -170,7 +170,7 @@ export default function ManagerSignPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 p-4">
         <div className="max-w-md rounded-2xl bg-white p-8 shadow-lg text-center">
           {alreadySigned ? (
             <>
@@ -195,7 +195,7 @@ export default function ManagerSignPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-green-50 to-emerald-100 p-4">
         <div className="max-w-md rounded-2xl bg-white p-8 shadow-lg text-center">
           <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
@@ -217,7 +217,7 @@ export default function ManagerSignPage() {
 
   if (rejected) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 to-orange-100 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-red-50 to-orange-100 p-4">
         <div className="max-w-md rounded-2xl bg-white p-8 shadow-lg text-center">
           <XCircle className="mx-auto h-16 w-16 text-red-500" />
           <h1 className="mt-4 text-2xl font-bold text-gray-900">
@@ -236,13 +236,13 @@ export default function ManagerSignPage() {
 
   return (
     <div
-      className="notranslate min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8"
+      className="notranslate min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-8"
       translate="no"
     >
       <div className="mx-auto max-w-3xl px-4">
         {/* Header */}
         <div className="mb-6 overflow-hidden rounded-2xl bg-white shadow-lg">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+          <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-4">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
                 <GraduationCap className="h-6 w-6 text-white" />
@@ -316,7 +316,7 @@ export default function ManagerSignPage() {
         {/* Warning */}
         <div className="mb-6 rounded-xl bg-amber-50 border border-amber-200 p-4">
           <div className="flex gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-medium text-amber-800">
                 Vérifiez les formations avant de valider

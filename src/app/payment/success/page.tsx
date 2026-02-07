@@ -18,7 +18,7 @@ function SuccessContent() {
   const sessionId = searchParams.get("session_id");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-green-50 to-white flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
@@ -86,7 +86,7 @@ export default function PaymentSuccessPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center">
+        <div className="min-h-screen bg-linear-to-br from-green-50 to-white flex items-center justify-center">
           <div className="animate-pulse text-gray-500">Chargement...</div>
         </div>
       }
@@ -95,4 +95,3 @@ export default function PaymentSuccessPage() {
     </Suspense>
   );
 }
-

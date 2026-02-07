@@ -12,11 +12,14 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AlertsTable } from "./alerts-table";
 import { BudgetWidget } from "./budget-widget";
 import { FormationCoverage } from "./formation-coverage";
 import { ServiceCoverage } from "./service-coverage";
+
+export const metadata: Metadata = { title: "Tableau de bord" };
 
 async function getStats() {
   const companyFilter = await getCompanyFilter();

@@ -2,8 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { GraduationCap } from "lucide-react";
+import type { Metadata } from "next";
 import { AddFormationTypeDialog } from "./add-formation-dialog";
 import { FormationsTable } from "./formations-table";
+
+export const metadata: Metadata = { title: "Formations" };
 
 async function getFormationTypes() {
   const companyFilter = await getCompanyFilter();

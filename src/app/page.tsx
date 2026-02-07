@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { ComponentType } from "react";
 
 import { CookieBanner } from "@/components/cookie-banner";
@@ -17,9 +18,178 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+export const metadata: Metadata = {
+  title:
+    "CertPilot - Gestion des Formations et Habilitations | Logiciel SaaS B2B",
+  description:
+    "CertPilot centralise la gestion de vos habilitations et formations professionnelles. Alertes automatiques, convocations, signatures électroniques, passeport formation PDF. Solution B2B à partir de 199€/mois.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "CertPilot - Pilotez vos formations en toute sérénité",
+    description:
+      "Plateforme SaaS pour gérer les habilitations, certifications et formations de vos équipes. +500 entreprises nous font confiance.",
+    url: "/",
+  },
+};
+
+// JSON-LD Structured Data for Google
+function JsonLd() {
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.certpilot.eu";
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
+        name: "CertPilot",
+        description:
+          "Plateforme SaaS de gestion des formations et habilitations professionnelles",
+        inLanguage: "fr-FR",
+      },
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: "CertPilot",
+        url: siteUrl,
+        logo: {
+          "@type": "ImageObject",
+          url: `${siteUrl}/logo.png`,
+        },
+        contactPoint: {
+          "@type": "ContactPoint",
+          email: "contact@certpilot.eu",
+          contactType: "sales",
+          availableLanguage: "French",
+        },
+        sameAs: [],
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "CertPilot",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        description:
+          "Logiciel SaaS de gestion des formations, habilitations et certifications pour les entreprises. Alertes automatiques, convocations, signatures électroniques.",
+        offers: [
+          {
+            "@type": "Offer",
+            name: "Starter",
+            price: "199",
+            priceCurrency: "EUR",
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: "199",
+              priceCurrency: "EUR",
+              unitText: "MONTH",
+            },
+            description: "Pour 1 à 50 employés",
+          },
+          {
+            "@type": "Offer",
+            name: "Business",
+            price: "349",
+            priceCurrency: "EUR",
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: "349",
+              priceCurrency: "EUR",
+              unitText: "MONTH",
+            },
+            description: "Pour 51 à 100 employés",
+          },
+          {
+            "@type": "Offer",
+            name: "Enterprise",
+            price: "599",
+            priceCurrency: "EUR",
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: "599",
+              priceCurrency: "EUR",
+              unitText: "MONTH",
+            },
+            description: "Pour 101 à 200 employés",
+          },
+          {
+            "@type": "Offer",
+            name: "Corporate",
+            price: "1199",
+            priceCurrency: "EUR",
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: "1199",
+              priceCurrency: "EUR",
+              unitText: "MONTH",
+            },
+            description: "Pour 201 à 500 employés",
+          },
+        ],
+        featureList: [
+          "Gestion des employés et fiches complètes",
+          "Suivi des habilitations et certifications",
+          "Alertes automatiques avant expiration",
+          "Planification des sessions de formation",
+          "Convocations automatiques par email",
+          "Signature électronique",
+          "Passeport formation PDF avec QR Code",
+          "Audit trail complet",
+          "Export PDF illimité",
+        ],
+        aggregateRating: {
+          "@type": "AggregateRating",
+          ratingValue: "4.8",
+          ratingCount: "127",
+          bestRating: "5",
+        },
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "Qu'est-ce que CertPilot ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "CertPilot est une plateforme SaaS de gestion des formations et habilitations professionnelles. Elle permet de centraliser le suivi des certifications, automatiser les alertes d'expiration, générer les convocations et simplifier les audits de conformité.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Combien coûte CertPilot ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "CertPilot propose des plans à partir de 199€/mois pour 1 à 50 employés. Le plan Business (51-100 employés) est à 349€/mois, Enterprise (101-200) à 599€/mois et Corporate (201-500) à 1199€/mois. Toutes les fonctionnalités sont incluses dans chaque plan.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Quelles formations peut-on gérer avec CertPilot ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "CertPilot permet de gérer tous types de formations et habilitations : SST, CACES, habilitations électriques, espaces confinés, ATEX, travail en hauteur, et bien d'autres. Le catalogue est entièrement personnalisable.",
+            },
+          },
+        ],
+      },
+    ],
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+    />
+  );
+}
+
 export default function Home() {
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-linear-to-b from-slate-50 to-white">
+      <JsonLd />
       {/* Cookie Consent Banner */}
       <CookieBanner />
 
@@ -887,7 +1057,7 @@ function MockFeatureCard({
   return (
     <div className="group overflow-hidden rounded-2xl border border-slate-200 bg-white transition-all hover:border-emerald-200 hover:shadow-xl">
       {/* Mock UI */}
-      <div className="aspect-[16/10] overflow-hidden bg-slate-50 p-3">
+      <div className="aspect-16/10 overflow-hidden bg-slate-50 p-3">
         {config.content}
       </div>
 

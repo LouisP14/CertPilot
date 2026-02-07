@@ -13,7 +13,7 @@ import Link from "next/link";
 
 export default function PaymentCancelPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-red-50 to-white flex items-center justify-center p-4">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-red-100 flex items-center justify-center">
@@ -70,4 +70,3 @@ export default function PaymentCancelPage() {
     </div>
   );
 }
-

@@ -75,12 +75,12 @@ export default async function PassportPage({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 py-8">
       <div className="mx-auto max-w-4xl px-4">
         {/* Header */}
         <div className="mb-8 overflow-hidden rounded-2xl bg-white shadow-xl">
           {/* Header Bar */}
-          <div className="bg-gradient-to-r from-[#173B56] via-[#1e4a6b] to-[#173B56] px-6 py-5">
+          <div className="bg-linear-to-r from-[#173B56] via-[#1e4a6b] to-[#173B56] px-6 py-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500 shadow-lg">
@@ -106,7 +106,7 @@ export default async function PassportPage({
           </div>
 
           {/* Bande accent */}
-          <div className="h-1 bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400"></div>
+          <div className="h-1 bg-linear-to-r from-emerald-400 via-emerald-500 to-emerald-400"></div>
 
           {/* Employee Info */}
           <div className="p-6">
@@ -123,7 +123,7 @@ export default async function PassportPage({
                     />
                   </div>
                 ) : (
-                  <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-gradient-to-br from-[#173B56] to-[#1e4a6b] text-3xl font-bold text-white shadow-lg">
+                  <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-2xl bg-linear-to-br from-[#173B56] to-[#1e4a6b] text-3xl font-bold text-white shadow-lg">
                     {employee.firstName[0]}
                     {employee.lastName[0]}
                   </div>
