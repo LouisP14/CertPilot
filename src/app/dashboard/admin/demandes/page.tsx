@@ -18,6 +18,7 @@ import {
   Send,
   User,
   Users,
+  Trash2,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -100,6 +101,7 @@ export default function DemandesAdminPage() {
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -202,6 +204,32 @@ export default function DemandesAdminPage() {
       );
     } finally {
       setSendingPaymentLink(false);
+    }
+  };
+
+  const deleteRequest = async (id: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.")) {
+      return;
+    }
+    setDeleting(id);
+    try {
+      const response = await fetch(`/api/contact-requests?id=${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setRequests((prev) => prev.filter((r) => r.id !== id));
+        if (selectedRequest?.id === id) {
+          setSelectedRequest(null);
+        }
+        toast.success("Demande supprimée");
+      } else {
+        toast.error("Erreur lors de la suppression");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      toast.error("Erreur lors de la suppression");
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -583,6 +611,21 @@ export default function DemandesAdminPage() {
                       )}
                     </div>
                   )}
+
+                  {/* Bouton supprimer */}
+                  <Button
+                    variant="outline"
+                    className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                    onClick={() => deleteRequest(selectedRequest.id)}
+                    disabled={deleting === selectedRequest.id}
+                  >
+                    {deleting === selectedRequest.id ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="mr-2 h-4 w-4" />
+                    )}
+                    Supprimer cette demande
+                  </Button>
                 </div>
               </div>
             ) : (

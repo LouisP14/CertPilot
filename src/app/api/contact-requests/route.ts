@@ -114,6 +114,38 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// DELETE - Supprimer une demande (SUPER_ADMIN only)
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session || session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json(
+        { error: "Accès non autorisé" },
+        { status: 403 },
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID requis" }, { status: 400 });
+    }
+
+    await prisma.contactRequest.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Erreur suppression demande:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de la suppression" },
+      { status: 500 },
+    );
+  }
+}
+
 // PATCH - Mettre à jour le statut d'une demande (admin only)
 export async function PATCH(request: NextRequest) {
   try {

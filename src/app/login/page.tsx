@@ -88,20 +88,20 @@ export default function LoginPage() {
         />
 
         <div className="relative z-10 flex flex-col items-center justify-center px-16 text-white text-center">
-          {/* Logo */}
-          <div className="mb-12">
+          {/* Logo cliquable */}
+          <Link href="/" className="mb-12 group">
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm group-hover:bg-white/20 transition-colors">
                 <Shield className="h-7 w-7 text-emerald-400" />
               </div>
-              <span className="text-3xl font-black tracking-tight">
+              <span className="text-3xl font-black tracking-tight group-hover:text-emerald-300 transition-colors">
                 CertPilot
               </span>
             </div>
             <p className="text-white/60 text-sm ml-15">
               Gestion des habilitations
             </p>
-          </div>
+          </Link>
 
           {/* Message principal */}
           <h1 className="text-4xl font-bold leading-tight mb-6">
@@ -116,17 +116,22 @@ export default function LoginPage() {
           </p>
 
           {/* Points forts */}
-          <div className="space-y-4">
+          <div className="space-y-4 text-left">
             {[
+              "Suivi des habilitations et certifications",
               "Alertes automatiques avant expiration",
-              "Génération des convocations",
-              "Export PDF pour les audits",
+              "Planification des sessions de formation",
+              "Génération des convocations par email",
+              "Signature électronique des attestations",
+              "Passeport formation exportable en PDF",
+              "Tableau de bord et statistiques en temps réel",
+              "Audit trail complet pour la conformité",
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/20">
                   <div className="h-2 w-2 rounded-full bg-emerald-400" />
                 </div>
-                <span className="text-white/80">{feature}</span>
+                <span className="text-white/80 text-sm">{feature}</span>
               </div>
             ))}
           </div>
@@ -136,16 +141,16 @@ export default function LoginPage() {
       {/* Panneau droit - Formulaire */}
       <div className="flex w-full lg:w-1/2 items-center justify-center bg-slate-50 px-6 py-12">
         <div className="w-full max-w-md">
-          {/* Mobile logo */}
+          {/* Mobile logo cliquable */}
           <div className="lg:hidden mb-10 text-center">
-            <div className="inline-flex items-center gap-2 mb-2">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#173B56]">
+            <Link href="/" className="inline-flex items-center gap-2 mb-2 group">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#173B56] group-hover:bg-[#1e4a6b] transition-colors">
                 <Shield className="h-6 w-6 text-white" />
               </div>
-              <span className="text-2xl font-black text-[#173B56]">
+              <span className="text-2xl font-black text-[#173B56] group-hover:text-[#1e4a6b] transition-colors">
                 CertPilot
               </span>
-            </div>
+            </Link>
           </div>
 
           {/* En-tête */}
