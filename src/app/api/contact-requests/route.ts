@@ -1,5 +1,8 @@
 import { auth } from "@/lib/auth";
-import { sendContactConfirmation } from "@/lib/email";
+import {
+  sendContactConfirmation,
+  sendNewContactNotification,
+} from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -84,6 +87,21 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       console.error("Erreur envoi email confirmation:", emailError);
       // Ne pas bloquer la création de la demande si l'email échoue
+    }
+
+    // Notifier l'admin par email
+    try {
+      await sendNewContactNotification({
+        contactName,
+        companyName,
+        email: email.toLowerCase(),
+        phone,
+        employeeCount,
+        plan,
+        message,
+      });
+    } catch (emailError) {
+      console.error("Erreur envoi notification admin:", emailError);
     }
 
     return NextResponse.json(contactRequest, { status: 201 });

@@ -123,6 +123,107 @@ L'équipe CertPilot
   });
 }
 
+// Email 1b : Notification admin - Nouvelle demande de contact
+export async function sendNewContactNotification(params: {
+  contactName: string;
+  companyName: string;
+  email: string;
+  phone?: string | null;
+  employeeCount?: string | null;
+  plan?: string | null;
+  message?: string | null;
+}) {
+  const {
+    contactName,
+    companyName,
+    email,
+    phone,
+    employeeCount,
+    plan,
+    message,
+  } = params;
+  const adminEmail =
+    process.env.ADMIN_NOTIFICATION_EMAIL || "contact@certpilot.eu";
+
+  const planNames: Record<string, string> = {
+    starter: "Starter (1-50 employés) - 199€/mois",
+    business: "Business (51-100 employés) - 349€/mois",
+    enterprise: "Enterprise (101-200 employés) - 599€/mois",
+    corporate: "Corporate (201-500 employés) - 1199€/mois",
+  };
+
+  const baseUrl = getAppBaseUrl();
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to: adminEmail,
+    subject: `🔔 Nouvelle demande de devis - ${companyName}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #173B56 0%, #1e4d6e 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+          .footer { background: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; margin: 20px 0; }
+          .info-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+          .info-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+          .info-table td:first-child { font-weight: bold; color: #6b7280; width: 140px; }
+          .highlight { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 0 6px 6px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🔔 Nouvelle demande de devis</h1>
+          </div>
+          <div class="content">
+            <div class="highlight">
+              <strong>⚡ Action requise :</strong> Un prospect souhaite une démonstration de CertPilot.
+            </div>
+            
+            <table class="info-table">
+              <tr><td>👤 Contact</td><td><strong>${contactName}</strong></td></tr>
+              <tr><td>🏢 Entreprise</td><td><strong>${companyName}</strong></td></tr>
+              <tr><td>📧 Email</td><td><a href="mailto:${email}">${email}</a></td></tr>
+              ${phone ? `<tr><td>📞 Téléphone</td><td><a href="tel:${phone}">${phone}</a></td></tr>` : ""}
+              ${employeeCount ? `<tr><td>👥 Effectif</td><td>${employeeCount} employés</td></tr>` : ""}
+              ${plan ? `<tr><td>📦 Offre</td><td><strong>${planNames[plan] || plan}</strong></td></tr>` : ""}
+            </table>
+            
+            ${message ? `<p><strong>💬 Message :</strong></p><p style="background: #f9fafb; padding: 15px; border-radius: 6px; font-style: italic;">${message}</p>` : ""}
+            
+            <a href="${baseUrl}/dashboard/admin" class="button">Voir dans le tableau de bord</a>
+            
+            <p style="color: #6b7280; font-size: 13px;">Un email de confirmation a été automatiquement envoyé au prospect.</p>
+          </div>
+          <div class="footer">
+            <p>CertPilot - Notification automatique</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `
+Nouvelle demande de devis CertPilot
+
+Contact : ${contactName}
+Entreprise : ${companyName}
+Email : ${email}
+${phone ? `Téléphone : ${phone}` : ""}
+${employeeCount ? `Effectif : ${employeeCount} employés` : ""}
+${plan ? `Offre : ${planNames[plan] || plan}` : ""}
+${message ? `Message : ${message}` : ""}
+
+Voir dans le tableau de bord : ${baseUrl}/dashboard/admin
+    `,
+  });
+}
+
 // Email 2 : Envoi du lien de paiement Stripe
 export async function sendPaymentLink(params: {
   to: string;
