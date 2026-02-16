@@ -173,6 +173,62 @@ function JsonLd() {
               text: "CertPilot permet de gérer tous types de formations et habilitations : SST, CACES, habilitations électriques, espaces confinés, ATEX, travail en hauteur, et bien d'autres. Le catalogue est entièrement personnalisable.",
             },
           },
+          {
+            "@type": "Question",
+            name: "Comment fonctionne le système d'alertes ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "CertPilot surveille automatiquement les dates d'expiration de toutes les habilitations. Vous configurez les seuils d'alerte (30, 60 ou 90 jours avant expiration) et recevez des notifications par email et dans le tableau de bord. Plus aucune habilitation n'expire sans que vous le sachiez.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "CertPilot est-il conforme au RGPD ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Oui, CertPilot est 100% conforme au RGPD. Les données sont hébergées en Europe (Google Cloud europe-west4), chiffrées en transit et au repos. Un DPA (Data Processing Agreement) est disponible. L'accès aux données est strictement isolé par entreprise.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Peut-on générer des convocations automatiquement ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Oui, CertPilot génère et envoie automatiquement les convocations de formation par email. Chaque convocation contient le lieu, la date, les horaires et les informations pratiques. Les employés peuvent confirmer leur présence directement.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Qu'est-ce que le passeport formation ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Le passeport formation est un document PDF récapitulant toutes les formations et habilitations d'un employé. Il inclut un QR code de vérification, les dates de validité et l'historique complet. Il peut être généré en un clic depuis CertPilot.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Combien de temps faut-il pour démarrer avec CertPilot ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "La prise en main est immédiate. Créez votre compte, ajoutez vos employés et leurs habilitations, et CertPilot commence à surveiller les échéances. L'import peut se faire manuellement ou depuis un fichier Excel. La plupart des entreprises sont opérationnelles en moins d'une journée.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "CertPilot gère-t-il la signature électronique ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Oui, CertPilot intègre la signature électronique pour les attestations de présence et les feuilles d'émargement. Les participants signent directement sur tablette ou ordinateur, et les documents signés sont archivés avec horodatage.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Peut-on exporter les données pour un audit ?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Oui, CertPilot permet d'exporter toutes les données en PDF et Excel : liste des habilitations, employés, sessions de formation, historique des alertes. Un audit trail complet trace toutes les actions. Vous êtes prêt pour tout contrôle DREAL, CARSAT ou inspection du travail.",
+            },
+          },
         ],
       },
     ],
@@ -216,6 +272,12 @@ export default function Home() {
             >
               Fonctionnalités
             </a>
+            <Link
+              href="/solutions"
+              className="text-sm font-medium text-slate-600 transition-colors hover:text-[#173B56]"
+            >
+              Solutions
+            </Link>
             <a
               href="#tarifs"
               className="text-sm font-medium text-slate-600 transition-colors hover:text-[#173B56]"
@@ -565,7 +627,7 @@ export default function Home() {
       <footer className="border-t border-slate-200 bg-white py-12">
         <div className="mx-auto max-w-7xl px-6">
           {/* Main footer content */}
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-5">
             {/* Brand */}
             <div className="md:col-span-1">
               <span className="text-lg font-black text-[#173B56]">
@@ -575,6 +637,28 @@ export default function Home() {
                 La solution complète pour gérer les formations et habilitations
                 de vos équipes.
               </p>
+            </div>
+
+            {/* Solutions */}
+            <div>
+              <h4 className="font-semibold text-[#173B56]">Solutions</h4>
+              <nav className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+                <Link href="/solutions/caces" className="hover:text-[#173B56]">
+                  Gestion CACES
+                </Link>
+                <Link href="/solutions/sst" className="hover:text-[#173B56]">
+                  Suivi SST
+                </Link>
+                <Link
+                  href="/solutions/habilitation-electrique"
+                  className="hover:text-[#173B56]"
+                >
+                  Habilitations électriques
+                </Link>
+                <Link href="/solutions" className="hover:text-[#173B56]">
+                  Toutes les solutions
+                </Link>
+              </nav>
             </div>
 
             {/* Navigation */}

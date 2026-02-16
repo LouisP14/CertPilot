@@ -143,7 +143,8 @@ export default function ExportPage() {
             </div>
             <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
               <p>
-                Vous allez télécharger : <strong>{excelExportLabels[exportType]}</strong>
+                Vous allez télécharger :{" "}
+                <strong>{excelExportLabels[exportType]}</strong>
               </p>
               <p className="mt-1 text-xs text-gray-500">
                 Nom du fichier :
@@ -214,4 +215,3 @@ export default function ExportPage() {
     </div>
   );
 }
-
