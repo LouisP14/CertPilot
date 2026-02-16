@@ -294,7 +294,7 @@ export default function HabilitationElectriquePage() {
                   className="flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5"
                 >
                   <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-xs font-black ${level.color}`}
+                    className={`flex h-12 min-w-12 shrink-0 items-center justify-center rounded-lg px-2 text-xs font-black whitespace-nowrap ${level.color}`}
                   >
                     {level.code}
                   </div>
