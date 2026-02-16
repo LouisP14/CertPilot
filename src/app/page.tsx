@@ -139,12 +139,6 @@ function JsonLd() {
           "Audit trail complet",
           "Export PDF illimité",
         ],
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: "4.8",
-          ratingCount: "127",
-          bestRating: "5",
-        },
       },
       {
         "@type": "FAQPage",
@@ -186,7 +180,7 @@ function JsonLd() {
             name: "CertPilot est-il conforme au RGPD ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Oui, CertPilot est 100% conforme au RGPD. Les données sont hébergées en Europe (Google Cloud europe-west4), chiffrées en transit et au repos. Un DPA (Data Processing Agreement) est disponible. L'accès aux données est strictement isolé par entreprise.",
+              text: "CertPilot est conçu pour répondre aux exigences RGPD (minimisation, sécurité, traçabilité, gestion des accès). Les données sont hébergées en Europe (Google Cloud europe-west4), chiffrées en transit et au repos. Un DPA (Data Processing Agreement) est disponible. L'accès aux données est isolé par entreprise.",
             },
           },
           {
@@ -226,7 +220,7 @@ function JsonLd() {
             name: "Peut-on exporter les données pour un audit ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Oui, CertPilot permet d'exporter toutes les données en PDF et Excel : liste des habilitations, employés, sessions de formation, historique des alertes. Un audit trail complet trace toutes les actions. Vous êtes prêt pour tout contrôle DREAL, CARSAT ou inspection du travail.",
+              text: "Oui, CertPilot permet d'exporter les données en PDF et Excel : habilitations, employés, sessions de formation et historique des alertes. Un audit trail trace les actions clés et facilite la préparation documentaire en cas de contrôle.",
             },
           },
         ],
@@ -345,18 +339,20 @@ export default function Home() {
 
               <div className="mt-10 flex items-center gap-6 border-t border-slate-200 pt-8">
                 <div>
-                  <p className="text-2xl font-black text-[#173B56]">500+</p>
-                  <p className="text-sm text-slate-500">Entreprises</p>
+                  <p className="text-2xl font-black text-[#173B56]">Suivi</p>
+                  <p className="text-sm text-slate-500">Centralisé</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200" />
                 <div>
-                  <p className="text-2xl font-black text-[#173B56]">50k+</p>
-                  <p className="text-sm text-slate-500">Habilitations</p>
+                  <p className="text-2xl font-black text-[#173B56]">Alertes</p>
+                  <p className="text-sm text-slate-500">Automatiques</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200" />
                 <div>
-                  <p className="text-2xl font-black text-[#173B56]">99.9%</p>
-                  <p className="text-sm text-slate-500">Disponibilité</p>
+                  <p className="text-2xl font-black text-[#173B56]">
+                    Historique
+                  </p>
+                  <p className="text-sm text-slate-500">Traçable</p>
                 </div>
               </div>
             </div>

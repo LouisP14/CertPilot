@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import {
   ArrowRight,
   Bell,
@@ -8,6 +7,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -31,8 +31,7 @@ export const metadata: Metadata = {
     canonical: "/solutions/habilitation-electrique",
   },
   openGraph: {
-    title:
-      "Gestion des habilitations électriques NF C 18-510 - CertPilot",
+    title: "Gestion des habilitations électriques NF C 18-510 - CertPilot",
     description:
       "Automatisez le suivi de vos habilitations électriques : alertes, recyclages, convocations. Conformité NF C 18-510 assurée.",
     url: "/solutions/habilitation-electrique",
@@ -63,7 +62,7 @@ function JsonLd() {
             name: "Quelle est la durée de validité d'une habilitation électrique ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "La norme NF C 18-510 recommande un recyclage tous les 3 ans pour les habilitations électriques. Cependant, l'employeur peut fixer une durée plus courte selon l'évaluation des risques. CertPilot gère automatiquement ces échéances, quelle que soit la durée configurée.",
+              text: "La périodicité de renouvellement est définie par l'employeur en fonction de la norme NF C 18-510, de l'analyse des risques et des conditions d'activité. CertPilot permet de paramétrer cette périodicité par niveau d'habilitation et d'automatiser les alertes.",
             },
           },
           {
@@ -106,7 +105,8 @@ const HABILITATION_LEVELS = [
   {
     code: "B1 / H1",
     name: "Exécutant",
-    description: "Exécute des travaux d'ordre électrique sous la direction d'un B2/H2",
+    description:
+      "Exécute des travaux d'ordre électrique sous la direction d'un B2/H2",
     color: "bg-blue-100 text-blue-700",
   },
   {
@@ -212,9 +212,10 @@ export default function HabilitationElectriquePage() {
               L&apos;habilitation électrique : une obligation légale
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
-              Le décret 2010-1118 impose l&apos;habilitation pour toute opération
-              sur ou à proximité d&apos;installations électriques. Ne pas respecter
-              cette obligation expose à des sanctions pénales.
+              Le décret 2010-1118 impose l&apos;habilitation pour toute
+              opération sur ou à proximité d&apos;installations électriques. Ne
+              pas respecter cette obligation expose l&apos;employeur à des
+              risques juridiques et organisationnels.
             </p>
 
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -229,7 +230,7 @@ export default function HabilitationElectriquePage() {
                   icon: Bell,
                   title: "Alertes de recyclage",
                   description:
-                    "Recyclage recommandé tous les 3 ans. CertPilot vous prévient en amont pour planifier les sessions de formation.",
+                    "Périodicité de recyclage paramétrable selon votre politique de prévention. CertPilot vous prévient en amont pour planifier les sessions.",
                 },
                 {
                   icon: Calendar,
@@ -239,7 +240,7 @@ export default function HabilitationElectriquePage() {
                 },
                 {
                   icon: FileText,
-                  title: "Titre d'habilitation traçé",
+                  title: "Titre d'habilitation tracé",
                   description:
                     "Chaque habilitation est enregistrée avec son niveau, sa date de délivrance, sa durée de validité et l'organisme formateur.",
                 },
@@ -251,9 +252,9 @@ export default function HabilitationElectriquePage() {
                 },
                 {
                   icon: Zap,
-                  title: "Export audit-ready",
+                  title: "Exports pour contrôle",
                   description:
-                    "Exportez l'ensemble des habilitations électriques en PDF ou Excel pour tout contrôle CARSAT ou inspection du travail.",
+                    "Exportez vos habilitations électriques en PDF ou Excel pour préparer vos éléments en cas de contrôle.",
                 },
               ].map((feature) => (
                 <div
@@ -282,8 +283,8 @@ export default function HabilitationElectriquePage() {
               Tous les niveaux d&apos;habilitation supportés
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
-              CertPilot gère toutes les catégories d&apos;habilitation électrique
-              BT et HT, y compris les niveaux combinés.
+              CertPilot gère toutes les catégories d&apos;habilitation
+              électrique BT et HT, y compris les niveaux combinés.
             </p>
 
             <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -334,13 +335,13 @@ export default function HabilitationElectriquePage() {
                   step: "3",
                   title: "Alerte de renouvellement",
                   description:
-                    "À l'approche de l'échéance de 3 ans, CertPilot vous alerte. Vous pouvez alors planifier le recyclage.",
+                    "À l'approche de l'échéance configurée, CertPilot vous alerte. Vous pouvez alors planifier le recyclage.",
                 },
                 {
                   step: "4",
                   title: "Recyclage et mise à jour",
                   description:
-                    "Après le recyclage, mettez à jour l'habilitation. Le nouveau cycle de 3 ans démarre, l'historique est conservé.",
+                    "Après le recyclage, mettez à jour l'habilitation. Un nouveau cycle démarre selon votre paramétrage, l'historique est conservé.",
                 },
               ].map((item) => (
                 <div key={item.step} className="flex gap-4">

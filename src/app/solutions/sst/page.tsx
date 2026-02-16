@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
 import {
   ArrowRight,
   Bell,
   Calendar,
-  CheckCircle2,
   FileText,
   Heart,
   Shield,
   Users,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -72,7 +71,7 @@ function JsonLd() {
             name: "Combien de SST faut-il dans une entreprise ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "L'article R4224-15 du Code du travail impose qu'un membre du personnel ait reçu la formation de secouriste dans chaque atelier où sont effectués des travaux dangereux. La recommandation est d'avoir 10 à 15% de l'effectif formé SST. CertPilot vous aide à calculer et maintenir ce ratio.",
+              text: "L'article R4224-15 du Code du travail impose qu'un membre du personnel ait reçu la formation de secouriste dans chaque atelier où sont effectués des travaux dangereux. Le nombre de SST à former dépend ensuite de votre activité, des risques et de l'organisation des équipes. CertPilot vous aide à piloter ce dimensionnement.",
             },
           },
           {
@@ -102,8 +101,8 @@ const SST_FACTS = [
     label: "Durée de validité du certificat SST",
   },
   {
-    stat: "10-15%",
-    label: "Effectif recommandé formé SST",
+    stat: "À définir",
+    label: "Nombre de SST selon risques et organisation",
   },
   {
     stat: "7h",
@@ -231,7 +230,7 @@ export default function SSTPage() {
                   icon: Users,
                   title: "Ratio SST / effectif",
                   description:
-                    "Visualisez si vous respectez le ratio recommandé de 10-15% de SST dans votre effectif, service par service.",
+                    "Visualisez la couverture SST de votre effectif, service par service, selon vos objectifs de prévention.",
                 },
                 {
                   icon: FileText,
@@ -243,7 +242,7 @@ export default function SSTPage() {
                   icon: Shield,
                   title: "Conformité réglementaire",
                   description:
-                    "Historique complet et horodaté de toutes les formations SST. Prêt pour tout contrôle de l'inspection du travail.",
+                    "Historique complet et horodaté des formations SST pour faciliter la préparation en cas de contrôle.",
                 },
                 {
                   icon: Zap,

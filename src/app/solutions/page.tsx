@@ -1,5 +1,5 @@
+import { ArrowRight, Heart, Shield, Zap } from "lucide-react";
 import type { Metadata } from "next";
-import { ArrowRight, Shield, Heart, Zap } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ const SOLUTIONS = [
     title: "Suivi SST",
     subtitle: "Sauveteurs Secouristes du Travail",
     description:
-      "Gérez vos SST et MAC SST. Suivi du ratio SST/effectif, alertes de recyclage tous les 24 mois, conformité code du travail.",
+      "Gérez vos SST et MAC SST. Suivez votre couverture SST, pilotez les échéances et facilitez votre conformité au code du travail.",
     color: "red",
     bgColor: "bg-red-100",
     textColor: "text-red-600",
@@ -43,7 +43,7 @@ const SOLUTIONS = [
     title: "Habilitations électriques",
     subtitle: "NF C 18-510 - B0 B1 B2 BR BC H0 H1 H2",
     description:
-      "Suivez tous les niveaux d'habilitation BT et HT. Recyclage tous les 3 ans, conformité NF C 18-510, export audit-ready.",
+      "Suivez les niveaux d'habilitation BT et HT. Échéances paramétrables, référentiel NF C 18-510, exports pour contrôle.",
     color: "blue",
     bgColor: "bg-blue-100",
     textColor: "text-blue-600",
@@ -104,15 +104,15 @@ export default function SolutionsPage() {
                 <div
                   className={`flex h-14 w-14 items-center justify-center rounded-xl ${solution.bgColor}`}
                 >
-                  <solution.icon
-                    className={`h-7 w-7 ${solution.textColor}`}
-                  />
+                  <solution.icon className={`h-7 w-7 ${solution.textColor}`} />
                 </div>
 
                 <h2 className="mt-6 text-xl font-black text-[#173B56]">
                   {solution.title}
                 </h2>
-                <p className={`mt-1 text-sm font-semibold ${solution.textColor}`}>
+                <p
+                  className={`mt-1 text-sm font-semibold ${solution.textColor}`}
+                >
                   {solution.subtitle}
                 </p>
                 <p className="mt-3 text-sm text-slate-600">

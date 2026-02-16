@@ -1,19 +1,17 @@
-import type { Metadata } from "next";
 import {
   ArrowRight,
   Bell,
   Calendar,
-  CheckCircle2,
   FileText,
   Shield,
   Users,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title:
-    "Logiciel gestion CACES | Suivi habilitations caristes - CertPilot",
+  title: "Logiciel gestion CACES | Suivi habilitations caristes - CertPilot",
   description:
     "Gérez vos CACES et habilitations caristes avec CertPilot : alertes d'expiration automatiques, planning des recyclages, convocations, passeport formation PDF. Solution de suivi CACES pour entreprises.",
   keywords: [
@@ -72,7 +70,7 @@ function JsonLd() {
             name: "Quelle est la durée de validité d'un CACES ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Les CACES ont une durée de validité de 5 ans (10 ans pour le R490 grues de chargement). CertPilot gère automatiquement ces échéances et vous alerte quand un recyclage est nécessaire, avec des seuils personnalisables (30, 60 ou 90 jours avant).",
+              text: "La durée de validité dépend de la recommandation CACES et de la catégorie concernée. CertPilot vous permet de paramétrer les échéances par type de CACES et de déclencher des alertes automatiques (30, 60 ou 90 jours avant) pour sécuriser les renouvellements.",
             },
           },
           {
@@ -101,37 +99,37 @@ const CACES_CATEGORIES = [
     code: "R489",
     name: "Chariots automoteurs",
     description: "Chariots élévateurs, transpalettes, gerbeurs",
-    validity: "5 ans",
+    validity: "Selon recommandation CACES",
   },
   {
     code: "R486",
     name: "PEMP (Nacelles)",
     description: "Plateformes élévatrices mobiles de personnes",
-    validity: "5 ans",
+    validity: "Selon recommandation CACES",
   },
   {
     code: "R482",
     name: "Engins de chantier",
     description: "Pelles, chargeuses, bulldozers, tombereaux",
-    validity: "5 ans",
+    validity: "Selon recommandation CACES",
   },
   {
     code: "R490",
     name: "Grues de chargement",
     description: "Grues auxiliaires de chargement de véhicules",
-    validity: "5 ans",
+    validity: "Selon recommandation CACES",
   },
   {
     code: "R487",
     name: "Grues à tour",
     description: "Grues à montage automatisé ou par éléments",
-    validity: "5 ans",
+    validity: "Selon recommandation CACES",
   },
   {
     code: "R483",
     name: "Grues mobiles",
     description: "Grues automotrices et sur porteur",
-    validity: "5 ans",
+    validity: "Selon recommandation CACES",
   },
 ];
 
@@ -185,7 +183,8 @@ export default function CACESPage() {
             <p className="mt-6 text-lg leading-relaxed text-slate-600">
               Ne ratez plus jamais un renouvellement CACES. CertPilot centralise
               toutes les habilitations de vos caristes, vous alerte avant chaque
-              expiration et génère automatiquement les convocations de recyclage.
+              expiration et génère automatiquement les convocations de
+              recyclage.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -245,15 +244,15 @@ export default function CACESPage() {
                 },
                 {
                   icon: Zap,
-                  title: "Audit-ready en permanence",
+                  title: "Préparation audit facilitée",
                   description:
-                    "Historique complet, traçabilité des actions, export instantané : soyez prêt pour tout contrôle DREAL ou inspection du travail.",
+                    "Historique, traçabilité des actions et exports : préparez plus rapidement vos éléments en cas de contrôle.",
                 },
                 {
                   icon: Shield,
                   title: "Multi-catégories",
                   description:
-                    "Gérez tous les CACES de votre entreprise : R489, R486, R482, R490, R487, R483 et catégories personnalisées.",
+                    "Gérez les principales familles CACES (R489, R486, R482, R490, R487, R483) et vos catégories personnalisées.",
                 },
               ].map((feature) => (
                 <div
@@ -283,7 +282,8 @@ export default function CACESPage() {
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
               CertPilot prend en charge toutes les recommandations CACES en
-              vigueur et vous permet d&apos;ajouter des catégories personnalisées.
+              vigueur et vous permet d&apos;ajouter des catégories
+              personnalisées.
             </p>
 
             <div className="mx-auto mt-12 grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -301,7 +301,7 @@ export default function CACESPage() {
                       {cat.description}
                     </p>
                     <p className="mt-1 text-xs font-semibold text-amber-600">
-                      Validité : {cat.validity}
+                      Périodicité : {cat.validity}
                     </p>
                   </div>
                 </div>
