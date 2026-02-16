@@ -6,15 +6,18 @@ import { NextRequest, NextResponse } from "next/server";
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    const companyId = session.user.companyId;
 
     const body = await request.json();
     const { name, adminEmail } = body;
 
-    // Get or create company
-    let company = await prisma.company.findFirst();
+    // Get or create company liée à la session
+    let company = await prisma.company.findUnique({
+      where: { id: companyId },
+    });
     const oldCompany = company ? { ...company } : null;
 
     if (company) {
@@ -44,6 +47,7 @@ export async function PUT(request: NextRequest) {
     } else {
       company = await prisma.company.create({
         data: {
+          id: companyId,
           name: name || "Mon Entreprise",
           adminEmail: adminEmail || null,
         },

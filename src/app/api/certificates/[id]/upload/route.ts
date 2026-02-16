@@ -10,15 +10,24 @@ export async function POST(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    const companyId = session.user.companyId;
 
     const { id } = await params;
 
     // Vérifier que le certificat existe
     const certificate = await prisma.certificate.findUnique({
       where: { id },
+      select: {
+        id: true,
+        employee: {
+          select: {
+            companyId: true,
+          },
+        },
+      },
     });
 
     if (!certificate) {
@@ -26,6 +35,10 @@ export async function POST(
         { error: "Certificat non trouvé" },
         { status: 404 },
       );
+    }
+
+    if (certificate.employee.companyId !== companyId) {
+      return NextResponse.json({ error: "Accès interdit" }, { status: 403 });
     }
 
     const formData = await request.formData();
@@ -101,11 +114,35 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    const companyId = session.user.companyId;
 
     const { id } = await params;
+
+    const certificate = await prisma.certificate.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        employee: {
+          select: {
+            companyId: true,
+          },
+        },
+      },
+    });
+
+    if (!certificate) {
+      return NextResponse.json(
+        { error: "Certificat non trouvé" },
+        { status: 404 },
+      );
+    }
+
+    if (certificate.employee.companyId !== companyId) {
+      return NextResponse.json({ error: "Accès interdit" }, { status: 403 });
+    }
 
     // Supprimer l'URL du fichier du certificat
     await prisma.certificate.update({

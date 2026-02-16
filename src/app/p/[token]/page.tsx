@@ -17,6 +17,9 @@ async function getPassport(token: string) {
   const employee = await prisma.employee.findUnique({
     where: { qrToken: token },
     include: {
+      company: {
+        select: { name: true },
+      },
       manager: {
         select: { firstName: true, lastName: true },
       },
@@ -48,20 +51,13 @@ async function getPassport(token: string) {
   return employee;
 }
 
-async function getCompany() {
-  return prisma.company.findFirst();
-}
-
 export default async function PassportPage({
   params,
 }: {
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const [employee, company] = await Promise.all([
-    getPassport(token),
-    getCompany(),
-  ]);
+  const employee = await getPassport(token);
 
   if (!employee) {
     notFound();
@@ -95,10 +91,10 @@ export default async function PassportPage({
                   </p>
                 </div>
               </div>
-              {company?.name && (
+              {employee.company?.name && (
                 <div className="text-right">
                   <p className="text-xl font-bold text-white tracking-wide">
-                    {company.name}
+                    {employee.company.name}
                   </p>
                 </div>
               )}

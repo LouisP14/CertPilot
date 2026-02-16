@@ -6,6 +6,12 @@ import { Resend } from "resend";
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+    const companyId = session.user.companyId;
+
     const body = await request.json();
     console.log("Convocations - Body reçu:", JSON.stringify(body, null, 2));
 
@@ -24,7 +30,10 @@ export async function POST(request: Request) {
     } = body;
 
     // Récupérer les infos de l'entreprise
-    const company = await prisma.company.findFirst();
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { name: true },
+    });
     console.log("Company:", company ? company.name : "Non trouvée");
 
     if (!company) {
@@ -51,20 +60,26 @@ export async function POST(request: Request) {
     // Récupérer les emails des employés depuis la base de données
     const employeeIds = employees.map((e: { id: string }) => e.id);
     const employeesFromDb = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
+      where: {
+        id: { in: employeeIds },
+        companyId,
+      },
       select: { id: true, email: true, firstName: true, lastName: true },
     });
 
-    // Fusionner les données (ajouter les emails)
-    const employeesWithEmails = employees.map(
-      (emp: { id: string; name: string }) => {
-        const dbEmployee = employeesFromDb.find((e) => e.id === emp.id);
-        return {
-          ...emp,
-          email: dbEmployee?.email || null,
-        };
-      },
-    );
+    // Utiliser uniquement les employés de la même entreprise
+    const employeesWithEmails = employeesFromDb.map((emp) => ({
+      id: emp.id,
+      name: `${emp.lastName} ${emp.firstName}`,
+      email: emp.email,
+    }));
+
+    if (employeesWithEmails.length === 0) {
+      return NextResponse.json(
+        { error: "Aucun employé valide pour cette entreprise" },
+        { status: 400 },
+      );
+    }
 
     // Vérifier si Resend est configuré
     const resendConfigured = !!process.env.RESEND_API_KEY;
@@ -72,7 +87,13 @@ export async function POST(request: Request) {
 
     let emailsSent = 0;
     const employeesWithEmail = employeesWithEmails.filter(
-      (emp: { email: string | null }) => emp.email,
+      (
+        emp,
+      ): emp is {
+        id: string;
+        name: string;
+        email: string;
+      } => typeof emp.email === "string" && emp.email.length > 0,
     );
     console.log("Employés avec email:", employeesWithEmail.length);
 
@@ -85,22 +106,21 @@ export async function POST(request: Request) {
       const pdfBuffer = pdfBase64 ? Buffer.from(pdfBase64, "base64") : null;
 
       // Envoyer un email à chaque employé
-      const emailPromises = employeesWithEmail.map(
-        async (employee: { name: string; email: string }) => {
-          const emailData: {
-            from: string;
-            to: string;
-            subject: string;
-            html: string;
-            attachments?: Array<{
-              filename: string;
-              content: Buffer;
-            }>;
-          } = {
-            from: fromEmail,
-            to: employee.email,
-            subject: `Convocation - ${formationName}`,
-            html: `
+      const emailPromises = employeesWithEmail.map(async (employee) => {
+        const emailData: {
+          from: string;
+          to: string;
+          subject: string;
+          html: string;
+          attachments?: Array<{
+            filename: string;
+            content: Buffer;
+          }>;
+        } = {
+          from: fromEmail,
+          to: employee.email,
+          subject: `Convocation - ${formationName}`,
+          html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <h2 style="color: #1e40af;">Convocation à une formation</h2>
                 <p>Bonjour ${employee.name},</p>
@@ -135,21 +155,20 @@ export async function POST(request: Request) {
                 </p>
               </div>
             `,
-          };
+        };
 
-          // Ajouter le PDF en pièce jointe si fourni
-          if (pdfBuffer) {
-            emailData.attachments = [
-              {
-                filename: `Convocation_${formationName.replace(/[^a-zA-Z0-9]/g, "_")}_${employee.name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
-                content: pdfBuffer,
-              },
-            ];
-          }
+        // Ajouter le PDF en pièce jointe si fourni
+        if (pdfBuffer) {
+          emailData.attachments = [
+            {
+              filename: `Convocation_${formationName.replace(/[^a-zA-Z0-9]/g, "_")}_${employee.name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`,
+              content: pdfBuffer,
+            },
+          ];
+        }
 
-          return resend.emails.send(emailData);
-        },
-      );
+        return resend.emails.send(emailData);
+      });
 
       // Attendre que tous les emails soient envoyés
       await Promise.all(emailPromises);
@@ -158,23 +177,34 @@ export async function POST(request: Request) {
 
     // Marquer la session comme "convocations envoyées"
     if (sessionId) {
-      await prisma.trainingSession.update({
-        where: { id: sessionId },
-        data: { convocationsSentAt: new Date() },
+      const trainingSession = await prisma.trainingSession.findFirst({
+        where: {
+          id: sessionId,
+          formationType: {
+            companyId,
+          },
+        },
+        select: { id: true },
       });
+
+      if (trainingSession) {
+        await prisma.trainingSession.update({
+          where: { id: trainingSession.id },
+          data: { convocationsSentAt: new Date() },
+        });
+      }
     }
 
     // Audit Trail - logger l'envoi (simplifié pour éviter les erreurs)
     try {
-      const session = await auth();
       const sessionInfo = `${formationName} - ${dateText}`;
-      for (const employee of employees) {
+      for (const employee of employeesWithEmails) {
         await auditSendConvocation(
           employee.id || "unknown",
           employee.name || "Inconnu",
           sessionInfo,
           employee.email || "(pas d'email)",
-          session?.user
+          session.user
             ? {
                 id: session.user.id,
                 name: session.user.name || undefined,
@@ -192,14 +222,29 @@ export async function POST(request: Request) {
     if (resendConfigured && emailsSent > 0) {
       message = `${emailsSent} email(s) envoyé(s) avec succès`;
     } else if (!resendConfigured) {
-      message = `Convocations enregistrées (${employees.length} participant(s)). Note: Resend non configuré, emails non envoyés.`;
+      message = `Convocations enregistrées (${employeesWithEmails.length} participant(s)). Note: Resend non configuré, emails non envoyés.`;
     } else {
-      message = `Convocations enregistrées pour ${employees.length} participant(s) (aucun n'a d'email)`;
+      message = `Convocations enregistrées pour ${employeesWithEmails.length} participant(s) (aucun n'a d'email)`;
     }
 
     // Sauvegarder ou mettre à jour la convocation dans la base de données
     try {
       if (convocationId) {
+        const existingConvocation = await prisma.convocation.findFirst({
+          where: {
+            id: convocationId,
+            companyId,
+          },
+          select: { id: true },
+        });
+
+        if (!existingConvocation) {
+          return NextResponse.json(
+            { error: "Convocation introuvable pour cette entreprise" },
+            { status: 404 },
+          );
+        }
+
         // Mise à jour d'une convocation existante (brouillon → envoyée)
         // D'abord supprimer les anciens attendees
         await prisma.convocationAttendee.deleteMany({
@@ -243,6 +288,7 @@ export async function POST(request: Request) {
             location,
             notes: notes || "",
             status: "sent",
+            companyId,
             attendees: {
               create: employeesWithEmails.map(
                 (emp: { id: string; name: string; email: string | null }) => ({

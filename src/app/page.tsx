@@ -620,6 +620,12 @@ export default function Home() {
                 <Link href="/legal/cgv" className="hover:text-[#173B56]">
                   CGV
                 </Link>
+                <Link href="/legal/dpa" className="hover:text-[#173B56]">
+                  DPA (RGPD)
+                </Link>
+                <Link href="/legal/securite" className="hover:text-[#173B56]">
+                  Sécurité & disponibilité
+                </Link>
                 <Link href="/legal/cookies" className="hover:text-[#173B56]">
                   Cookies
                 </Link>
