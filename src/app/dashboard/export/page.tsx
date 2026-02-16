@@ -20,6 +20,20 @@ interface Stats {
   expired: number;
 }
 
+const excelExportLabels: Record<string, string> = {
+  all: "Tous les employés et formations",
+  expiring: "Formations expirant dans 90 jours",
+  expired: "Formations expirées",
+  employees: "Liste des employés uniquement",
+};
+
+const excelExportFileNames: Record<string, string> = {
+  all: "passeport-formation-all",
+  expiring: "passeport-formation-expiring",
+  expired: "passeport-formation-expired",
+  employees: "passeport-formation-employees",
+};
+
 export default function ExportPage() {
   const [loading, setLoading] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState(false);
@@ -53,7 +67,10 @@ export default function ExportPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `passeport-formation-${new Date().toISOString().split("T")[0]}.xlsx`;
+        const datePart = new Date().toISOString().split("T")[0];
+        const fileBaseName =
+          excelExportFileNames[exportType] || "passeport-formation-all";
+        a.download = `${fileBaseName}-${datePart}.xlsx`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -108,7 +125,7 @@ export default function ExportPage() {
               Export Excel
             </CardTitle>
             <CardDescription>
-              Téléchargez un fichier Excel avec toutes les données
+              Téléchargez un fichier Excel (.xlsx) selon le type choisi
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -118,13 +135,20 @@ export default function ExportPage() {
                 value={exportType}
                 onChange={(e) => setExportType(e.target.value)}
               >
-                <option value="all">Tous les employés et formations</option>
-                <option value="expiring">
-                  Formations expirant dans 90 jours
-                </option>
-                <option value="expired">Formations expirées</option>
-                <option value="employees">Liste des employés uniquement</option>
+                <option value="all">{excelExportLabels.all}</option>
+                <option value="expiring">{excelExportLabels.expiring}</option>
+                <option value="expired">{excelExportLabels.expired}</option>
+                <option value="employees">{excelExportLabels.employees}</option>
               </Select>
+            </div>
+            <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+              <p>
+                Vous allez télécharger : <strong>{excelExportLabels[exportType]}</strong>
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                Nom du fichier :
+                {` ${excelExportFileNames[exportType] || "passeport-formation-all"}-AAAA-MM-JJ.xlsx`}
+              </p>
             </div>
             <Button
               onClick={handleExportExcel}
@@ -139,7 +163,7 @@ export default function ExportPage() {
               ) : (
                 <>
                   <Download className="mr-2 h-4 w-4" />
-                  Télécharger Excel
+                  Télécharger le fichier Excel (.xlsx)
                 </>
               )}
             </Button>
