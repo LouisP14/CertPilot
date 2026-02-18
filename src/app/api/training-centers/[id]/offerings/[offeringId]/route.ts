@@ -17,7 +17,10 @@ export async function GET(
     const { offeringId } = await params;
 
     const offering = await prisma.trainingCenterOffering.findFirst({
-      where: { id: offeringId, trainingCenter: { companyId: session.user.companyId } },
+      where: {
+        id: offeringId,
+        trainingCenter: { companyId: session.user.companyId },
+      },
       include: {
         formationType: true,
         trainingCenter: true,
@@ -76,7 +79,10 @@ export async function PUT(
 
     // Récupérer les anciennes valeurs pour l'audit + vérification appartenance
     const oldOffering = await prisma.trainingCenterOffering.findFirst({
-      where: { id: offeringId, trainingCenter: { companyId: session.user.companyId } },
+      where: {
+        id: offeringId,
+        trainingCenter: { companyId: session.user.companyId },
+      },
       include: { formationType: true, trainingCenter: true },
     });
     if (!oldOffering) {
@@ -190,7 +196,10 @@ export async function DELETE(
 
     // Récupérer l'offre pour l'audit + vérification appartenance
     const offering = await prisma.trainingCenterOffering.findFirst({
-      where: { id: offeringId, trainingCenter: { companyId: session.user.companyId } },
+      where: {
+        id: offeringId,
+        trainingCenter: { companyId: session.user.companyId },
+      },
       include: { formationType: true, trainingCenter: true },
     });
     if (!offering) {

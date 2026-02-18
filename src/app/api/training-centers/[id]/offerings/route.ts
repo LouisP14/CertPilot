@@ -17,7 +17,10 @@ export async function GET(
     const { id } = await params;
 
     const offerings = await prisma.trainingCenterOffering.findMany({
-      where: { trainingCenterId: id, trainingCenter: { companyId: session.user.companyId } },
+      where: {
+        trainingCenterId: id,
+        trainingCenter: { companyId: session.user.companyId },
+      },
       include: {
         formationType: {
           select: {

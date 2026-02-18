@@ -23,7 +23,10 @@ export async function GET(request: NextRequest) {
       where: { id: employeeId, companyId: session.user.companyId },
     });
     if (!employeeCheck) {
-      return NextResponse.json({ error: "Employé non trouvé" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Employé non trouvé" },
+        { status: 404 },
+      );
     }
 
     const signature = await prisma.passportSignature.findUnique({

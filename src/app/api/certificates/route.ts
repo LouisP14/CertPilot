@@ -36,7 +36,10 @@ export async function POST(request: NextRequest) {
       where: { id: employeeId, companyId: session.user.companyId },
     });
     if (!employeeOwnership) {
-      return NextResponse.json({ error: "Employé non trouvé" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Employé non trouvé" },
+        { status: 404 },
+      );
     }
 
     const certificate = await prisma.certificate.create({

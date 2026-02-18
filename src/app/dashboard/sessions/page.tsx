@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
+import { generateConvocationPDF } from "@/lib/generate-convocation-pdf";
 import {
   Building2,
   Calendar,
@@ -108,9 +109,17 @@ export default function SessionsPage() {
   );
   const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [companyName, setCompanyName] = useState("Entreprise");
 
   useEffect(() => {
     fetchSessions();
+    // Charger le nom de l'entreprise pour le PDF
+    fetch("/api/convocations/form-data")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.companyName) setCompanyName(data.companyName);
+      })
+      .catch(() => {});
   }, []);
 
   const fetchSessions = async () => {
@@ -184,6 +193,23 @@ export default function SessionsPage() {
         ? `${session.trainingCenter.name}, ${session.trainingCenter.city}`
         : "À définir";
 
+      // Déterminer les horaires (utiliser les heures par défaut si non renseignées)
+      const startTime = "09:00";
+      const endTime = "17:00";
+
+      // Générer le PDF de convocation
+      const pdfBase64 = generateConvocationPDF(
+        companyName,
+        session.formationType.name,
+        session.startDate,
+        session.endDate,
+        startTime,
+        endTime,
+        location,
+        "",
+        employees,
+      );
+
       const response = await fetch("/api/convocations/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -192,12 +218,12 @@ export default function SessionsPage() {
           formationName: session.formationType.name,
           startDate: session.startDate,
           endDate: session.endDate,
-          startTime: "09:00",
-          endTime: "17:00",
+          startTime,
+          endTime,
           location,
           notes: "",
           employees,
-          pdfBase64: "",
+          pdfBase64,
         }),
       });
 
@@ -726,4 +752,3 @@ export default function SessionsPage() {
     </div>
   );
 }
-
