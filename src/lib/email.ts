@@ -231,7 +231,14 @@ export async function sendPaymentLink(params: {
   billing?: "monthly" | "annual";
   paymentUrl: string;
 }) {
-  const { to, contactName, companyName, plan, billing = "monthly", paymentUrl } = params;
+  const {
+    to,
+    contactName,
+    companyName,
+    plan,
+    billing = "monthly",
+    paymentUrl,
+  } = params;
   const isAnnual = billing === "annual";
 
   const monthlyPrices: Record<string, number> = {
@@ -257,7 +264,9 @@ export async function sendPaymentLink(params: {
   const priceLabel = isAnnual
     ? `${price}€/an <span style="font-size:13px;color:#6b7280;">(${Math.round(price / 12)}€/mois facturés annuellement)</span>`
     : `${price}€<span style="font-size:16px;">/mois</span>`;
-  const billingLabel = isAnnual ? "Facturation annuelle (économisez 17%)" : "Facturation mensuelle";
+  const billingLabel = isAnnual
+    ? "Facturation annuelle (économisez 17%)"
+    : "Facturation mensuelle";
   const planDisplayName = `${planLabels[plan] ?? plan} - ${isAnnual ? `${price}€/an` : `${price}€/mois`}`;
 
   await sendEmail({
@@ -323,7 +332,7 @@ Bonjour ${contactName},
 
 Suite à notre échange, voici votre lien de paiement sécurisé pour ${companyName}.
 
-Offre : ${planNames[plan]}
+Offre : ${planDisplayName}
 
 Lien de paiement : ${paymentUrl}
 
