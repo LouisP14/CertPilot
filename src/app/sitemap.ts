@@ -42,10 +42,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${siteUrl}/login`,
+      url: `${siteUrl}/legal/securite`,
       lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.5,
+      changeFrequency: "yearly",
+      priority: 0.3,
     },
     {
       url: `${siteUrl}/legal/mentions-legales`,

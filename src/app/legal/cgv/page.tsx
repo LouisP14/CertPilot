@@ -5,6 +5,13 @@ export const metadata = {
   title: "Conditions Générales de Vente | CertPilot",
   description:
     "Conditions Générales de Vente de CertPilot - Logiciel de gestion des formations",
+  alternates: {
+    canonical: "/legal/cgv",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function CGV() {

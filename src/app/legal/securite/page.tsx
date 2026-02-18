@@ -5,6 +5,13 @@ export const metadata = {
   title: "Sécurité & Disponibilité | CertPilot",
   description:
     "Engagements de sécurité, disponibilité, sauvegardes et continuité de service de CertPilot",
+  alternates: {
+    canonical: "/legal/securite",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function SecurityPage() {
