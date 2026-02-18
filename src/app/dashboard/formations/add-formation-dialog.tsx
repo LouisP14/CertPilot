@@ -5,44 +5,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-const AVAILABLE_SERVICES = [
-  "Maintenance",
-  "Production",
-  "Logistique",
-  "Qualité",
-  "Direction",
-  "HSE",
-  "Administratif",
-];
+import { useEffect, useState } from "react";
 
 export function AddFormationTypeDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [allServicesChecked, setAllServicesChecked] = useState(true); // Par défaut tous les services
+  const [availableServices, setAvailableServices] = useState<string[]>([]);
+  const [allServicesChecked, setAllServicesChecked] = useState(true);
 
   const [formData, setFormData] = useState({
     name: "",
     category: "",
-    services: [...AVAILABLE_SERVICES] as string[], // Par défaut tous les services
+    services: [] as string[],
     defaultValidityMonths: "",
   });
+
+  // Charger les services dynamiquement à l'ouverture
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/references?type=SERVICE")
+      .then((r) => r.json())
+      .then((data: { value: string }[]) => {
+        const services = data.map((d) => d.value);
+        setAvailableServices(services);
+        // Par défaut tous cochés
+        setAllServicesChecked(true);
+        setFormData((prev) => ({ ...prev, services }));
+      })
+      .catch(() => {});
+  }, [open]);
 
   const toggleService = (service: string) => {
     const newServices = formData.services.includes(service)
       ? formData.services.filter((s) => s !== service)
       : [...formData.services, service];
 
-    setFormData((prev) => ({
-      ...prev,
-      services: newServices,
-    }));
+    setFormData((prev) => ({ ...prev, services: newServices }));
 
-    // Si tous les services sont sélectionnés manuellement, activer "Tous"
-    if (newServices.length === AVAILABLE_SERVICES.length) {
+    if (newServices.length === availableServices.length) {
       setAllServicesChecked(true);
     } else {
       setAllServicesChecked(false);
@@ -54,7 +56,7 @@ export function AddFormationTypeDialog() {
     setAllServicesChecked(newValue);
     setFormData((prev) => ({
       ...prev,
-      services: newValue ? [...AVAILABLE_SERVICES] : [],
+      services: newValue ? [...availableServices] : [],
     }));
   };
 
@@ -87,7 +89,7 @@ export function AddFormationTypeDialog() {
       setFormData({
         name: "",
         category: "",
-        services: [...AVAILABLE_SERVICES],
+        services: [...availableServices],
         defaultValidityMonths: "",
       });
       router.refresh();
@@ -160,7 +162,7 @@ export function AddFormationTypeDialog() {
                 </span>
               </label>
               <div className="grid grid-cols-2 gap-2 pl-6">
-                {AVAILABLE_SERVICES.map((service) => (
+                {availableServices.map((service) => (
                   <label
                     key={service}
                     className="flex items-center gap-2 cursor-pointer"

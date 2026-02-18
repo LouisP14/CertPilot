@@ -5,17 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Edit, Loader2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-
-const AVAILABLE_SERVICES = [
-  "Maintenance",
-  "Production",
-  "Logistique",
-  "Qualité",
-  "Direction",
-  "HSE",
-  "Administratif",
-];
+import { useEffect, useState } from "react";
 
 interface FormationType {
   id: string;
@@ -32,6 +22,7 @@ export function FormationActions({ formation }: { formation: FormationType }) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [availableServices, setAvailableServices] = useState<string[]>([]);
 
   // Convertir le service stocké en tableau
   const isAllServices =
@@ -39,8 +30,8 @@ export function FormationActions({ formation }: { formation: FormationType }) {
     formation.service.toLowerCase() === "tous" ||
     formation.service === "";
 
-  const initialServices = isAllServices
-    ? [...AVAILABLE_SERVICES]
+  const savedServices = isAllServices
+    ? []
     : formation
         .service!.split(",")
         .map((s) => s.trim())
@@ -50,22 +41,34 @@ export function FormationActions({ formation }: { formation: FormationType }) {
   const [formData, setFormData] = useState({
     name: formation.name,
     category: formation.category || "",
-    services: initialServices,
+    services: savedServices,
     defaultValidityMonths: formation.defaultValidityMonths?.toString() || "",
   });
+
+  // Charger les services dynamiquement à l'ouverture du modal
+  useEffect(() => {
+    if (!editOpen) return;
+    fetch("/api/references?type=SERVICE")
+      .then((r) => r.json())
+      .then((data: { value: string }[]) => {
+        const services = data.map((d) => d.value);
+        setAvailableServices(services);
+        // Si "Tous", initialiser avec la liste dynamique
+        if (isAllServices) {
+          setFormData((prev) => ({ ...prev, services }));
+        }
+      })
+      .catch(() => {});
+  }, [editOpen, isAllServices]);
 
   const toggleService = (service: string) => {
     const newServices = formData.services.includes(service)
       ? formData.services.filter((s) => s !== service)
       : [...formData.services, service];
 
-    setFormData((prev) => ({
-      ...prev,
-      services: newServices,
-    }));
+    setFormData((prev) => ({ ...prev, services: newServices }));
 
-    // Si tous les services sont sélectionnés manuellement, activer "Tous"
-    if (newServices.length === AVAILABLE_SERVICES.length) {
+    if (newServices.length === availableServices.length) {
       setAllServicesChecked(true);
     } else {
       setAllServicesChecked(false);
@@ -77,7 +80,7 @@ export function FormationActions({ formation }: { formation: FormationType }) {
     setAllServicesChecked(newValue);
     setFormData((prev) => ({
       ...prev,
-      services: newValue ? [...AVAILABLE_SERVICES] : [],
+      services: newValue ? [...availableServices] : [],
     }));
   };
 
@@ -221,7 +224,7 @@ export function FormationActions({ formation }: { formation: FormationType }) {
                     </span>
                   </label>
                   <div className="grid grid-cols-2 gap-2 pl-6">
-                    {AVAILABLE_SERVICES.map((service) => (
+                    {availableServices.map((service) => (
                       <label
                         key={service}
                         className="flex items-center gap-2 cursor-pointer"
