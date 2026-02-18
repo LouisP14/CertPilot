@@ -20,11 +20,14 @@ export async function POST(request: NextRequest) {
     });
 
     const body = await request.json();
-    const { plan, contactRequestId, customerEmail, companyName, contactName } =
+    const { plan, billing, contactRequestId, customerEmail, companyName, contactName } =
       body;
+
+    const isAnnual = billing === "annual";
 
     console.log("Création session Stripe pour:", {
       plan,
+      billing: isAnnual ? "annual" : "monthly",
       customerEmail,
       companyName,
     });
@@ -36,7 +39,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Plan invalide" }, { status: 400 });
     }
 
-    console.log("Plan config:", planConfig);
+    const selectedPriceId = isAnnual ? planConfig.annualPriceId : planConfig.priceId;
+
+    console.log("Plan config:", planConfig, "| Billing:", isAnnual ? "annual" : "monthly");
 
     // URLs de redirection
     const baseUrl = process.env.NEXTAUTH_URL || "https://www.certpilot.eu";
@@ -47,7 +52,7 @@ export async function POST(request: NextRequest) {
       payment_method_types: ["card"],
       line_items: [
         {
-          price: planConfig.priceId,
+          price: selectedPriceId,
           quantity: 1,
         },
       ],
@@ -55,6 +60,7 @@ export async function POST(request: NextRequest) {
       metadata: {
         contactRequestId: contactRequestId || "",
         plan: plan,
+        billing: isAnnual ? "annual" : "monthly",
         companyName: companyName || "",
         contactName: contactName || "",
         employeeLimit: planConfig.employeeLimit.toString(),
@@ -63,6 +69,7 @@ export async function POST(request: NextRequest) {
         metadata: {
           contactRequestId: contactRequestId || "",
           plan: plan,
+          billing: isAnnual ? "annual" : "monthly",
           companyName: companyName || "",
           contactName: contactName || "",
           employeeLimit: planConfig.employeeLimit.toString(),

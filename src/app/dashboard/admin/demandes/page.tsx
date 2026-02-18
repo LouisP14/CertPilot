@@ -101,6 +101,7 @@ export default function DemandesAdminPage() {
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -160,6 +161,7 @@ export default function DemandesAdminPage() {
         body: JSON.stringify({
           contactRequestId: request.id,
           plan: request.plan,
+          billing: billingCycle,
           customerEmail: request.email,
           companyName: request.companyName,
           contactName: request.contactName,
@@ -567,18 +569,49 @@ export default function DemandesAdminPage() {
                   {selectedRequest.plan &&
                     selectedRequest.status !== "CONVERTED" &&
                     selectedRequest.status !== "REJECTED" && (
-                      <Button
-                        onClick={() => createPaymentLink(selectedRequest)}
-                        disabled={sendingPaymentLink}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        {sendingPaymentLink ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <CreditCard className="mr-2 h-4 w-4" />
-                        )}
-                        Envoyer lien de paiement
-                      </Button>
+                      <div className="space-y-2">
+                        {/* Toggle mensuel / annuel */}
+                        <div className="flex rounded-lg border border-slate-200 overflow-hidden text-sm">
+                          <button
+                            type="button"
+                            onClick={() => setBillingCycle("monthly")}
+                            className={`flex-1 py-2 font-medium transition-colors ${
+                              billingCycle === "monthly"
+                                ? "bg-slate-800 text-white"
+                                : "bg-white text-slate-600 hover:bg-slate-50"
+                            }`}
+                          >
+                            Mensuel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBillingCycle("annual")}
+                            className={`flex-1 py-2 font-medium transition-colors ${
+                              billingCycle === "annual"
+                                ? "bg-emerald-600 text-white"
+                                : "bg-white text-slate-600 hover:bg-slate-50"
+                            }`}
+                          >
+                            Annuel
+                            <span className="ml-1 text-xs opacity-80">−17%</span>
+                          </button>
+                        </div>
+                        <Button
+                          onClick={() => createPaymentLink(selectedRequest)}
+                          disabled={sendingPaymentLink}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          {sendingPaymentLink ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <CreditCard className="mr-2 h-4 w-4" />
+                          )}
+                          Envoyer lien de paiement
+                          <span className="ml-1 opacity-80 text-xs">
+                            ({billingCycle === "annual" ? "annuel" : "mensuel"})
+                          </span>
+                        </Button>
+                      </div>
                     )}
 
                   {selectedRequest.status === "CONVERTED" ? (
