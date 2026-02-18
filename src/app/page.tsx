@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   title:
     "CertPilot - Gestion des Formations et Habilitations | Logiciel SaaS B2B",
   description:
-    "CertPilot centralise la gestion de vos habilitations et formations professionnelles. Alertes automatiques, convocations, signatures électroniques, passeport formation PDF. Solution B2B à partir de 199€/mois.",
+    "CertPilot centralise la gestion de vos habilitations et formations professionnelles. Alertes automatiques, convocations, signatures électroniques, passeport formation PDF. Solution B2B à partir de 199€ HT/mois.",
   alternates: {
     canonical: "/",
   },
@@ -156,7 +156,7 @@ function JsonLd() {
             name: "Combien coûte CertPilot ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "CertPilot propose des plans à partir de 199€/mois pour 1 à 50 employés. Le plan Business (51-100 employés) est à 349€/mois, Enterprise (101-200) à 599€/mois et Corporate (201-500) à 1199€/mois. Toutes les fonctionnalités sont incluses dans chaque plan.",
+              text: "CertPilot propose des plans à partir de 199€ HT/mois pour 1 à 50 employés. Le plan Business (51-100 employés) est à 349€ HT/mois, Enterprise (101-200) à 599€ HT/mois et Corporate (201-500) à 1199€ HT/mois. Toutes les fonctionnalités sont incluses dans chaque plan.",
             },
           },
           {
@@ -825,11 +825,11 @@ function PricingCard({
 
       <div className="mt-4">
         <span className="text-4xl font-black text-[#173B56]">{price}€</span>
-        <span className="text-slate-500">/mois</span>
+        <span className="text-slate-500">/mois HT</span>
       </div>
 
       <p className="mt-2 text-sm font-semibold text-emerald-700">
-        {yearlyPrice}€/an
+        {yearlyPrice}€/an HT
       </p>
       <p className="text-xs text-slate-500">Économisez 17% en annuel</p>
 
