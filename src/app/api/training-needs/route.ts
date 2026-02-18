@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN") {
+    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent lancer la détection" },
         { status: 403 },

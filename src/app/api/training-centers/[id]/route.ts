@@ -52,7 +52,7 @@ export async function PUT(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN") {
+    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent modifier les centres" },
         { status: 403 },
@@ -180,7 +180,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN") {
+    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent supprimer les centres" },
         { status: 403 },

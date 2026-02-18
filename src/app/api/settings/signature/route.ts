@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Vérifier que l'utilisateur est admin
-    if (session.user?.role !== "ADMIN") {
+    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent modifier la signature" },
         { status: 403 },
