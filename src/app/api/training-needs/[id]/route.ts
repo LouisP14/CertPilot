@@ -9,13 +9,21 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
     const body = await request.json();
     const { status, plannedSessionId } = body;
+
+    // SÉCURITÉ : vérifier que le besoin appartient à l'entreprise
+    const existingNeed = await prisma.trainingNeed.findFirst({
+      where: { id, employee: { companyId: session.user.companyId } },
+    });
+    if (!existingNeed) {
+      return NextResponse.json({ error: "Besoin non trouvé" }, { status: 404 });
+    }
 
     const need = await prisma.trainingNeed.update({
       where: { id },
@@ -46,7 +54,7 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -61,6 +69,14 @@ export async function DELETE(
     }
 
     const { id } = await params;
+
+    // SÉCURITÉ : vérifier que le besoin appartient à l'entreprise
+    const existingNeed = await prisma.trainingNeed.findFirst({
+      where: { id, employee: { companyId: session.user.companyId } },
+    });
+    if (!existingNeed) {
+      return NextResponse.json({ error: "Besoin non trouvé" }, { status: 404 });
+    }
 
     await prisma.trainingNeed.update({
       where: { id },

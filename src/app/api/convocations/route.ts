@@ -121,6 +121,9 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const session = await auth();
+    if (!session?.user?.companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
@@ -131,9 +134,9 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Récupérer la convocation avant suppression pour l'audit
-    const convocation = await prisma.convocation.findUnique({
-      where: { id },
+    // Récupérer la convocation avant suppression + vérification appartenance
+    const convocation = await prisma.convocation.findFirst({
+      where: { id, companyId: session.user.companyId },
       include: { attendees: true },
     });
 

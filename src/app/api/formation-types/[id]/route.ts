@@ -9,7 +9,7 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -24,10 +24,16 @@ export async function PUT(
       );
     }
 
-    // Récupérer l'ancienne formation pour l'audit
-    const oldFormation = await prisma.formationType.findUnique({
-      where: { id },
+    // Récupérer l'ancienne formation pour l'audit + vérification appartenance
+    const oldFormation = await prisma.formationType.findFirst({
+      where: { id, companyId: session.user.companyId },
     });
+    if (!oldFormation) {
+      return NextResponse.json(
+        { error: "Formation non trouvée" },
+        { status: 404 },
+      );
+    }
 
     const formationType = await prisma.formationType.update({
       where: { id },
@@ -79,16 +85,22 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
 
-    // Récupérer la formation pour l'audit
-    const formationToDelete = await prisma.formationType.findUnique({
-      where: { id },
+    // Récupérer la formation pour l'audit + vérification appartenance
+    const formationToDelete = await prisma.formationType.findFirst({
+      where: { id, companyId: session.user.companyId },
     });
+    if (!formationToDelete) {
+      return NextResponse.json(
+        { error: "Formation non trouvée" },
+        { status: 404 },
+      );
+    }
 
     // Vérifier s'il y a des certificats liés
     const certificateCount = await prisma.certificate.count({

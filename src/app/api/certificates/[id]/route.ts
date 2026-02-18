@@ -10,7 +10,7 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -19,11 +19,17 @@ export async function PUT(
     const { formationTypeId, obtainedDate, expiryDate, organism, details } =
       body;
 
-    // Récupérer le certificat actuel pour l'audit
-    const currentCertificate = await prisma.certificate.findUnique({
-      where: { id },
+    // Récupérer le certificat actuel + vérification appartenance entreprise
+    const currentCertificate = await prisma.certificate.findFirst({
+      where: { id, employee: { companyId: session.user.companyId } },
       include: { formationType: true, employee: true },
     });
+    if (!currentCertificate) {
+      return NextResponse.json(
+        { error: "Certificat non trouvé" },
+        { status: 404 },
+      );
+    }
 
     const certificate = await prisma.certificate.update({
       where: { id },
@@ -81,15 +87,15 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
 
-    // Récupérer le certificat pour obtenir l'employeeId avant l'archivage
-    const certificate = await prisma.certificate.findUnique({
-      where: { id },
+    // Récupérer le certificat + vérification appartenance entreprise
+    const certificate = await prisma.certificate.findFirst({
+      where: { id, employee: { companyId: session.user.companyId } },
       include: { formationType: true, employee: true },
     });
 

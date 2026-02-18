@@ -9,14 +9,14 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
 
-    const trainingCenter = await prisma.trainingCenter.findUnique({
-      where: { id },
+    const trainingCenter = await prisma.trainingCenter.findFirst({
+      where: { id, companyId: session.user.companyId },
       include: {
         offerings: {
           include: { formationType: true },
@@ -85,9 +85,9 @@ export async function PUT(
       rating,
     } = body;
 
-    // Récupérer les anciennes valeurs pour l'audit
-    const oldCenter = await prisma.trainingCenter.findUnique({
-      where: { id },
+    // Récupérer les anciennes valeurs pour l'audit + vérification appartenance
+    const oldCenter = await prisma.trainingCenter.findFirst({
+      where: { id, companyId: session.user.companyId },
     });
     if (!oldCenter) {
       return NextResponse.json({ error: "Centre non trouvé" }, { status: 404 });
@@ -193,11 +193,13 @@ export async function DELETE(
 
     const { id } = await params;
 
-    // Récupérer le centre pour l'audit
-    const center = await prisma.trainingCenter.findUnique({
-      where: { id },
+    // Récupérer le centre pour l'audit + vérification appartenance
+    const center = await prisma.trainingCenter.findFirst({
+      where: { id, companyId: session.user.companyId },
     });
     if (!center) {
+      return NextResponse.json({ error: "Centre non trouvé" }, { status: 404 });
+    }
       return NextResponse.json({ error: "Centre non trouvé" }, { status: 404 });
     }
 

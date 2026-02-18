@@ -6,12 +6,15 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET() {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    const companyId = session.user.companyId;
 
     // Récupérer l'entreprise
-    const company = await prisma.company.findFirst();
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    });
     if (!company) {
       return NextResponse.json(
         { error: "Entreprise non configurée" },
@@ -46,7 +49,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -59,6 +62,8 @@ export async function PUT(request: NextRequest) {
         { status: 403 },
       );
     }
+
+    const companyId = session.user.companyId;
 
     const body = await request.json();
     const {
@@ -77,7 +82,9 @@ export async function PUT(request: NextRequest) {
     } = body;
 
     // Récupérer l'entreprise
-    const company = await prisma.company.findFirst();
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+    });
     if (!company) {
       return NextResponse.json(
         { error: "Entreprise non configurée" },

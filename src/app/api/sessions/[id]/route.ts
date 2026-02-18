@@ -10,14 +10,14 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
 
-    const trainingSession = await prisma.trainingSession.findUnique({
-      where: { id },
+    const trainingSession = await prisma.trainingSession.findFirst({
+      where: { id, formationType: { companyId: session.user.companyId } },
       include: {
         formationType: true,
         trainingCenter: true,
@@ -64,16 +64,16 @@ export async function PATCH(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
     const body = await request.json();
 
-    // Vérifier que la session existe
-    const existingSession = await prisma.trainingSession.findUnique({
-      where: { id },
+    // Vérifier que la session existe + appartenance entreprise
+    const existingSession = await prisma.trainingSession.findFirst({
+      where: { id, formationType: { companyId: session.user.companyId } },
       include: { attendees: true },
     });
 
@@ -244,15 +244,15 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { id } = await params;
 
-    // Vérifier que la session existe
-    const existingSession = await prisma.trainingSession.findUnique({
-      where: { id },
+    // Vérifier que la session existe + appartenance entreprise
+    const existingSession = await prisma.trainingSession.findFirst({
+      where: { id, formationType: { companyId: session.user.companyId } },
       include: { attendees: true },
     });
 

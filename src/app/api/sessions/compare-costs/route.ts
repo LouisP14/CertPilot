@@ -39,9 +39,10 @@ interface CenterComparison {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    const companyId = session.user.companyId;
 
     const body = await request.json();
     const { formationTypeId, employeeIds } = body;
@@ -53,9 +54,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. Récupérer le type de formation
-    const formationType = await prisma.formationType.findUnique({
-      where: { id: formationTypeId },
+    // 1. Récupérer le type de formation (vérification appartenance entreprise)
+    const formationType = await prisma.formationType.findFirst({
+      where: { id: formationTypeId, companyId },
       select: {
         id: true,
         name: true,
@@ -76,9 +77,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Récupérer les employés avec leurs coûts
+    // 2. Récupérer les employés avec leurs coûts (filtrés par entreprise)
     const employees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
+      where: { id: { in: employeeIds }, companyId },
       select: {
         id: true,
         firstName: true,

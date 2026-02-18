@@ -1,9 +1,16 @@
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 // Vérifier les contraintes d'absence pour une date et des employés donnés
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+    const companyId = session.user.companyId;
+
     const body = await request.json();
     const { date, employeeIds } = body;
 
@@ -15,7 +22,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Récupérer les contraintes de planification
-    const company = await prisma.company.findFirst({
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
       include: {
         planningConstraints: true,
       },
@@ -85,13 +93,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Récupérer les informations des employés sélectionnés
+    // Récupérer les informations des employés sélectionnés (filtrés par entreprise)
     const selectedEmployees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
+      where: { id: { in: employeeIds }, companyId },
       select: { id: true, site: true, team: true, department: true },
     });
 
-    // Récupérer les sessions existantes pour cette date
+    // Récupérer les sessions existantes pour cette date (filtrées par entreprise)
     const existingSessions = await prisma.trainingSession.findMany({
       where: {
         startDate: {
@@ -103,6 +111,7 @@ export async function POST(request: NextRequest) {
         status: {
           in: ["PLANNED", "SCHEDULED", "IN_PROGRESS", "CONFIRMED"],
         },
+        formationType: { companyId },
       },
       include: {
         attendees: {
@@ -120,9 +129,9 @@ export async function POST(request: NextRequest) {
       session.attendees.map((a) => a.employee),
     );
 
-    // Compter le total des employés
+    // Compter le total des employés actifs de l'entreprise
     const totalEmployees = await prisma.employee.count({
-      where: { isActive: true },
+      where: { isActive: true, companyId },
     });
 
     // Vérification par équipe + service (combinés)

@@ -10,14 +10,14 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
     const { offeringId } = await params;
 
-    const offering = await prisma.trainingCenterOffering.findUnique({
-      where: { id: offeringId },
+    const offering = await prisma.trainingCenterOffering.findFirst({
+      where: { id: offeringId, trainingCenter: { companyId: session.user.companyId } },
       include: {
         formationType: true,
         trainingCenter: true,
@@ -45,7 +45,7 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -74,9 +74,9 @@ export async function PUT(
       isActive,
     } = body;
 
-    // Récupérer les anciennes valeurs pour l'audit
-    const oldOffering = await prisma.trainingCenterOffering.findUnique({
-      where: { id: offeringId },
+    // Récupérer les anciennes valeurs pour l'audit + vérification appartenance
+    const oldOffering = await prisma.trainingCenterOffering.findFirst({
+      where: { id: offeringId, trainingCenter: { companyId: session.user.companyId } },
       include: { formationType: true, trainingCenter: true },
     });
     if (!oldOffering) {
@@ -172,7 +172,7 @@ export async function DELETE(
 ) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -188,9 +188,9 @@ export async function DELETE(
 
     const { offeringId } = await params;
 
-    // Récupérer l'offre pour l'audit
-    const offering = await prisma.trainingCenterOffering.findUnique({
-      where: { id: offeringId },
+    // Récupérer l'offre pour l'audit + vérification appartenance
+    const offering = await prisma.trainingCenterOffering.findFirst({
+      where: { id: offeringId, trainingCenter: { companyId: session.user.companyId } },
       include: { formationType: true, trainingCenter: true },
     });
     if (!offering) {

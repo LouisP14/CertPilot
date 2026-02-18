@@ -65,9 +65,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    const companyId = session.user.companyId;
 
     if (
       session.user?.role !== "ADMIN" &&
@@ -101,6 +102,43 @@ export async function POST(request: NextRequest) {
       employeeIds, // Liste des employés à inviter
       trainingNeedIds, // Besoins de formation à marquer comme planifiés
     } = body;
+
+    // SÉCURITÉ : vérifier que le formationType appartient à l'entreprise
+    const formationTypeCheck = await prisma.formationType.findFirst({
+      where: { id: formationTypeId, companyId },
+    });
+    if (!formationTypeCheck) {
+      return NextResponse.json(
+        { error: "Type de formation non trouvé" },
+        { status: 404 },
+      );
+    }
+
+    // SÉCURITÉ : vérifier que le centre de formation appartient à l'entreprise
+    if (trainingCenterId) {
+      const centerCheck = await prisma.trainingCenter.findFirst({
+        where: { id: trainingCenterId, companyId },
+      });
+      if (!centerCheck) {
+        return NextResponse.json(
+          { error: "Centre de formation non trouvé" },
+          { status: 404 },
+        );
+      }
+    }
+
+    // SÉCURITÉ : vérifier que tous les employés appartiennent à l'entreprise
+    if (employeeIds && employeeIds.length > 0) {
+      const validCount = await prisma.employee.count({
+        where: { id: { in: employeeIds }, companyId },
+      });
+      if (validCount !== employeeIds.length) {
+        return NextResponse.json(
+          { error: "Un ou plusieurs employés sont invalides" },
+          { status: 400 },
+        );
+      }
+    }
 
     // Vérifier la limite de participants si un centre est sélectionné
     if (trainingCenterId && employeeIds && employeeIds.length > 0) {

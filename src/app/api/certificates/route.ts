@@ -28,6 +28,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // SÉCURITÉ : vérifier que l'employé appartient bien à l'entreprise de l'utilisateur
+    if (!session.user.companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+    const employeeOwnership = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId: session.user.companyId },
+    });
+    if (!employeeOwnership) {
+      return NextResponse.json({ error: "Employé non trouvé" }, { status: 404 });
+    }
+
     const certificate = await prisma.certificate.create({
       data: {
         employeeId,

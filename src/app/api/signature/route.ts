@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -16,6 +16,14 @@ export async function GET(request: NextRequest) {
 
     if (!employeeId) {
       return NextResponse.json({ error: "employeeId requis" }, { status: 400 });
+    }
+
+    // SÉCURITÉ : vérifier que l'employé appartient à l'entreprise
+    const employeeCheck = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId: session.user.companyId },
+    });
+    if (!employeeCheck) {
+      return NextResponse.json({ error: "Employé non trouvé" }, { status: 404 });
     }
 
     const signature = await prisma.passportSignature.findUnique({
@@ -60,9 +68,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "employeeId requis" }, { status: 400 });
     }
 
-    // Vérifier que l'employé existe et a un email
-    const employee = await prisma.employee.findUnique({
-      where: { id: employeeId },
+    // Vérifier que l'employé existe, a un email, et appartient à l'entreprise
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId: session.user.companyId },
       select: { id: true, email: true, firstName: true, lastName: true },
     });
 
