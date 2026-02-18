@@ -55,6 +55,7 @@ model Company {
   name                  String
   logo                  String?
   alertThresholds       String   @default("90,60,30,7") // jours avant expiration, séparés par virgule
+  priorityThresholds    String   @default("7,30,60")   // jours pour Critique, Urgent, Normal (séparés par virgule)
   adminEmail            String?
   // Signature électronique du responsable
   signatureEnabled      Boolean  @default(false)

@@ -94,6 +94,35 @@ export async function POST(request: NextRequest) {
     }
     const companyId = session.user.companyId;
 
+    // Lire les seuils de priorité configurés par l'entreprise
+    const companySettings = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { priorityThresholds: true },
+    });
+    const rawThresholds = (companySettings?.priorityThresholds ?? "7,30,60")
+      .split(",")
+      .map(Number);
+    const [critiqueDays, urgentDays, normalDays] = [
+      rawThresholds[0] ?? 7,
+      rawThresholds[1] ?? 30,
+      rawThresholds[2] ?? 60,
+    ];
+
+    // Helper : calcul du score de priorité (1-10) selon les seuils configurés
+    const computePriority = (daysUntilExpiry: number): { priority: number; priorityReason: string } => {
+      if (daysUntilExpiry <= 0) {
+        return { priority: 10, priorityReason: "⚠️ EXPIRÉ" };
+      } else if (daysUntilExpiry <= critiqueDays) {
+        return { priority: 9, priorityReason: `Expire dans ${daysUntilExpiry} jour(s)` };
+      } else if (daysUntilExpiry <= urgentDays) {
+        return { priority: 8, priorityReason: `Expire dans ${daysUntilExpiry} jours` };
+      } else if (daysUntilExpiry <= normalDays) {
+        return { priority: 6, priorityReason: `Expire dans ${Math.ceil(daysUntilExpiry / 7)} semaines` };
+      } else {
+        return { priority: 4, priorityReason: `Expire dans ${Math.ceil(daysUntilExpiry / 30)} mois` };
+      }
+    };
+
     const body = await request.json();
     const { horizonDays = 90 } = body; // Horizon de détection (défaut: 90 jours)
 
@@ -180,26 +209,8 @@ export async function POST(request: NextRequest) {
         (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
       );
 
-      // Calcul de la priorité (1-10)
-      let priority = 5;
-      let priorityReason = "";
-
-      if (daysUntilExpiry <= 0) {
-        priority = 10;
-        priorityReason = "⚠️ EXPIRÉ";
-      } else if (daysUntilExpiry <= 7) {
-        priority = 9;
-        priorityReason = `Expire dans ${daysUntilExpiry} jour(s)`;
-      } else if (daysUntilExpiry <= 30) {
-        priority = 8;
-        priorityReason = `Expire dans ${daysUntilExpiry} jours`;
-      } else if (daysUntilExpiry <= 60) {
-        priority = 6;
-        priorityReason = `Expire dans ${Math.ceil(daysUntilExpiry / 7)} semaines`;
-      } else {
-        priority = 4;
-        priorityReason = `Expire dans ${Math.ceil(daysUntilExpiry / 30)} mois`;
-      }
+      // Calcul de la priorité via les seuils configurés
+      let { priority, priorityReason } = computePriority(daysUntilExpiry);
 
       // Bonus priorité si obligation légale
       if (cert.formationType.isLegalObligation) {
@@ -263,25 +274,9 @@ export async function POST(request: NextRequest) {
           (need.expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
         );
 
-        let priority = 5;
-        let priorityReason = "";
+        let { priority, priorityReason } = computePriority(daysUntilExpiry);
 
-        if (daysUntilExpiry <= 0) {
-          priority = 10;
-          priorityReason = "⚠️ EXPIRÉ";
-        } else if (daysUntilExpiry <= 7) {
-          priority = 9;
-          priorityReason = `Expire dans ${daysUntilExpiry} jour(s)`;
-        } else if (daysUntilExpiry <= 30) {
-          priority = 8;
-          priorityReason = `Expire dans ${daysUntilExpiry} jours`;
-        } else if (daysUntilExpiry <= 60) {
-          priority = 6;
-          priorityReason = `Expire dans ${Math.ceil(daysUntilExpiry / 7)} semaines`;
-        } else {
-          priority = 4;
-          priorityReason = `Expire dans ${Math.ceil(daysUntilExpiry / 30)} mois`;
-        }
+        // (pas de bonus legal ici car données non chargées dans ce contexte)
 
         const durationHours =
           need.formationType.durationHours ||

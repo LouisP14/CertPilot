@@ -871,3 +871,229 @@ export function PlanningConstraintsForm({
   );
 }
 
+// ============================================
+// FORMULAIRE SEUILS DE PRIORITÉ
+// ============================================
+
+interface PriorityLevel {
+  key: "critique" | "urgent" | "normal";
+  label: string;
+  color: string;
+  badgeBg: string;
+  description: string;
+}
+
+const PRIORITY_LEVELS: PriorityLevel[] = [
+  {
+    key: "critique",
+    label: "Critique",
+    color: "text-red-600",
+    badgeBg: "bg-red-100 text-red-700 border border-red-200",
+    description: "Formation expirée ou proche de l'expiration",
+  },
+  {
+    key: "urgent",
+    label: "Urgent",
+    color: "text-orange-600",
+    badgeBg: "bg-orange-100 text-orange-700 border border-orange-200",
+    description: "Renouvellement à planifier rapidement",
+  },
+  {
+    key: "normal",
+    label: "Normal",
+    color: "text-yellow-600",
+    badgeBg: "bg-yellow-100 text-yellow-700 border border-yellow-200",
+    description: "À anticiper dans les prochains mois",
+  },
+];
+
+interface PriorityFormProps {
+  priorityThresholds: string;
+}
+
+export function PriorityForm({ priorityThresholds }: PriorityFormProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
+  const parsed = priorityThresholds.split(",").map(Number);
+  const [thresholds, setThresholds] = useState({
+    critique: parsed[0] ?? 7,
+    urgent: parsed[1] ?? 30,
+    normal: parsed[2] ?? 60,
+  });
+
+  const handleChange = (key: "critique" | "urgent" | "normal", raw: string) => {
+    const val = parseInt(raw, 10);
+    if (!isNaN(val) && val >= 1) {
+      setThresholds((prev) => ({ ...prev, [key]: val }));
+    } else if (raw === "") {
+      setThresholds((prev) => ({ ...prev, [key]: 0 }));
+    }
+  };
+
+  // Validation en temps réel
+  const validationError =
+    thresholds.critique >= thresholds.urgent
+      ? "Le seuil Critique doit être inférieur à Urgent"
+      : thresholds.urgent >= thresholds.normal
+        ? "Le seuil Urgent doit être inférieur à Normal"
+        : "";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validationError) return;
+    setLoading(true);
+    setError("");
+    setSuccess(false);
+
+    try {
+      const response = await fetch("/api/settings/priority", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priorityThresholds: `${thresholds.critique},${thresholds.urgent},${thresholds.normal}`,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Une erreur est survenue");
+      }
+
+      setSuccess(true);
+      router.refresh();
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Une erreur est survenue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <p className="text-sm text-gray-500">
+        Définissez le nombre de jours avant expiration déclenchant chaque
+        niveau. Les formations expirées sont toujours{" "}
+        <span className="font-medium text-red-600">Critique</span>.
+      </p>
+
+      <div className="space-y-4">
+        {PRIORITY_LEVELS.map((level, idx) => {
+          const keys = ["critique", "urgent", "normal"] as const;
+          const prevKey = idx > 0 ? keys[idx - 1] : null;
+          const prevVal = prevKey ? thresholds[prevKey] : 0;
+
+          return (
+            <div key={level.key} className="flex items-start gap-4">
+              {/* Badge priorité */}
+              <div className="flex-shrink-0 pt-1">
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${level.badgeBg}`}
+                >
+                  {level.label}
+                </span>
+              </div>
+
+              {/* Description + Input */}
+              <div className="flex-1 space-y-1">
+                <p className="text-sm text-gray-600">{level.description}</p>
+                <div className="flex items-center gap-2">
+                  {prevKey && (
+                    <span className="text-xs text-gray-400">
+                      Entre {prevVal} et
+                    </span>
+                  )}
+                  {!prevKey && (
+                    <span className="text-xs text-gray-400">Dans moins de</span>
+                  )}
+                  <Input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={thresholds[level.key] || ""}
+                    onChange={(e) => handleChange(level.key, e.target.value)}
+                    className="w-20 text-center"
+                  />
+                  <span className="text-xs text-gray-400">jours</span>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Faible — automatique */}
+        <div className="flex items-start gap-4 opacity-60">
+          <div className="flex-shrink-0 pt-1">
+            <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
+              Faible
+            </span>
+          </div>
+          <div className="flex-1 space-y-1">
+            <p className="text-sm text-gray-500">Aucune action urgente requise</p>
+            <p className="text-xs text-gray-400">
+              Au-delà de {thresholds.normal} jours (automatique)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Aperçu visuel */}
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+        <p className="mb-2 text-xs font-medium text-gray-500 uppercase tracking-wide">
+          Aperçu de la règle
+        </p>
+        <div className="flex flex-wrap gap-2 text-xs text-gray-600">
+          <span>Expiré</span>
+          <span className="text-gray-300">→</span>
+          <span className="font-medium text-red-600">Critique</span>
+          <span className="text-gray-300">•</span>
+          <span>≤ {thresholds.critique}j</span>
+          <span className="text-gray-300">→</span>
+          <span className="font-medium text-red-600">Critique</span>
+          <span className="text-gray-300">•</span>
+          <span>≤ {thresholds.urgent}j</span>
+          <span className="text-gray-300">→</span>
+          <span className="font-medium text-orange-600">Urgent</span>
+          <span className="text-gray-300">•</span>
+          <span>≤ {thresholds.normal}j</span>
+          <span className="text-gray-300">→</span>
+          <span className="font-medium text-yellow-600">Normal</span>
+          <span className="text-gray-300">•</span>
+          <span>&gt; {thresholds.normal}j</span>
+          <span className="text-gray-300">→</span>
+          <span className="font-medium text-green-600">Faible</span>
+        </div>
+      </div>
+
+      {(validationError || error) && (
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+          {validationError || error}
+        </div>
+      )}
+
+      {success && (
+        <div className="rounded-md bg-green-50 p-3 text-sm text-green-600 flex items-center gap-2">
+          <Check className="h-4 w-4" />
+          Seuils enregistrés avec succès
+        </div>
+      )}
+
+      <Button
+        type="submit"
+        disabled={loading || !!validationError}
+      >
+        {loading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Enregistrement...
+          </>
+        ) : (
+          "Enregistrer les seuils"
+        )}
+      </Button>
+    </form>
+  );
+}

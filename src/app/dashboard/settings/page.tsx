@@ -24,6 +24,7 @@ export default async function SettingsPage() {
               name: company.name,
               adminEmail: company.adminEmail,
               alertThresholds: company.alertThresholds,
+              priorityThresholds: company.priorityThresholds,
             }
           : null
       }

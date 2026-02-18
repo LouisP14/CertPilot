@@ -7,13 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Bell, Building, CalendarCog, ChevronDown, Users } from "lucide-react";
+import { Bell, Building, CalendarCog, ChevronDown, TrendingUp, Users } from "lucide-react";
 import { useState } from "react";
 import { ReferenceManager } from "./reference-manager";
 import {
   AlertForm,
   CompanyForm,
   PlanningConstraintsForm,
+  PriorityForm,
 } from "./settings-forms";
 
 interface SettingsAccordionProps {
@@ -22,6 +23,7 @@ interface SettingsAccordionProps {
     name: string;
     adminEmail: string | null;
     alertThresholds: string;
+    priorityThresholds: string;
   } | null;
 }
 
@@ -29,6 +31,7 @@ export function SettingsAccordion({ company }: SettingsAccordionProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     company: true,
     alerts: false,
+    priority: false,
     planning: false,
     references: false,
   });
@@ -115,6 +118,39 @@ export function SettingsAccordion({ company }: SettingsAccordionProps) {
             <CardContent className="pt-0">
               <AlertForm
                 alertThresholds={company?.alertThresholds || "90,60,30,7"}
+              />
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Priority Thresholds */}
+        <Card>
+          <CardHeader
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => toggleSection("priority")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-orange-500" />
+                <div>
+                  <CardTitle>Seuils de priorité des besoins</CardTitle>
+                  <CardDescription className="mt-1">
+                    Définissez à partir de combien de jours un besoin devient
+                    Critique, Urgent ou Normal
+                  </CardDescription>
+                </div>
+              </div>
+              <ChevronDown
+                className={`h-5 w-5 text-gray-500 transition-transform ${
+                  openSections.priority ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </CardHeader>
+          {openSections.priority && (
+            <CardContent className="pt-0">
+              <PriorityForm
+                priorityThresholds={company?.priorityThresholds || "7,30,60"}
               />
             </CardContent>
           )}
