@@ -56,7 +56,10 @@ export async function POST(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
+    if (
+      session.user?.role !== "ADMIN" &&
+      session.user?.role !== "SUPER_ADMIN"
+    ) {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent ajouter des offres" },
         { status: 403 },

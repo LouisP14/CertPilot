@@ -69,7 +69,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
+    if (
+      session.user?.role !== "ADMIN" &&
+      session.user?.role !== "SUPER_ADMIN"
+    ) {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent créer des sessions" },
         { status: 403 },

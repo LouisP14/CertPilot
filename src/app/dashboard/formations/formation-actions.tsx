@@ -347,4 +347,3 @@ export function FormationActions({ formation }: { formation: FormationType }) {
     </>
   );
 }
-

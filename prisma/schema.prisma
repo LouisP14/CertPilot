@@ -334,7 +334,6 @@ model TrainingCenter {
   maxCapacity       Int?     // Capacité max simultanée
   hasOwnPremises    Boolean  @default(true)  // Dispose de locaux
   canTravel         Boolean  @default(false) // Peut se déplacer (intra)
-  travelCostPerKm   Float?   // Coût déplacement par km (€)
   
   // Évaluation
   rating            Float?   // Note moyenne (1-5)

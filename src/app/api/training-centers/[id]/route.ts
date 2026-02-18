@@ -52,7 +52,10 @@ export async function PUT(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
+    if (
+      session.user?.role !== "ADMIN" &&
+      session.user?.role !== "SUPER_ADMIN"
+    ) {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent modifier les centres" },
         { status: 403 },
@@ -79,7 +82,6 @@ export async function PUT(
       maxCapacity,
       hasOwnPremises,
       canTravel,
-      travelCostPerKm,
       rating,
     } = body;
 
@@ -127,7 +129,6 @@ export async function PUT(
         maxCapacity: maxCapacity ? parseInt(maxCapacity) : null,
         hasOwnPremises: hasOwnPremises !== false,
         canTravel: canTravel || false,
-        travelCostPerKm: travelCostPerKm ? parseFloat(travelCostPerKm) : null,
         rating: rating ? parseFloat(rating) : null,
       },
     });
@@ -180,7 +181,10 @@ export async function DELETE(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
+    if (
+      session.user?.role !== "ADMIN" &&
+      session.user?.role !== "SUPER_ADMIN"
+    ) {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent supprimer les centres" },
         { status: 403 },

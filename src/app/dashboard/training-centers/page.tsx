@@ -45,7 +45,6 @@ interface TrainingCenter {
   maxCapacity: number | null;
   hasOwnPremises: boolean;
   canTravel: boolean;
-  travelCostPerKm: number | null;
   rating: number | null;
   totalSessions: number;
   _count?: { sessions: number; offerings: number };
@@ -79,7 +78,6 @@ export default function TrainingCentersPage() {
     maxCapacity: "",
     hasOwnPremises: true,
     canTravel: false,
-    travelCostPerKm: "",
   });
 
   useEffect(() => {
@@ -160,7 +158,6 @@ export default function TrainingCentersPage() {
       maxCapacity: center.maxCapacity?.toString() || "",
       hasOwnPremises: center.hasOwnPremises,
       canTravel: center.canTravel,
-      travelCostPerKm: center.travelCostPerKm?.toString() || "",
     });
     setShowForm(true);
   };
@@ -202,7 +199,6 @@ export default function TrainingCentersPage() {
       maxCapacity: "",
       hasOwnPremises: true,
       canTravel: false,
-      travelCostPerKm: "",
     });
   };
 
@@ -678,24 +674,6 @@ export default function TrainingCentersPage() {
                         }
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="travelCostPerKm">
-                        Coût déplacement (€/km)
-                      </Label>
-                      <Input
-                        id="travelCostPerKm"
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={formData.travelCostPerKm}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            travelCostPerKm: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
                   </div>
                   <div className="mt-4 flex gap-6">
                     <div className="flex items-center gap-2">
@@ -773,4 +751,3 @@ export default function TrainingCentersPage() {
     </div>
   );
 }
-

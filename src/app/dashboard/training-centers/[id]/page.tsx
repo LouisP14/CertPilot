@@ -70,7 +70,6 @@ interface TrainingCenter {
   discountPercent: number | null;
   hasOwnPremises: boolean;
   canTravel: boolean;
-  travelCostPerKm: number | null;
   rating: number | null;
 }
 

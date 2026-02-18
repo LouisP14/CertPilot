@@ -49,7 +49,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    if (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN") {
+    if (
+      session.user?.role !== "ADMIN" &&
+      session.user?.role !== "SUPER_ADMIN"
+    ) {
       return NextResponse.json(
         { error: "Seuls les administrateurs peuvent créer des centres" },
         { status: 403 },
@@ -75,7 +78,6 @@ export async function POST(request: NextRequest) {
       maxCapacity,
       hasOwnPremises,
       canTravel,
-      travelCostPerKm,
     } = body;
 
     // Validation
@@ -118,7 +120,6 @@ export async function POST(request: NextRequest) {
         maxCapacity: maxCapacity ? parseInt(maxCapacity) : null,
         hasOwnPremises: hasOwnPremises !== false,
         canTravel: canTravel || false,
-        travelCostPerKm: travelCostPerKm ? parseFloat(travelCostPerKm) : null,
         companyId: session.user.companyId, // Ajouter le companyId
       },
     });
