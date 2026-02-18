@@ -122,6 +122,7 @@ export async function GET(request: NextRequest) {
 
     // 3. Contraintes de planification
     const company = await prisma.company.findFirst({
+      where: { id: companyId },
       include: {
         planningConstraints: true,
       },
@@ -233,6 +234,28 @@ export async function GET(request: NextRequest) {
     });
 
     // 5. Stats du mois/année
+    // upcomingExpirations et expiredCount sont basés sur AUJOURD'HUI (pas la période affichée)
+    const today = new Date();
+    const in30Days = new Date(today);
+    in30Days.setDate(in30Days.getDate() + 30);
+
+    const [upcomingExpirationsCount, expiredCount] = await Promise.all([
+      prisma.certificate.count({
+        where: {
+          isArchived: false,
+          employee: { companyId },
+          expiryDate: { gte: today, lte: in30Days },
+        },
+      }),
+      prisma.certificate.count({
+        where: {
+          isArchived: false,
+          employee: { companyId },
+          expiryDate: { lt: today },
+        },
+      }),
+    ]);
+
     const stats = {
       totalSessions: sessions.length,
       totalParticipants: sessions.reduce(
@@ -240,17 +263,8 @@ export async function GET(request: NextRequest) {
         0,
       ),
       totalExpirations: expirations.length,
-      expiredCount: expirations.filter(
-        (e) => e.expiryDate && e.expiryDate < new Date(),
-      ).length,
-      upcomingExpirations: expirations.filter((e) => {
-        if (!e.expiryDate) return false;
-        const daysUntil = Math.ceil(
-          (e.expiryDate.getTime() - new Date().getTime()) /
-            (1000 * 60 * 60 * 24),
-        );
-        return daysUntil >= 0 && daysUntil <= 30;
-      }).length,
+      expiredCount,
+      upcomingExpirations: upcomingExpirationsCount,
       blacklistedDays: filteredBlacklistedDates.length,
     };
 
