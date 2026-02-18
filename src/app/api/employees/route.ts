@@ -98,6 +98,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier la limite d'employés selon le plan
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+      select: { employeeLimit: true, subscriptionPlan: true },
+    });
+
+    if (company) {
+      const currentCount = await prisma.employee.count({
+        where: { companyId: session.user.companyId, isActive: true },
+      });
+
+      if (currentCount >= company.employeeLimit) {
+        return NextResponse.json(
+          {
+            error: `Limite d'employés atteinte (${currentCount}/${company.employeeLimit}). Passez à un plan supérieur pour ajouter davantage d'employés.`,
+          },
+          { status: 403 },
+        );
+      }
+    }
+
     const employee = await prisma.employee.create({
       data: {
         firstName,
