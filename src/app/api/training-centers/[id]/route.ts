@@ -200,8 +200,6 @@ export async function DELETE(
     if (!center) {
       return NextResponse.json({ error: "Centre non trouvé" }, { status: 404 });
     }
-      return NextResponse.json({ error: "Centre non trouvé" }, { status: 404 });
-    }
 
     // Soft delete
     await prisma.trainingCenter.update({
