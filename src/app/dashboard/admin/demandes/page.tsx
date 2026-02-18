@@ -101,7 +101,9 @@ export default function DemandesAdminPage() {
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [updating, setUpdating] = useState<string | null>(null);
   const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("monthly");
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">(
+    "monthly",
+  );
   const [deleting, setDeleting] = useState<string | null>(null);
 
   useEffect(() => {
@@ -185,6 +187,7 @@ export default function DemandesAdminPage() {
           contactName: request.contactName,
           companyName: request.companyName,
           plan: request.plan,
+          billing: billingCycle,
           paymentUrl: url,
         }),
       });
@@ -593,7 +596,9 @@ export default function DemandesAdminPage() {
                             }`}
                           >
                             Annuel
-                            <span className="ml-1 text-xs opacity-80">−17%</span>
+                            <span className="ml-1 text-xs opacity-80">
+                              −17%
+                            </span>
                           </button>
                         </div>
                         <Button

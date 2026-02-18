@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { to, contactName, companyName, plan, paymentUrl } = body;
+    const { to, contactName, companyName, plan, billing, paymentUrl } = body;
 
     console.log("Envoi email paiement à:", to);
     console.log("SMTP config:", {
@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
       contactName,
       companyName,
       plan,
+      billing: billing ?? "monthly",
       paymentUrl,
     });
 

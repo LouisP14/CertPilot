@@ -228,16 +228,37 @@ export async function sendPaymentLink(params: {
   contactName: string;
   companyName: string;
   plan: string;
+  billing?: "monthly" | "annual";
   paymentUrl: string;
 }) {
-  const { to, contactName, companyName, plan, paymentUrl } = params;
+  const { to, contactName, companyName, plan, billing = "monthly", paymentUrl } = params;
+  const isAnnual = billing === "annual";
 
-  const planNames: Record<string, string> = {
-    starter: "Starter - 199€/mois",
-    business: "Business - 349€/mois",
-    enterprise: "Enterprise - 599€/mois",
-    corporate: "Corporate - 1199€/mois",
+  const monthlyPrices: Record<string, number> = {
+    starter: 199,
+    business: 349,
+    enterprise: 599,
+    corporate: 1199,
   };
+  const annualPrices: Record<string, number> = {
+    starter: 1990,
+    business: 3490,
+    enterprise: 5990,
+    corporate: 11990,
+  };
+  const planLabels: Record<string, string> = {
+    starter: "Starter",
+    business: "Business",
+    enterprise: "Enterprise",
+    corporate: "Corporate",
+  };
+
+  const price = isAnnual ? annualPrices[plan] : monthlyPrices[plan];
+  const priceLabel = isAnnual
+    ? `${price}€/an <span style="font-size:13px;color:#6b7280;">(${Math.round(price / 12)}€/mois facturés annuellement)</span>`
+    : `${price}€<span style="font-size:16px;">/mois</span>`;
+  const billingLabel = isAnnual ? "Facturation annuelle (économisez 17%)" : "Facturation mensuelle";
+  const planDisplayName = `${planLabels[plan] ?? plan} - ${isAnnual ? `${price}€/an` : `${price}€/mois`}`;
 
   await sendEmail({
     from: FROM_EMAIL,
@@ -270,8 +291,8 @@ export async function sendPaymentLink(params: {
             <p>Suite à notre échange, voici votre lien de paiement sécurisé pour <strong>${companyName}</strong>.</p>
             <div class="price-box">
               <div style="font-size: 14px; color: #6b7280; margin-bottom: 10px;">Offre sélectionnée</div>
-              <div style="font-size: 20px; font-weight: bold; color: #1f2937; margin-bottom: 10px;">${planNames[plan]}</div>
-              <div class="price">${plan === "starter" ? "199" : plan === "business" ? "349" : plan === "enterprise" ? "599" : "1199"}€<span style="font-size: 16px;">/mois</span></div>
+              <div style="font-size: 20px; font-weight: bold; color: #1f2937; margin-bottom: 10px;">${planDisplayName}</div>
+              <div class="price">${priceLabel}</div>
             </div>
             <div style="text-align: center;">
               <a href="${paymentUrl}" class="button">🔒 Procéder au paiement</a>
@@ -280,7 +301,7 @@ export async function sendPaymentLink(params: {
               <strong>ℹ️ Informations importantes :</strong>
               <ul style="margin: 10px 0; padding-left: 20px;">
                 <li>Paiement 100% sécurisé via Stripe</li>
-                <li>Facturation mensuelle</li>
+                <li>${billingLabel}</li>
                 <li>Résiliation possible à tout moment</li>
                 <li>Vos identifiants vous seront envoyés automatiquement après paiement</li>
               </ul>
