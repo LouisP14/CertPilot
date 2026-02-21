@@ -33,7 +33,9 @@ async function getEmployees() {
       getCertificateStatus(c.expiryDate),
     );
 
-    const validCount = statuses.filter((s) => s === "valid").length;
+    const validCount = statuses.filter(
+      (s) => s === "valid" || s === "no-expiry",
+    ).length;
     const expiringCount = statuses.filter((s) => s === "expiring").length;
     const expiredCount = statuses.filter((s) => s === "expired").length;
 
@@ -147,7 +149,11 @@ export default async function EmployeesPage() {
       {archivedCount > 0 && (
         <div className="pt-2">
           <Link href="/dashboard/employees/archived">
-            <Button variant="outline" size="sm" className="text-gray-500 hover:text-gray-700">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-gray-500 hover:text-gray-700"
+            >
               <Archive className="mr-2 h-4 w-4" />
               Voir les employés archivés ({archivedCount})
             </Button>

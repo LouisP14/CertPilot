@@ -56,7 +56,7 @@ export function getStatusColor(status: CertificateStatus): string {
     case "expired":
       return "bg-red-100 text-red-800 border-red-200";
     case "no-expiry":
-      return "bg-gray-100 text-gray-800 border-gray-200";
+      return "bg-green-100 text-green-800 border-green-200";
   }
 }
 
@@ -82,6 +82,6 @@ export function getStatusLabel(status: CertificateStatus): string {
     case "expired":
       return "Expiré";
     case "no-expiry":
-      return "Sans expiration";
+      return "Valide (sans expiration)";
   }
 }
