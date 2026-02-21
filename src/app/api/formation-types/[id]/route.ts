@@ -102,19 +102,34 @@ export async function DELETE(
       );
     }
 
-    // Vérifier s'il y a des certificats liés
-    const certificateCount = await prisma.certificate.count({
-      where: { formationTypeId: id },
+    // Vérifier s'il y a des certificats actifs liés à des employés actifs
+    const activeCertificateCount = await prisma.certificate.count({
+      where: {
+        formationTypeId: id,
+        isArchived: false,
+        employee: { isActive: true },
+      },
     });
 
-    if (certificateCount > 0) {
+    if (activeCertificateCount > 0) {
       return NextResponse.json(
         {
-          error: `Impossible de supprimer cette formation car elle est utilisée par ${certificateCount} certificat(s)`,
+          error: `Impossible de supprimer cette formation car elle est utilisée par ${activeCertificateCount} certificat(s) actif(s)`,
         },
         { status: 400 },
       );
     }
+
+    // Supprimer les certificats orphelins (archivés ou d'employés inactifs)
+    await prisma.certificate.deleteMany({
+      where: {
+        formationTypeId: id,
+        OR: [
+          { isArchived: true },
+          { employee: { isActive: false } },
+        ],
+      },
+    });
 
     // Soft delete
     await prisma.formationType.update({
