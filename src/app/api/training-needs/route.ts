@@ -188,9 +188,12 @@ export async function POST(request: NextRequest) {
         employee: { companyId },
       },
       select: {
+        id: true,
         employeeId: true,
         formationTypeId: true,
         certificateId: true,
+        status: true,
+        plannedSessionId: true,
       },
     });
 
@@ -204,6 +207,43 @@ export async function POST(request: NextRequest) {
         employee: { companyId },
       },
     });
+
+    // Réinitialiser les besoins PLANNED orphelins en PENDING
+    // Cas typique : employé archivé puis réintégré, le besoin PLANNED reste
+    // mais l'employé a été retiré de la session lors de l'archivage
+    const plannedNeeds = existingNeeds.filter((n) => n.status === "PLANNED");
+
+    if (plannedNeeds.length > 0) {
+      // Vérifier quels employés sont encore participants de leur session planifiée
+      const attendees = await prisma.trainingSessionAttendee.findMany({
+        where: {
+          sessionId: {
+            in: plannedNeeds.map((n) => n.plannedSessionId!).filter(Boolean),
+          },
+          employeeId: { in: plannedNeeds.map((n) => n.employeeId) },
+        },
+        select: { employeeId: true, sessionId: true },
+      });
+
+      const attendeeSet = new Set(
+        attendees.map((a) => `${a.employeeId}-${a.sessionId}`),
+      );
+
+      const orphanedPlannedIds = plannedNeeds
+        .filter(
+          (n) =>
+            !n.plannedSessionId ||
+            !attendeeSet.has(`${n.employeeId}-${n.plannedSessionId}`),
+        )
+        .map((n) => n.id);
+
+      if (orphanedPlannedIds.length > 0) {
+        await prisma.trainingNeed.updateMany({
+          where: { id: { in: orphanedPlannedIds } },
+          data: { status: "PENDING", plannedSessionId: null },
+        });
+      }
+    }
 
     const existingSet = new Set(
       existingNeeds.map((n) => `${n.employeeId}-${n.formationTypeId}`),

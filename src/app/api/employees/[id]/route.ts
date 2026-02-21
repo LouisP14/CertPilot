@@ -211,11 +211,11 @@ export async function DELETE(
         },
       });
 
-      // 2. Annuler les besoins de formation en attente
+      // 2. Annuler les besoins de formation en attente ou planifiés
       await tx.trainingNeed.updateMany({
         where: {
           employeeId: id,
-          status: "PENDING",
+          status: { in: ["PENDING", "PLANNED"] },
         },
         data: { status: "CANCELLED" },
       });

@@ -464,7 +464,7 @@ export default function TrainingNeedsPage() {
                     </div>
 
                     {/* Coût total (affiché uniquement si données réelles) */}
-                    {(group.totalEstimatedCost + group.totalAbsenceCost) > 0 && (
+                    {group.totalEstimatedCost + group.totalAbsenceCost > 0 && (
                       <div className="flex items-center gap-1 text-gray-600">
                         <Euro className="h-4 w-4" />
                         <span className="font-semibold">
@@ -558,7 +558,8 @@ export default function TrainingNeedsPage() {
                           {(need.totalCost ?? 0) > 0 && (
                             <div className="text-right text-sm">
                               <p className="font-medium text-gray-700">
-                                {(need.totalCost || 0).toLocaleString("fr-FR")} €
+                                {(need.totalCost || 0).toLocaleString("fr-FR")}{" "}
+                                €
                               </p>
                               <p className="text-xs text-gray-500">
                                 Form:{" "}
@@ -567,7 +568,10 @@ export default function TrainingNeedsPage() {
                                 )}
                                 €{" + "}
                                 Abs:{" "}
-                                {(need.absenceCost || 0).toLocaleString("fr-FR")}€
+                                {(need.absenceCost || 0).toLocaleString(
+                                  "fr-FR",
+                                )}
+                                €
                               </p>
                             </div>
                           )}
@@ -584,7 +588,8 @@ export default function TrainingNeedsPage() {
                       </p>
                       <p className="text-emerald-700">
                         {group.formationType.estimatedCostPerPerson != null
-                          ? group.totalEmployees <= group.formationType.maxParticipants
+                          ? group.totalEmployees <=
+                            group.formationType.maxParticipants
                             ? `Session unique possible (${group.totalEmployees}/${group.formationType.maxParticipants} places)`
                             : `${Math.ceil(group.totalEmployees / group.formationType.maxParticipants)} sessions nécessaires`
                           : group.totalEmployees === 1

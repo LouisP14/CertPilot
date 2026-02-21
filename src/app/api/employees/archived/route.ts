@@ -51,10 +51,7 @@ export async function PATCH(request: NextRequest) {
     const { employeeId, restoreCertificates } = await request.json();
 
     if (!employeeId) {
-      return NextResponse.json(
-        { error: "ID employé requis" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ID employé requis" }, { status: 400 });
     }
 
     // Vérifier que l'employé appartient à la company et est archivé
@@ -157,10 +154,7 @@ export async function DELETE(request: NextRequest) {
     const employeeId = searchParams.get("id");
 
     if (!employeeId) {
-      return NextResponse.json(
-        { error: "ID employé requis" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "ID employé requis" }, { status: 400 });
     }
 
     // Vérifier que l'employé appartient à la company et est archivé

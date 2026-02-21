@@ -145,10 +145,9 @@ export default function ArchivedEmployeesPage() {
           setActionLoading(employeeId);
           setConfirmDialog((prev) => ({ ...prev, open: false }));
 
-          const res = await fetch(
-            `/api/employees/archived?id=${employeeId}`,
-            { method: "DELETE" },
-          );
+          const res = await fetch(`/api/employees/archived?id=${employeeId}`, {
+            method: "DELETE",
+          });
 
           const data = await res.json();
           if (res.ok) {
