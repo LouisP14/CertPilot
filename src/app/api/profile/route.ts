@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, currentPassword, newPassword } = body;
+    const { name, currentPassword, newPassword } = body;
 
     // Récupérer l'utilisateur actuel
     const currentUser = await prisma.user.findUnique({
@@ -117,23 +117,9 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    // Vérifier unicité de l'email si changé
-    if (email && email !== currentUser.email) {
-      const existingUser = await prisma.user.findUnique({
-        where: { email: email.trim().toLowerCase() },
-      });
-      if (existingUser) {
-        return NextResponse.json(
-          { error: "Cet email est déjà utilisé par un autre compte" },
-          { status: 400 },
-        );
-      }
-    }
-
     // Construire les données de mise à jour
     const updateData: Record<string, unknown> = {};
     if (name && name.trim()) updateData.name = name.trim();
-    if (email && email.trim()) updateData.email = email.trim().toLowerCase();
     if (newPassword) {
       updateData.password = await bcrypt.hash(newPassword, 12);
       updateData.mustChangePassword = false;

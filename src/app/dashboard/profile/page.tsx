@@ -143,7 +143,6 @@ export default function ProfilePage() {
   // Édition informations personnelles
   const [editingInfo, setEditingInfo] = useState(false);
   const [editName, setEditName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
   const [savingInfo, setSavingInfo] = useState(false);
   const [infoSuccess, setInfoSuccess] = useState("");
   const [infoError, setInfoError] = useState("");
@@ -166,7 +165,6 @@ export default function ProfilePage() {
       const data = await res.json();
       setProfile(data);
       setEditName(data.name);
-      setEditEmail(data.email);
     } catch {
       setError("Impossible de charger le profil");
     } finally {
@@ -187,14 +185,14 @@ export default function ProfilePage() {
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: editName, email: editEmail }),
+        body: JSON.stringify({ name: editName }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
 
       // Mettre à jour la session NextAuth pour rafraîchir le header
-      await updateSession({ name: editName, email: editEmail });
+      await updateSession({ name: editName });
 
       setInfoSuccess("Informations mises à jour avec succès");
       setEditingInfo(false);
@@ -412,7 +410,7 @@ export default function ProfilePage() {
                     Informations personnelles
                   </CardTitle>
                   <CardDescription className="mt-1">
-                    Modifiez votre nom et adresse email
+                    Modifiez votre nom d&apos;affichage
                   </CardDescription>
                 </div>
                 {!editingInfo && (
@@ -460,24 +458,10 @@ export default function ProfilePage() {
                       placeholder="Votre nom"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                      Adresse email
-                    </label>
-                    <input
-                      type="email"
-                      value={editEmail}
-                      onChange={(e) => setEditEmail(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#173B56]/20 focus:border-[#173B56]"
-                      placeholder="votre@email.com"
-                    />
-                  </div>
                   <div className="flex gap-3 pt-2">
                     <Button
                       onClick={handleSaveInfo}
-                      disabled={
-                        savingInfo || !editName.trim() || !editEmail.trim()
-                      }
+                      disabled={savingInfo || !editName.trim()}
                       className="bg-[#173B56] hover:bg-[#1e4a6b] text-white gap-2"
                       size="sm"
                     >
@@ -494,7 +478,6 @@ export default function ProfilePage() {
                       onClick={() => {
                         setEditingInfo(false);
                         setEditName(profile.name);
-                        setEditEmail(profile.email);
                         setInfoError("");
                       }}
                     >
