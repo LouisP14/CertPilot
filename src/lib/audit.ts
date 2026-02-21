@@ -18,7 +18,8 @@ export type AuditAction =
   | "LOGOUT"
   | "PLAN_SESSION"
   | "CANCEL_SESSION"
-  | "IMPORT";
+  | "IMPORT"
+  | "EXPORT";
 
 // Types d'entités
 export type AuditEntityType =
@@ -455,6 +456,7 @@ export function getActionLabel(action: AuditAction): string {
     PLAN_SESSION: "Planification session",
     CANCEL_SESSION: "Annulation session",
     IMPORT: "Import données",
+    EXPORT: "Export données",
   };
   return labels[action] || action;
 }
@@ -476,6 +478,7 @@ export function getActionColor(action: AuditAction): string {
     PLAN_SESSION: "bg-teal-100 text-teal-800",
     CANCEL_SESSION: "bg-orange-100 text-orange-800",
     IMPORT: "bg-violet-100 text-violet-800",
+    EXPORT: "bg-gray-100 text-gray-800",
   };
   return colors[action] || "bg-gray-100 text-gray-800";
 }

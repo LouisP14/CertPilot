@@ -30,7 +30,7 @@ const navigation = [
   { name: "Centres", href: "/dashboard/training-centers", icon: Building2 },
   { name: "Convocations", href: "/dashboard/convocations", icon: Mail },
   { name: "Vue Calendaire", href: "/dashboard/calendar", icon: Calendar },
-  { name: "Export", href: "/dashboard/export", icon: FileText },
+  { name: "Import / Export", href: "/dashboard/export", icon: FileText },
   { name: "Audit Trail", href: "/dashboard/audit", icon: History },
   { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
 ];
