@@ -895,48 +895,37 @@ export async function POST(request: NextRequest) {
 
       // 2. Upsert Employees
       for (const emp of parsedEmployees) {
+        const employeeData = {
+          firstName: emp.firstName,
+          lastName: emp.lastName,
+          email: emp.email,
+          position: emp.position,
+          department: emp.department,
+          site: emp.site,
+          team: emp.team,
+          managerEmail: emp.managerEmail,
+          contractType: emp.contractType,
+          hourlyCost: emp.hourlyCost,
+          workingHoursPerDay: emp.workingHoursPerDay ?? 7,
+          medicalCheckupDate: emp.medicalCheckupDate,
+          isActive: emp.isActive,
+        };
+
         const existingId = existingMatriculesMap.get(emp.matricule);
         if (existingId) {
           await tx.employee.update({
             where: { id: existingId },
-            data: {
-              firstName: emp.firstName,
-              lastName: emp.lastName,
-              email: emp.email,
-              position: emp.position,
-              department: emp.department,
-              site: emp.site,
-              team: emp.team,
-              managerEmail: emp.managerEmail,
-              contractType: emp.contractType,
-              hourlyCost: emp.hourlyCost,
-              workingHoursPerDay: emp.workingHoursPerDay ?? 7,
-              medicalCheckupDate: emp.medicalCheckupDate,
-              isActive: emp.isActive,
-            },
+            data: employeeData,
           });
           stats.employeesUpdated++;
         } else {
-          const created = await tx.employee.create({
-            data: {
-              employeeId: emp.matricule,
-              firstName: emp.firstName,
-              lastName: emp.lastName,
-              email: emp.email,
-              position: emp.position,
-              department: emp.department,
-              site: emp.site,
-              team: emp.team,
-              managerEmail: emp.managerEmail,
-              contractType: emp.contractType,
-              hourlyCost: emp.hourlyCost,
-              workingHoursPerDay: emp.workingHoursPerDay ?? 7,
-              medicalCheckupDate: emp.medicalCheckupDate,
-              isActive: emp.isActive,
-              companyId,
-            },
+          // Upsert par employeeId (unique global) pour éviter les conflits
+          const upserted = await tx.employee.upsert({
+            where: { employeeId: emp.matricule },
+            update: { ...employeeData, companyId },
+            create: { ...employeeData, employeeId: emp.matricule, companyId },
           });
-          existingMatriculesMap.set(emp.matricule, created.id);
+          existingMatriculesMap.set(emp.matricule, upserted.id);
           stats.employeesCreated++;
         }
       }
@@ -965,16 +954,37 @@ export async function POST(request: NextRequest) {
 
         if (!employeeId || !formationTypeId) continue; // Ne devrait pas arriver vu les validations
 
-        await tx.certificate.create({
-          data: {
+        // Vérifier si un certificat identique existe déjà
+        const existingCert = await tx.certificate.findFirst({
+          where: {
             employeeId,
             formationTypeId,
             obtainedDate: cert.obtainedDate,
-            expiryDate: cert.expiryDate,
-            organism: cert.organism,
-            details: cert.details,
           },
         });
+
+        if (existingCert) {
+          // Mettre à jour le certificat existant
+          await tx.certificate.update({
+            where: { id: existingCert.id },
+            data: {
+              expiryDate: cert.expiryDate,
+              organism: cert.organism,
+              details: cert.details,
+            },
+          });
+        } else {
+          await tx.certificate.create({
+            data: {
+              employeeId,
+              formationTypeId,
+              obtainedDate: cert.obtainedDate,
+              expiryDate: cert.expiryDate,
+              organism: cert.organism,
+              details: cert.details,
+            },
+          });
+        }
         stats.certificatesCreated++;
       }
 
