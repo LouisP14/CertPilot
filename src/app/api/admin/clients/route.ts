@@ -156,7 +156,7 @@ export async function GET() {
         _count: {
           select: {
             users: true,
-            employees: true,
+            employees: { where: { isActive: true } },
           },
         },
       },
