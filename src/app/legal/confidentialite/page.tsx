@@ -220,6 +220,15 @@ export default function Confidentialite() {
                     </td>
                   </tr>
                   <tr>
+                    <td className="py-2">
+                      Données des employés archivés
+                    </td>
+                    <td className="py-2">
+                      Conservées pour traçabilité jusqu&apos;à suppression
+                      définitive par le responsable de compte
+                    </td>
+                  </tr>
+                  <tr>
                     <td className="py-2">Certificats et attestations</td>
                     <td className="py-2">Durée de validité + 10 ans</td>
                   </tr>

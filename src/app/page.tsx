@@ -136,6 +136,7 @@ function JsonLd() {
           "Convocations automatiques par email",
           "Signature électronique",
           "Passeport formation PDF avec QR Code",
+          "Import / Export Excel",
           "Audit trail complet",
           "Export PDF illimité",
         ],
@@ -835,6 +836,7 @@ function PricingCard({
 
       <div className="mt-6 space-y-3">
         <IncludedFeature>Toutes les fonctionnalités</IncludedFeature>
+        <IncludedFeature>Import / Export Excel</IncludedFeature>
         <IncludedFeature>Support prioritaire</IncludedFeature>
         <IncludedFeature>Mises à jour incluses</IncludedFeature>
         <IncludedFeature>Export PDF illimité</IncludedFeature>
