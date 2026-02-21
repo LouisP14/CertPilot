@@ -30,11 +30,7 @@ export async function GET() {
       "Équipe",
       "Manager (matricule)",
       "Email manager",
-      "Type contrat",
-      "Coût horaire (€)",
-      "Heures/jour",
       "Date visite médicale (JJ/MM/AAAA)",
-      "Actif (OUI/NON)",
     ];
     const employeesExample = [
       "MAT001",
@@ -47,11 +43,7 @@ export async function GET() {
       "Équipe A",
       "MAT000",
       "chef@email.com",
-      "CDI",
-      "25",
-      "7",
       "15/03/2026",
-      "OUI",
     ];
     const employeesSheet = XLSX.utils.aoa_to_sheet([
       employeesHeader,
@@ -69,26 +61,12 @@ export async function GET() {
       "Catégorie",
       "Service",
       "Validité (mois)",
-      "Durée (heures)",
-      "Durée (jours)",
-      "Min participants",
-      "Max participants",
-      "Obligation légale (OUI/NON)",
-      "Coût estimé/personne (€)",
-      "Actif (OUI/NON)",
     ];
     const formationsExample = [
       "Habilitation électrique B0-H0V",
       "Sécurité électrique",
       "Maintenance",
       "36",
-      "14",
-      "2",
-      "4",
-      "12",
-      "OUI",
-      "350",
-      "OUI",
     ];
     const formationsSheet = XLSX.utils.aoa_to_sheet([
       formationsHeader,
@@ -153,7 +131,6 @@ export async function GET() {
         "  - Si un matricule existe déjà, l'employé sera mis à jour (pas de doublon).",
       ],
       ["  - Manager (matricule) : indiquez le matricule d'un autre employé."],
-      ["  - Actif : OUI ou NON (par défaut OUI si vide)."],
       [""],
       ["ONGLET FORMATIONS :"],
       [

@@ -67,11 +67,7 @@ interface ParsedEmployee {
   team?: string;
   managerMatricule?: string;
   managerEmail?: string;
-  contractType?: string;
-  hourlyCost?: number;
-  workingHoursPerDay?: number;
   medicalCheckupDate?: Date;
-  isActive: boolean;
   _action: "CREATE" | "UPDATE";
 }
 
@@ -80,13 +76,6 @@ interface ParsedFormation {
   category?: string;
   service?: string;
   defaultValidityMonths?: number;
-  durationHours: number;
-  durationDays: number;
-  minParticipants: number;
-  maxParticipants: number;
-  isLegalObligation: boolean;
-  estimatedCostPerPerson?: number;
-  isActive: boolean;
   _action: "CREATE" | "UPDATE";
 }
 
@@ -133,18 +122,6 @@ function parseDate(value: unknown): Date | undefined {
   }
 
   return undefined;
-}
-
-function parseBool(value: unknown): boolean {
-  if (!value) return true; // Par défaut OUI
-  const str = String(value).trim().toUpperCase();
-  return str !== "NON" && str !== "N" && str !== "0" && str !== "FALSE";
-}
-
-function parseFloat_(value: unknown): number | undefined {
-  if (value === null || value === undefined || value === "") return undefined;
-  const n = parseFloat(String(value).replace(",", "."));
-  return isNaN(n) ? undefined : n;
 }
 
 function parseInt_(value: unknown): number | undefined {
@@ -333,13 +310,7 @@ function parseEmployeesSheet(
       managerMatricule:
         strVal(row, "Manager (matricule)", "Manager") || undefined,
       managerEmail: strVal(row, "Email manager") || undefined,
-      contractType: strVal(row, "Type contrat") || undefined,
-      hourlyCost: parseFloat_(
-        cellValue(row, "Coût horaire (€)", "Coût horaire"),
-      ),
-      workingHoursPerDay: parseFloat_(cellValue(row, "Heures/jour")),
       medicalCheckupDate: medicalDate,
-      isActive: parseBool(cellValue(row, "Actif (OUI/NON)", "Actif")),
       _action: existingMatricules.has(matricule) ? "UPDATE" : "CREATE",
     });
   }
@@ -406,25 +377,6 @@ function parseFormationsSheet(
       defaultValidityMonths: parseInt_(
         cellValue(row, "Validité (mois)", "Validité"),
       ),
-      durationHours:
-        parseFloat_(cellValue(row, "Durée (heures)", "Durée heures")) ?? 7,
-      durationDays:
-        parseInt_(cellValue(row, "Durée (jours)", "Durée jours")) ?? 1,
-      minParticipants: parseInt_(cellValue(row, "Min participants")) ?? 1,
-      maxParticipants: parseInt_(cellValue(row, "Max participants")) ?? 12,
-      isLegalObligation: parseBool(
-        cellValue(row, "Obligation légale (OUI/NON)", "Obligation légale"),
-      )
-        ? strVal(
-            row,
-            "Obligation légale (OUI/NON)",
-            "Obligation légale",
-          ).toUpperCase() === "OUI"
-        : false,
-      estimatedCostPerPerson: parseFloat_(
-        cellValue(row, "Coût estimé/personne (€)", "Coût/personne"),
-      ),
-      isActive: parseBool(cellValue(row, "Actif (OUI/NON)", "Actif")),
       _action: existingNames.has(name.toLowerCase()) ? "UPDATE" : "CREATE",
     });
   }
@@ -827,13 +779,6 @@ export async function POST(request: NextRequest) {
               category: ft.category,
               service: ft.service,
               defaultValidityMonths: ft.defaultValidityMonths,
-              durationHours: ft.durationHours,
-              durationDays: ft.durationDays,
-              minParticipants: ft.minParticipants,
-              maxParticipants: ft.maxParticipants,
-              isLegalObligation: ft.isLegalObligation,
-              estimatedCostPerPerson: ft.estimatedCostPerPerson,
-              isActive: ft.isActive,
             },
           });
           stats.formationsUpdated++;
@@ -844,13 +789,6 @@ export async function POST(request: NextRequest) {
               category: ft.category,
               service: ft.service,
               defaultValidityMonths: ft.defaultValidityMonths,
-              durationHours: ft.durationHours,
-              durationDays: ft.durationDays,
-              minParticipants: ft.minParticipants,
-              maxParticipants: ft.maxParticipants,
-              isLegalObligation: ft.isLegalObligation,
-              estimatedCostPerPerson: ft.estimatedCostPerPerson,
-              isActive: ft.isActive,
               companyId,
             },
           });
@@ -870,11 +808,7 @@ export async function POST(request: NextRequest) {
           site: emp.site,
           team: emp.team,
           managerEmail: emp.managerEmail,
-          contractType: emp.contractType,
-          hourlyCost: emp.hourlyCost,
-          workingHoursPerDay: emp.workingHoursPerDay ?? 7,
           medicalCheckupDate: emp.medicalCheckupDate,
-          isActive: emp.isActive,
         };
 
         const existingId = existingMatriculesMap.get(emp.matricule);
