@@ -156,6 +156,7 @@ export async function GET() {
         _count: {
           select: {
             users: true,
+            employees: true,
           },
         },
       },
