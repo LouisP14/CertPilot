@@ -26,6 +26,7 @@ import {
   User,
   Users,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
@@ -134,6 +135,7 @@ function getPlanLabel(plan: string | null) {
 }
 
 export default function ProfilePage() {
+  const { update: updateSession } = useSession();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -190,6 +192,9 @@ export default function ProfilePage() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
+
+      // Mettre à jour la session NextAuth pour rafraîchir le header
+      await updateSession({ name: editName, email: editEmail });
 
       setInfoSuccess("Informations mises à jour avec succès");
       setEditingInfo(false);

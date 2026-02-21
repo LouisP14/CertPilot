@@ -62,12 +62,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session: updateData }) {
       if (user) {
         token.role = user.role;
         token.id = user.id;
         token.companyId = user.companyId;
         token.mustChangePassword = user.mustChangePassword;
+      }
+      // Mettre à jour le token quand session.update() est appelé côté client
+      if (trigger === "update" && updateData) {
+        if (updateData.name) token.name = updateData.name;
+        if (updateData.email) token.email = updateData.email;
       }
       return token;
     },
@@ -77,6 +82,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.companyId = token.companyId as string | null;
         session.user.mustChangePassword = token.mustChangePassword as boolean;
+        // Propager name/email depuis le token (mis à jour via update())
+        if (token.name) session.user.name = token.name as string;
+        if (token.email) session.user.email = token.email as string;
       }
       return session;
     },

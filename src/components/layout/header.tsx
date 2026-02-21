@@ -11,6 +11,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -51,6 +52,11 @@ interface Employee {
 }
 
 export function Header({ user }: HeaderProps) {
+  // Utiliser useSession pour un nom/email réactif (mis à jour après édition profil)
+  const { data: sessionData } = useSession();
+  const displayName = sessionData?.user?.name || user?.name || "Administrateur";
+  const displayEmail = sessionData?.user?.email || user?.email || "";
+
   const [showNotifications, setShowNotifications] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -447,9 +453,9 @@ export function Header({ user }: HeaderProps) {
           </div>
           <div className="text-sm">
             <p className="font-semibold text-[#173B56]">
-              {user?.name || "Administrateur"}
+              {displayName}
             </p>
-            <p className="text-xs text-slate-500">{user?.email}</p>
+            <p className="text-xs text-slate-500">{displayEmail}</p>
           </div>
         </Link>
       </div>

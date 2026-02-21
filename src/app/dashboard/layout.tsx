@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { Providers } from "@/components/providers";
 import { ToastContainer } from "@/components/ui/toast";
 import { auth } from "@/lib/auth";
 import type { Metadata } from "next";
@@ -33,13 +34,17 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-slate-50">
-      <Sidebar userRole={session.user?.role} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header user={session.user} />
-        <main className="flex-1 overflow-auto bg-slate-50 p-6">{children}</main>
+    <Providers>
+      <div className="flex h-screen bg-slate-50">
+        <Sidebar userRole={session.user?.role} />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <Header user={session.user} />
+          <main className="flex-1 overflow-auto bg-slate-50 p-6">
+            {children}
+          </main>
+        </div>
+        <ToastContainer />
       </div>
-      <ToastContainer />
-    </div>
+    </Providers>
   );
 }
