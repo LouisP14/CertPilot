@@ -15,19 +15,45 @@ interface RowError {
   message: string;
 }
 
+interface RowWarning {
+  sheet: string;
+  row: number;
+  column: string;
+  message: string;
+  refType: "FUNCTION" | "SERVICE" | "SITE" | "TEAM";
+  refValue: string;
+}
+
+interface ReferenceToCreate {
+  type: "FUNCTION" | "SERVICE" | "SITE" | "TEAM";
+  value: string;
+}
+
 interface ValidationResult {
   employees: ParsedEmployee[];
   formations: ParsedFormation[];
   certificates: ParsedCertificate[];
   errors: RowError[];
+  warnings: RowWarning[];
+  referencesToCreate: ReferenceToCreate[];
   summary: {
     employeesToCreate: number;
     employeesToUpdate: number;
     formationsToCreate: number;
     formationsToUpdate: number;
     certificatesToCreate: number;
+    referencesToCreate: number;
     totalErrors: number;
+    totalWarnings: number;
   };
+}
+
+// Sets de valeurs de référentiels valides (passés aux parsers)
+interface ReferenceRefs {
+  functions: Set<string>; // FUNCTION - positions/fonctions
+  services: Set<string>; // SERVICE - départements/services
+  sites: Set<string>; // SITE
+  teams: Set<string>; // TEAM
 }
 
 interface ParsedEmployee {
@@ -149,9 +175,11 @@ function strVal(row: Record<string, unknown>, ...keys: string[]): string {
 function parseEmployeesSheet(
   rows: Record<string, unknown>[],
   existingMatricules: Set<string>,
-): { employees: ParsedEmployee[]; errors: RowError[] } {
+  refs: ReferenceRefs,
+): { employees: ParsedEmployee[]; errors: RowError[]; warnings: RowWarning[] } {
   const employees: ParsedEmployee[] = [];
   const errors: RowError[] = [];
+  const warnings: RowWarning[] = [];
   const seenMatricules = new Set<string>();
 
   for (let i = 0; i < rows.length; i++) {
@@ -252,6 +280,50 @@ function parseEmployeesSheet(
       });
     }
 
+    // Validation référentiels
+    if (position && !refs.functions.has(position.toLowerCase())) {
+      warnings.push({
+        sheet: "Employés",
+        row: rowNum,
+        column: "Fonction",
+        message: `La fonction "${position}" n'existe pas dans vos référentiels. Elle sera créée automatiquement.`,
+        refType: "FUNCTION",
+        refValue: position,
+      });
+    }
+    if (department && !refs.services.has(department.toLowerCase())) {
+      warnings.push({
+        sheet: "Employés",
+        row: rowNum,
+        column: "Service",
+        message: `Le service "${department}" n'existe pas dans vos référentiels. Il sera créé automatiquement.`,
+        refType: "SERVICE",
+        refValue: department,
+      });
+    }
+    const siteVal = strVal(row, "Site") || undefined;
+    if (siteVal && !refs.sites.has(siteVal.toLowerCase())) {
+      warnings.push({
+        sheet: "Employés",
+        row: rowNum,
+        column: "Site",
+        message: `Le site "${siteVal}" n'existe pas dans vos référentiels. Il sera créé automatiquement.`,
+        refType: "SITE",
+        refValue: siteVal,
+      });
+    }
+    const teamVal = strVal(row, "Équipe", "Equipe") || undefined;
+    if (teamVal && !refs.teams.has(teamVal.toLowerCase())) {
+      warnings.push({
+        sheet: "Employés",
+        row: rowNum,
+        column: "Équipe",
+        message: `L'équipe "${teamVal}" n'existe pas dans vos référentiels. Elle sera créée automatiquement.`,
+        refType: "TEAM",
+        refValue: teamVal,
+      });
+    }
+
     employees.push({
       matricule,
       lastName,
@@ -259,13 +331,15 @@ function parseEmployeesSheet(
       email,
       position,
       department,
-      site: strVal(row, "Site") || undefined,
-      team: strVal(row, "Équipe", "Equipe") || undefined,
+      site: siteVal,
+      team: teamVal,
       managerMatricule:
         strVal(row, "Manager (matricule)", "Manager") || undefined,
       managerEmail: strVal(row, "Email manager") || undefined,
       contractType: strVal(row, "Type contrat") || undefined,
-      hourlyCost: parseFloat_(cellValue(row, "Coût horaire (€)", "Coût horaire")),
+      hourlyCost: parseFloat_(
+        cellValue(row, "Coût horaire (€)", "Coût horaire"),
+      ),
       workingHoursPerDay: parseFloat_(cellValue(row, "Heures/jour")),
       medicalCheckupDate: medicalDate,
       isActive: parseBool(cellValue(row, "Actif (OUI/NON)", "Actif")),
@@ -273,15 +347,21 @@ function parseEmployeesSheet(
     });
   }
 
-  return { employees, errors };
+  return { employees, errors, warnings };
 }
 
 function parseFormationsSheet(
   rows: Record<string, unknown>[],
   existingNames: Set<string>,
-): { formations: ParsedFormation[]; errors: RowError[] } {
+  refs: ReferenceRefs,
+): {
+  formations: ParsedFormation[];
+  errors: RowError[];
+  warnings: RowWarning[];
+} {
   const formations: ParsedFormation[] = [];
   const errors: RowError[] = [];
+  const warnings: RowWarning[] = [];
   const seenNames = new Set<string>();
 
   for (let i = 0; i < rows.length; i++) {
@@ -324,15 +404,29 @@ function parseFormationsSheet(
       });
     }
 
+    const serviceVal = strVal(row, "Service") || undefined;
+    if (serviceVal && !refs.services.has(serviceVal.toLowerCase())) {
+      warnings.push({
+        sheet: "Formations",
+        row: rowNum,
+        column: "Service",
+        message: `Le service "${serviceVal}" n'existe pas dans vos référentiels. Il sera créé automatiquement.`,
+        refType: "SERVICE",
+        refValue: serviceVal,
+      });
+    }
+
     formations.push({
       name,
       category: strVal(row, "Catégorie", "Categorie") || undefined,
-      service: strVal(row, "Service") || undefined,
+      service: serviceVal,
       defaultValidityMonths: parseInt_(
         cellValue(row, "Validité (mois)", "Validité"),
       ),
-      durationHours: parseFloat_(cellValue(row, "Durée (heures)", "Durée heures")) ?? 7,
-      durationDays: parseInt_(cellValue(row, "Durée (jours)", "Durée jours")) ?? 1,
+      durationHours:
+        parseFloat_(cellValue(row, "Durée (heures)", "Durée heures")) ?? 7,
+      durationDays:
+        parseInt_(cellValue(row, "Durée (jours)", "Durée jours")) ?? 1,
       minParticipants: parseInt_(cellValue(row, "Min participants")) ?? 1,
       maxParticipants: parseInt_(cellValue(row, "Max participants")) ?? 12,
       trainingMode:
@@ -363,7 +457,7 @@ function parseFormationsSheet(
     });
   }
 
-  return { formations, errors };
+  return { formations, errors, warnings };
 }
 
 function parseCertificatesSheet(
@@ -532,18 +626,50 @@ export async function POST(request: NextRequest) {
     const workbook = XLSX.read(arrayBuffer, { type: "array" });
 
     // Charger les données existantes pour détecter CREATE vs UPDATE
-    const [existingEmployees, existingFormations] = await Promise.all([
-      prisma.employee.findMany({
-        where: { companyId },
-        select: { employeeId: true, id: true },
-      }),
-      prisma.formationType.findMany({
-        where: { companyId },
-        select: { name: true, id: true },
-      }),
-    ]);
+    const [existingEmployees, existingFormations, existingReferences] =
+      await Promise.all([
+        prisma.employee.findMany({
+          where: { companyId },
+          select: { employeeId: true, id: true },
+        }),
+        prisma.formationType.findMany({
+          where: { companyId },
+          select: { name: true, id: true },
+        }),
+        prisma.referenceData.findMany({
+          where: { companyId, isActive: true },
+          select: { type: true, value: true },
+        }),
+      ]);
 
-    const existingMatricules = new Set(existingEmployees.map((e) => e.employeeId));
+    // Construire les sets de référentiels
+    const refs: ReferenceRefs = {
+      functions: new Set<string>(),
+      services: new Set<string>(),
+      sites: new Set<string>(),
+      teams: new Set<string>(),
+    };
+    for (const ref of existingReferences) {
+      const key = ref.value.toLowerCase();
+      switch (ref.type) {
+        case "FUNCTION":
+          refs.functions.add(key);
+          break;
+        case "SERVICE":
+          refs.services.add(key);
+          break;
+        case "SITE":
+          refs.sites.add(key);
+          break;
+        case "TEAM":
+          refs.teams.add(key);
+          break;
+      }
+    }
+
+    const existingMatricules = new Set(
+      existingEmployees.map((e) => e.employeeId),
+    );
     const existingMatriculesMap = new Map(
       existingEmployees.map((e) => [e.employeeId, e.id]),
     );
@@ -571,15 +697,17 @@ export async function POST(request: NextRequest) {
     let parsedFormations: ParsedFormation[] = [];
     let parsedCertificates: ParsedCertificate[] = [];
     const allErrors: RowError[] = [];
+    const allWarnings: RowWarning[] = [];
 
     // Parse Employés
     if (employeesSheetName) {
       const sheet = workbook.Sheets[employeesSheetName];
       const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
       if (rows.length > 0) {
-        const result = parseEmployeesSheet(rows, existingMatricules);
+        const result = parseEmployeesSheet(rows, existingMatricules, refs);
         parsedEmployees = result.employees;
         allErrors.push(...result.errors);
+        allWarnings.push(...result.warnings);
       }
     }
 
@@ -588,9 +716,10 @@ export async function POST(request: NextRequest) {
       const sheet = workbook.Sheets[formationsSheetName];
       const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
       if (rows.length > 0) {
-        const result = parseFormationsSheet(rows, existingFormationNames);
+        const result = parseFormationsSheet(rows, existingFormationNames, refs);
         parsedFormations = result.formations;
         allErrors.push(...result.errors);
+        allWarnings.push(...result.warnings);
       }
     }
 
@@ -632,11 +761,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Déduire les références uniques à créer
+    const refsToCreateMap = new Map<string, ReferenceToCreate>();
+    for (const w of allWarnings) {
+      const key = `${w.refType}::${w.refValue.toLowerCase()}`;
+      if (!refsToCreateMap.has(key)) {
+        refsToCreateMap.set(key, { type: w.refType, value: w.refValue });
+      }
+    }
+    const referencesToCreate = Array.from(refsToCreateMap.values());
+
     const validationResult: ValidationResult = {
       employees: parsedEmployees,
       formations: parsedFormations,
       certificates: parsedCertificates,
       errors: allErrors,
+      warnings: allWarnings,
+      referencesToCreate,
       summary: {
         employeesToCreate: parsedEmployees.filter((e) => e._action === "CREATE")
           .length,
@@ -649,7 +790,9 @@ export async function POST(request: NextRequest) {
           (f) => f._action === "UPDATE",
         ).length,
         certificatesToCreate: parsedCertificates.length,
+        referencesToCreate: referencesToCreate.length,
         totalErrors: allErrors.length,
+        totalWarnings: allWarnings.length,
       },
     };
 
@@ -677,7 +820,30 @@ export async function POST(request: NextRequest) {
         formationsCreated: 0,
         formationsUpdated: 0,
         certificatesCreated: 0,
+        referencesCreated: 0,
       };
+
+      // 0. Créer les références manquantes
+      for (const ref of referencesToCreate) {
+        // Vérifier que ça n'existe pas déjà (double sécurité)
+        const existing = await tx.referenceData.findFirst({
+          where: {
+            type: ref.type,
+            value: ref.value,
+            companyId,
+          },
+        });
+        if (!existing) {
+          await tx.referenceData.create({
+            data: {
+              type: ref.type,
+              value: ref.value,
+              companyId,
+            },
+          });
+          stats.referencesCreated++;
+        }
+      }
 
       // 1. Upsert FormationTypes
       for (const ft of parsedFormations) {
@@ -824,7 +990,7 @@ export async function POST(request: NextRequest) {
       action: "IMPORT",
       entityType: "EMPLOYEE",
       entityName: file.name,
-      description: `Import Excel : ${result.employeesCreated} employés créés, ${result.employeesUpdated} mis à jour, ${result.formationsCreated} formations créées, ${result.formationsUpdated} mises à jour, ${result.certificatesCreated} certificats créés`,
+      description: `Import Excel : ${result.employeesCreated} employés créés, ${result.employeesUpdated} mis à jour, ${result.formationsCreated} formations créées, ${result.formationsUpdated} mises à jour, ${result.certificatesCreated} certificats créés, ${result.referencesCreated} référentiels créés`,
     });
 
     return NextResponse.json({
@@ -837,9 +1003,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error
-            ? error.message
-            : "Erreur lors de l'import",
+          error instanceof Error ? error.message : "Erreur lors de l'import",
       },
       { status: 500 },
     );

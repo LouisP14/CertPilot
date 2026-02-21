@@ -139,16 +139,16 @@ export async function GET() {
       [
         "1. Remplissez les onglets Employés, Formations et/ou Certificats selon vos besoins.",
       ],
-      [
-        "2. Les colonnes marquées d'un astérisque (*) sont obligatoires.",
-      ],
+      ["2. Les colonnes marquées d'un astérisque (*) sont obligatoires."],
       [
         "3. Vous pouvez importer un seul onglet à la fois ou tous en même temps.",
       ],
       [
         "4. La première ligne de chaque onglet contient les en-têtes — ne la modifiez pas.",
       ],
-      ["5. La deuxième ligne contient un exemple — supprimez-la avant l'import."],
+      [
+        "5. La deuxième ligne contient un exemple — supprimez-la avant l'import.",
+      ],
       [""],
       ["FORMAT DES DATES :"],
       ["  - Utilisez le format JJ/MM/AAAA (ex: 15/03/2026)"],
@@ -165,9 +165,7 @@ export async function GET() {
       [
         "  - Le Nom formation doit être unique. S'il existe déjà, il sera mis à jour.",
       ],
-      [
-        "  - Validité (mois) : laissez vide si la formation n'expire pas.",
-      ],
+      ["  - Validité (mois) : laissez vide si la formation n'expire pas."],
       ["  - Mode : PRESENTIEL, DISTANCIEL ou MIXTE."],
       [""],
       ["ONGLET CERTIFICATS :"],
@@ -177,9 +175,7 @@ export async function GET() {
       [
         "  - Le Nom formation doit correspondre à une formation existante ou présente dans l'onglet Formations.",
       ],
-      [
-        "  - Date expiration : laissez vide si la formation n'expire pas.",
-      ],
+      ["  - Date expiration : laissez vide si la formation n'expire pas."],
     ];
     const instructionsSheet = XLSX.utils.aoa_to_sheet(instructions);
     instructionsSheet["!cols"] = [{ wch: 90 }];

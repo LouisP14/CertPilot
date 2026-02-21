@@ -36,17 +36,35 @@ interface ImportError {
   message: string;
 }
 
+interface ImportWarning {
+  sheet: string;
+  row: number;
+  column: string;
+  message: string;
+  refType: string;
+  refValue: string;
+}
+
+interface ReferenceToCreate {
+  type: string;
+  value: string;
+}
+
 interface ImportSummary {
   employeesToCreate: number;
   employeesToUpdate: number;
   formationsToCreate: number;
   formationsToUpdate: number;
   certificatesToCreate: number;
+  referencesToCreate: number;
   totalErrors: number;
+  totalWarnings: number;
 }
 
 interface ValidationResult {
   errors: ImportError[];
+  warnings: ImportWarning[];
+  referencesToCreate: ReferenceToCreate[];
   summary: ImportSummary;
 }
 
@@ -56,6 +74,7 @@ interface ImportStats {
   formationsCreated: number;
   formationsUpdated: number;
   certificatesCreated: number;
+  referencesCreated: number;
 }
 
 const excelExportLabels: Record<string, string> = {
@@ -72,7 +91,13 @@ const excelExportFileNames: Record<string, string> = {
   employees: "passeport-formation-employees",
 };
 
-type ImportStep = "idle" | "validating" | "preview" | "importing" | "done" | "error";
+type ImportStep =
+  | "idle"
+  | "validating"
+  | "preview"
+  | "importing"
+  | "done"
+  | "error";
 
 export default function ExportPage() {
   // ── Export state ──
@@ -85,7 +110,8 @@ export default function ExportPage() {
   // ── Import state ──
   const [importStep, setImportStep] = useState<ImportStep>("idle");
   const [importFile, setImportFile] = useState<File | null>(null);
-  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
+  const [validationResult, setValidationResult] =
+    useState<ValidationResult | null>(null);
   const [importStats, setImportStats] = useState<ImportStats | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [downloadingTemplate, setDownloadingTemplate] = useState(false);
@@ -183,41 +209,38 @@ export default function ExportPage() {
     }
   };
 
-  const handleFileSelect = useCallback(
-    async (file: File) => {
-      setImportFile(file);
-      setImportStep("validating");
-      setImportError(null);
-      setValidationResult(null);
-      setImportStats(null);
+  const handleFileSelect = useCallback(async (file: File) => {
+    setImportFile(file);
+    setImportStep("validating");
+    setImportError(null);
+    setValidationResult(null);
+    setImportStats(null);
 
-      try {
-        const formData = new FormData();
-        formData.append("file", file);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
 
-        const response = await fetch("/api/import/validate?mode=validate", {
-          method: "POST",
-          body: formData,
-        });
+      const response = await fetch("/api/import/validate?mode=validate", {
+        method: "POST",
+        body: formData,
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) {
-          setImportStep("error");
-          setImportError(data.error || "Erreur lors de la validation");
-          return;
-        }
-
-        setValidationResult(data);
-        setImportStep("preview");
-      } catch (error) {
-        console.error("Validation error:", error);
+      if (!response.ok) {
         setImportStep("error");
-        setImportError("Erreur de connexion lors de la validation");
+        setImportError(data.error || "Erreur lors de la validation");
+        return;
       }
-    },
-    [],
-  );
+
+      setValidationResult(data);
+      setImportStep("preview");
+    } catch (error) {
+      console.error("Validation error:", error);
+      setImportStep("error");
+      setImportError("Erreur de connexion lors de la validation");
+    }
+  }, []);
 
   const handleConfirmImport = async () => {
     if (!importFile) return;
@@ -291,8 +314,8 @@ export default function ExportPage() {
               Importer depuis un fichier Excel
             </CardTitle>
             <CardDescription>
-              Importez vos employés, formations et certificats en masse depuis un
-              fichier Excel au format CertPilot.
+              Importez vos employés, formations et certificats en masse depuis
+              un fichier Excel au format CertPilot.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -340,7 +363,9 @@ export default function ExportPage() {
                   const file = e.target.files?.[0];
                   if (file) handleFileSelect(file);
                 }}
-                disabled={importStep === "validating" || importStep === "importing"}
+                disabled={
+                  importStep === "validating" || importStep === "importing"
+                }
               />
             </div>
 
@@ -374,7 +399,7 @@ export default function ExportPage() {
                   <h4 className="text-sm font-semibold text-gray-800">
                     Résultat de la validation
                   </h4>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <div className="rounded-lg bg-green-50 p-3 text-center">
                       <p className="text-2xl font-bold text-green-700">
                         {validationResult.summary.employeesToCreate}
@@ -385,25 +410,59 @@ export default function ExportPage() {
                       <p className="text-2xl font-bold text-blue-700">
                         {validationResult.summary.employeesToUpdate}
                       </p>
-                      <p className="text-xs text-blue-600">Employés à mettre à jour</p>
+                      <p className="text-xs text-blue-600">
+                        Employés à mettre à jour
+                      </p>
                     </div>
                     <div className="rounded-lg bg-green-50 p-3 text-center">
                       <p className="text-2xl font-bold text-green-700">
                         {validationResult.summary.formationsToCreate}
                       </p>
-                      <p className="text-xs text-green-600">Formations à créer</p>
+                      <p className="text-xs text-green-600">
+                        Formations à créer
+                      </p>
                     </div>
                     <div className="rounded-lg bg-blue-50 p-3 text-center">
                       <p className="text-2xl font-bold text-blue-700">
                         {validationResult.summary.formationsToUpdate}
                       </p>
-                      <p className="text-xs text-blue-600">Formations à mettre à jour</p>
+                      <p className="text-xs text-blue-600">
+                        Formations à mettre à jour
+                      </p>
                     </div>
                     <div className="rounded-lg bg-purple-50 p-3 text-center">
                       <p className="text-2xl font-bold text-purple-700">
                         {validationResult.summary.certificatesToCreate}
                       </p>
-                      <p className="text-xs text-purple-600">Certificats à créer</p>
+                      <p className="text-xs text-purple-600">
+                        Certificats à créer
+                      </p>
+                    </div>
+                    <div
+                      className={`rounded-lg p-3 text-center ${
+                        validationResult.summary.referencesToCreate > 0
+                          ? "bg-amber-50"
+                          : "bg-gray-50"
+                      }`}
+                    >
+                      <p
+                        className={`text-2xl font-bold ${
+                          validationResult.summary.referencesToCreate > 0
+                            ? "text-amber-700"
+                            : "text-gray-400"
+                        }`}
+                      >
+                        {validationResult.summary.referencesToCreate}
+                      </p>
+                      <p
+                        className={`text-xs ${
+                          validationResult.summary.referencesToCreate > 0
+                            ? "text-amber-600"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        Référentiel(s) à créer
+                      </p>
                     </div>
                     <div
                       className={`rounded-lg p-3 text-center ${
@@ -434,6 +493,42 @@ export default function ExportPage() {
                   </div>
                 </div>
 
+                {/* Références à auto-créer (warnings) */}
+                {validationResult.referencesToCreate &&
+                  validationResult.referencesToCreate.length > 0 && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-amber-800">
+                        <AlertTriangle className="h-4 w-4" />
+                        {validationResult.referencesToCreate.length}{" "}
+                        référentiel(s) seront créés automatiquement dans vos
+                        Paramètres
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {validationResult.referencesToCreate.map((ref, idx) => {
+                          const typeLabel: Record<string, string> = {
+                            FUNCTION: "Fonction",
+                            SERVICE: "Service",
+                            SITE: "Site",
+                            TEAM: "Équipe",
+                          };
+                          return (
+                            <span
+                              key={idx}
+                              className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800"
+                            >
+                              {typeLabel[ref.type] || ref.type} : {ref.value}
+                            </span>
+                          );
+                        })}
+                      </div>
+                      <p className="text-xs text-amber-700">
+                        Ces valeurs seront ajoutées à vos référentiels
+                        (Paramètres &gt; Services, Fonctions, Sites, Équipes)
+                        lors de la confirmation.
+                      </p>
+                    </div>
+                  )}
+
                 {/* Liste des erreurs */}
                 {validationResult.errors.length > 0 && (
                   <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
@@ -461,12 +556,17 @@ export default function ExportPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-3">
-                  {validationResult.errors.length === 0 && hasSomethingToImport ? (
-                    <Button onClick={handleConfirmImport} className="bg-blue-600 hover:bg-blue-700">
+                  {validationResult.errors.length === 0 &&
+                  hasSomethingToImport ? (
+                    <Button
+                      onClick={handleConfirmImport}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
                       <CheckCircle2 className="mr-2 h-4 w-4" />
                       Confirmer l&apos;import
                     </Button>
-                  ) : validationResult.errors.length === 0 && !hasSomethingToImport ? (
+                  ) : validationResult.errors.length === 0 &&
+                    !hasSomethingToImport ? (
                     <p className="text-sm text-gray-500">
                       Le fichier ne contient aucune donnée à importer.
                     </p>
@@ -505,12 +605,18 @@ export default function ExportPage() {
                   )}
                   {importStats.formationsUpdated > 0 && (
                     <p>
-                      {importStats.formationsUpdated} formation(s) mise(s) à jour
+                      {importStats.formationsUpdated} formation(s) mise(s) à
+                      jour
                     </p>
                   )}
                   {importStats.certificatesCreated > 0 && (
                     <p>
                       {importStats.certificatesCreated} certificat(s) créé(s)
+                    </p>
+                  )}
+                  {importStats.referencesCreated > 0 && (
+                    <p>
+                      {importStats.referencesCreated} référentiel(s) créé(s)
                     </p>
                   )}
                 </div>
@@ -544,7 +650,9 @@ export default function ExportPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Type d&apos;export</label>
+                <label className="text-sm font-medium">
+                  Type d&apos;export
+                </label>
                 <Select
                   value={exportType}
                   onChange={(e) => setExportType(e.target.value)}
@@ -552,7 +660,9 @@ export default function ExportPage() {
                   <option value="all">{excelExportLabels.all}</option>
                   <option value="expiring">{excelExportLabels.expiring}</option>
                   <option value="expired">{excelExportLabels.expired}</option>
-                  <option value="employees">{excelExportLabels.employees}</option>
+                  <option value="employees">
+                    {excelExportLabels.employees}
+                  </option>
                 </Select>
               </div>
               <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
@@ -599,8 +709,8 @@ export default function ExportPage() {
             <CardContent className="space-y-4">
               <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-500">
                 <p>
-                  Génère un rapport PDF complet avec les statistiques et la liste
-                  de tous les employés avec leurs formations.
+                  Génère un rapport PDF complet avec les statistiques et la
+                  liste de tous les employés avec leurs formations.
                 </p>
               </div>
               <Button
