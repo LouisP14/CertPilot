@@ -434,9 +434,11 @@ export default function PlanningModal({
                       </p>
                     </div>
                     <div className="text-right text-sm">
-                      <p className="font-medium text-gray-700">
-                        {need.employee.hourlyCost ?? 0} €/h
-                      </p>
+                      {need.employee.hourlyCost != null && need.employee.hourlyCost > 0 && (
+                        <p className="font-medium text-gray-700">
+                          {need.employee.hourlyCost} €/h
+                        </p>
+                      )}
                       <Badge
                         className={`text-xs ${
                           need.priority >= 9
@@ -455,8 +457,13 @@ export default function PlanningModal({
 
               <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">
                 <strong>{selectedEmployees.length}</strong> employé(s)
-                sélectionné(s) • Durée formation:{" "}
-                <strong>{formationType.durationDays} jour(s)</strong>
+                sélectionné(s)
+                {formationType.durationDays > 1 && (
+                  <>
+                    {" "}• Durée formation:{" "}
+                    <strong>{formationType.durationDays} jour(s)</strong>
+                  </>
+                )}
               </div>
             </div>
           )}

@@ -310,21 +310,23 @@ export default function TrainingNeedsPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-purple-100 p-2">
-                <Euro className="h-5 w-5 text-purple-600" />
+        {totalCost > 0 && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-purple-100 p-2">
+                  <Euro className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">
+                    {totalCost.toLocaleString("fr-FR")} €
+                  </p>
+                  <p className="text-sm text-gray-500">Coût total estimé</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {totalCost.toLocaleString("fr-FR")} €
-                </p>
-                <p className="text-sm text-gray-500">Coût total estimé</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Filtres */}
@@ -461,16 +463,18 @@ export default function TrainingNeedsPage() {
                       <span className="text-sm">pers.</span>
                     </div>
 
-                    {/* Coût total */}
-                    <div className="flex items-center gap-1 text-gray-600">
-                      <Euro className="h-4 w-4" />
-                      <span className="font-semibold">
-                        {(
-                          group.totalEstimatedCost + group.totalAbsenceCost
-                        ).toLocaleString("fr-FR")}
-                      </span>
-                      <span className="text-sm">€</span>
-                    </div>
+                    {/* Coût total (affiché uniquement si données réelles) */}
+                    {(group.totalEstimatedCost + group.totalAbsenceCost) > 0 && (
+                      <div className="flex items-center gap-1 text-gray-600">
+                        <Euro className="h-4 w-4" />
+                        <span className="font-semibold">
+                          {(
+                            group.totalEstimatedCost + group.totalAbsenceCost
+                          ).toLocaleString("fr-FR")}
+                        </span>
+                        <span className="text-sm">€</span>
+                      </div>
+                    )}
 
                     {/* Date expiration la plus proche */}
                     {group.earliestExpiry && (
@@ -498,21 +502,25 @@ export default function TrainingNeedsPage() {
                         {group.sites.join(", ") || "N/A"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">Durée:</span>
-                      <span className="font-medium">
-                        {group.formationType.durationDays} jour(s)
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-600">Session:</span>
-                      <span className="font-medium">
-                        {group.formationType.minParticipants}-
-                        {group.formationType.maxParticipants} pers.
-                      </span>
-                    </div>
+                    {group.formationType.estimatedCostPerPerson != null && (
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">Durée:</span>
+                        <span className="font-medium">
+                          {group.formationType.durationDays} jour(s)
+                        </span>
+                      </div>
+                    )}
+                    {group.formationType.estimatedCostPerPerson != null && (
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-600">Session:</span>
+                        <span className="font-medium">
+                          {group.formationType.minParticipants}-
+                          {group.formationType.maxParticipants} pers.
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -546,21 +554,23 @@ export default function TrainingNeedsPage() {
                             {need.priorityReason}
                           </Badge>
 
-                          {/* Coût */}
-                          <div className="text-right text-sm">
-                            <p className="font-medium text-gray-700">
-                              {(need.totalCost || 0).toLocaleString("fr-FR")} €
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Form:{" "}
-                              {(need.estimatedCost || 0).toLocaleString(
-                                "fr-FR",
-                              )}
-                              €{" + "}
-                              Abs:{" "}
-                              {(need.absenceCost || 0).toLocaleString("fr-FR")}€
-                            </p>
-                          </div>
+                          {/* Coût (affiché uniquement si données réelles) */}
+                          {(need.totalCost ?? 0) > 0 && (
+                            <div className="text-right text-sm">
+                              <p className="font-medium text-gray-700">
+                                {(need.totalCost || 0).toLocaleString("fr-FR")} €
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                Form:{" "}
+                                {(need.estimatedCost || 0).toLocaleString(
+                                  "fr-FR",
+                                )}
+                                €{" + "}
+                                Abs:{" "}
+                                {(need.absenceCost || 0).toLocaleString("fr-FR")}€
+                              </p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -573,10 +583,13 @@ export default function TrainingNeedsPage() {
                         💡 Recommandation de planification
                       </p>
                       <p className="text-emerald-700">
-                        {group.totalEmployees <=
-                        group.formationType.maxParticipants
-                          ? `Session unique possible (${group.totalEmployees}/${group.formationType.maxParticipants} places)`
-                          : `${Math.ceil(group.totalEmployees / group.formationType.maxParticipants)} sessions nécessaires`}
+                        {group.formationType.estimatedCostPerPerson != null
+                          ? group.totalEmployees <= group.formationType.maxParticipants
+                            ? `Session unique possible (${group.totalEmployees}/${group.formationType.maxParticipants} places)`
+                            : `${Math.ceil(group.totalEmployees / group.formationType.maxParticipants)} sessions nécessaires`
+                          : group.totalEmployees === 1
+                            ? `1 employé concerné`
+                            : `${group.totalEmployees} employés concernés`}
                       </p>
                     </div>
                     <Button onClick={() => openPlanningModal(group)}>
