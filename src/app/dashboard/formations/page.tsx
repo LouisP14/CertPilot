@@ -14,7 +14,14 @@ async function getFormationTypes() {
     where: { isActive: true, ...companyFilter },
     include: {
       _count: {
-        select: { certificates: true },
+        select: {
+          certificates: {
+            where: {
+              isArchived: false,
+              employee: { isActive: true },
+            },
+          },
+        },
       },
     },
     orderBy: { name: "asc" },

@@ -158,7 +158,6 @@ export function FormationActions({ formation }: { formation: FormationType }) {
           size="icon"
           className="text-red-500 hover:text-red-600"
           title="Supprimer"
-          disabled={formation.certificateCount > 0}
           onClick={() => setDeleteOpen(true)}
         >
           <Trash2 className="h-4 w-4" />

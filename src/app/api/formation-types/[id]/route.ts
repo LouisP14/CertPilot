@@ -124,10 +124,7 @@ export async function DELETE(
     await prisma.certificate.deleteMany({
       where: {
         formationTypeId: id,
-        OR: [
-          { isArchived: true },
-          { employee: { isActive: false } },
-        ],
+        OR: [{ isArchived: true }, { employee: { isActive: false } }],
       },
     });
 

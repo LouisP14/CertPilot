@@ -28,7 +28,7 @@ async function getStats() {
     await Promise.all([
       prisma.employee.count({ where: { isActive: true, ...companyFilter } }),
       prisma.certificate.count({
-        where: { isArchived: false, employee: companyFilter },
+        where: { isArchived: false, employee: { isActive: true, ...companyFilter } },
       }),
       prisma.formationType.count({
         where: { isActive: true, ...companyFilter },
@@ -146,7 +146,7 @@ async function getStats() {
       category: true,
       service: true,
       certificates: {
-        where: { isArchived: false },
+        where: { isArchived: false, employee: { isActive: true } },
         select: { employeeId: true },
       },
     },
