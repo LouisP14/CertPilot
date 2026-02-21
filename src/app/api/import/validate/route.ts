@@ -779,6 +779,7 @@ export async function POST(request: NextRequest) {
               category: ft.category,
               service: ft.service,
               defaultValidityMonths: ft.defaultValidityMonths,
+              isActive: true,
             },
           });
           stats.formationsUpdated++;
@@ -789,6 +790,7 @@ export async function POST(request: NextRequest) {
               category: ft.category,
               service: ft.service,
               defaultValidityMonths: ft.defaultValidityMonths,
+              isActive: true,
               companyId,
             },
           });
@@ -809,6 +811,7 @@ export async function POST(request: NextRequest) {
           team: emp.team,
           managerEmail: emp.managerEmail,
           medicalCheckupDate: emp.medicalCheckupDate,
+          isActive: true,
         };
 
         const existingId = existingMatriculesMap.get(emp.matricule);
@@ -816,6 +819,11 @@ export async function POST(request: NextRequest) {
           await tx.employee.update({
             where: { id: existingId },
             data: employeeData,
+          });
+          // Désarchiver les certificats si l'employé est réactivé
+          await tx.certificate.updateMany({
+            where: { employeeId: existingId, isArchived: true },
+            data: { isArchived: false },
           });
           stats.employeesUpdated++;
         } else {
