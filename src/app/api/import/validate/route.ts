@@ -84,11 +84,8 @@ interface ParsedFormation {
   durationDays: number;
   minParticipants: number;
   maxParticipants: number;
-  trainingMode: string;
   isLegalObligation: boolean;
-  renewalPriority: number;
   estimatedCostPerPerson?: number;
-  estimatedCostPerSession?: number;
   isActive: boolean;
   _action: "CREATE" | "UPDATE";
 }
@@ -390,20 +387,6 @@ function parseFormationsSheet(
     }
     seenNames.add(name.toLowerCase());
 
-    const mode = strVal(
-      row,
-      "Mode (PRESENTIEL/DISTANCIEL/MIXTE)",
-      "Mode",
-    ).toUpperCase();
-    if (mode && !["PRESENTIEL", "DISTANCIEL", "MIXTE"].includes(mode)) {
-      errors.push({
-        sheet: "Formations",
-        row: rowNum,
-        column: "Mode",
-        message: `Mode invalide : "${mode}". Valeurs acceptées : PRESENTIEL, DISTANCIEL, MIXTE`,
-      });
-    }
-
     const serviceVal = strVal(row, "Service") || undefined;
     if (serviceVal && !refs.services.has(serviceVal.toLowerCase())) {
       warnings.push({
@@ -429,10 +412,6 @@ function parseFormationsSheet(
         parseInt_(cellValue(row, "Durée (jours)", "Durée jours")) ?? 1,
       minParticipants: parseInt_(cellValue(row, "Min participants")) ?? 1,
       maxParticipants: parseInt_(cellValue(row, "Max participants")) ?? 12,
-      trainingMode:
-        mode && ["PRESENTIEL", "DISTANCIEL", "MIXTE"].includes(mode)
-          ? mode
-          : "PRESENTIEL",
       isLegalObligation: parseBool(
         cellValue(row, "Obligation légale (OUI/NON)", "Obligation légale"),
       )
@@ -442,15 +421,8 @@ function parseFormationsSheet(
             "Obligation légale",
           ).toUpperCase() === "OUI"
         : false,
-      renewalPriority:
-        parseInt_(
-          cellValue(row, "Priorité renouvellement (1-10)", "Priorité"),
-        ) ?? 5,
       estimatedCostPerPerson: parseFloat_(
         cellValue(row, "Coût estimé/personne (€)", "Coût/personne"),
-      ),
-      estimatedCostPerSession: parseFloat_(
-        cellValue(row, "Coût estimé/session (€)", "Coût/session"),
       ),
       isActive: parseBool(cellValue(row, "Actif (OUI/NON)", "Actif")),
       _action: existingNames.has(name.toLowerCase()) ? "UPDATE" : "CREATE",
@@ -859,11 +831,8 @@ export async function POST(request: NextRequest) {
               durationDays: ft.durationDays,
               minParticipants: ft.minParticipants,
               maxParticipants: ft.maxParticipants,
-              trainingMode: ft.trainingMode,
               isLegalObligation: ft.isLegalObligation,
-              renewalPriority: ft.renewalPriority,
               estimatedCostPerPerson: ft.estimatedCostPerPerson,
-              estimatedCostPerSession: ft.estimatedCostPerSession,
               isActive: ft.isActive,
             },
           });
@@ -879,11 +848,8 @@ export async function POST(request: NextRequest) {
               durationDays: ft.durationDays,
               minParticipants: ft.minParticipants,
               maxParticipants: ft.maxParticipants,
-              trainingMode: ft.trainingMode,
               isLegalObligation: ft.isLegalObligation,
-              renewalPriority: ft.renewalPriority,
               estimatedCostPerPerson: ft.estimatedCostPerPerson,
-              estimatedCostPerSession: ft.estimatedCostPerSession,
               isActive: ft.isActive,
               companyId,
             },

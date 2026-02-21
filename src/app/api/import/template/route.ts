@@ -73,11 +73,8 @@ export async function GET() {
       "Durée (jours)",
       "Min participants",
       "Max participants",
-      "Mode (PRESENTIEL/DISTANCIEL/MIXTE)",
       "Obligation légale (OUI/NON)",
-      "Priorité renouvellement (1-10)",
       "Coût estimé/personne (€)",
-      "Coût estimé/session (€)",
       "Actif (OUI/NON)",
     ];
     const formationsExample = [
@@ -89,11 +86,8 @@ export async function GET() {
       "2",
       "4",
       "12",
-      "PRESENTIEL",
       "OUI",
-      "8",
       "350",
-      "3500",
       "OUI",
     ];
     const formationsSheet = XLSX.utils.aoa_to_sheet([
@@ -166,7 +160,6 @@ export async function GET() {
         "  - Le Nom formation doit être unique. S'il existe déjà, il sera mis à jour.",
       ],
       ["  - Validité (mois) : laissez vide si la formation n'expire pas."],
-      ["  - Mode : PRESENTIEL, DISTANCIEL ou MIXTE."],
       [""],
       ["ONGLET CERTIFICATS :"],
       [
