@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getCertificateStatus } from "@/lib/utils";
-import { AlertCircle, Plus, Users } from "lucide-react";
+import { AlertCircle, Archive, Plus, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EmployeesList } from "./employees-list";
@@ -58,6 +58,15 @@ async function getEmployees() {
   });
 }
 
+async function getArchivedCount() {
+  const companyFilter = await getCompanyFilter();
+  if (!companyFilter?.companyId) return 0;
+
+  return prisma.employee.count({
+    where: { isActive: false, ...companyFilter },
+  });
+}
+
 async function getEmployeeLimit() {
   const companyFilter = await getCompanyFilter();
   if (!companyFilter?.companyId) return { limit: null, plan: null };
@@ -74,9 +83,10 @@ async function getEmployeeLimit() {
 }
 
 export default async function EmployeesPage() {
-  const [employees, { limit, plan }] = await Promise.all([
+  const [employees, { limit, plan }, archivedCount] = await Promise.all([
     getEmployees(),
     getEmployeeLimit(),
+    getArchivedCount(),
   ]);
 
   const currentCount = employees.length;
@@ -132,6 +142,18 @@ export default async function EmployeesPage() {
       </div>
 
       <EmployeesList employees={employees} />
+
+      {/* Lien vers les employés archivés */}
+      {archivedCount > 0 && (
+        <div className="pt-2">
+          <Link href="/dashboard/employees/archived">
+            <Button variant="outline" size="sm" className="text-gray-500 hover:text-gray-700">
+              <Archive className="mr-2 h-4 w-4" />
+              Voir les employés archivés ({archivedCount})
+            </Button>
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
