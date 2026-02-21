@@ -6,7 +6,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
-import { ArrowLeft, Camera, Loader2, Trash2, Upload, X } from "lucide-react";
+import { Archive, ArrowLeft, Camera, Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -605,8 +605,8 @@ export function EmployeeForm({ employee, employees = [] }: EmployeeFormProps) {
               onClick={() => setShowDeleteConfirm(true)}
               disabled={deleting}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Supprimer l'employé
+              <Archive className="mr-2 h-4 w-4" />
+              Archiver l'employé
             </Button>
           ) : (
             <div></div>
@@ -633,15 +633,15 @@ export function EmployeeForm({ employee, employees = [] }: EmployeeFormProps) {
         </div>
       </form>
 
-      {/* Dialog de confirmation de suppression */}
+      {/* Dialog de confirmation d'archivage */}
       {employee && (
         <ConfirmDialog
           open={showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(false)}
           onConfirm={handleDelete}
-          title="Supprimer l'employé"
-          message={`Êtes-vous sûr de vouloir supprimer ${employee.firstName} ${employee.lastName} ? Cette action supprimera également tous ses certificats et ne peut pas être annulée.`}
-          confirmText={deleting ? "Suppression..." : "Supprimer"}
+          title="Archiver l'employé"
+          message={`Êtes-vous sûr de vouloir archiver ${employee.firstName} ${employee.lastName} ? L'employé sera désactivé et ses certificats seront archivés. Ses inscriptions aux sessions futures seront annulées. L'historique de ses formations sera conservé pour traçabilité.`}
+          confirmText={deleting ? "Archivage..." : "Archiver"}
           variant="danger"
         />
       )}
