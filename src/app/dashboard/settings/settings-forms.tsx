@@ -323,7 +323,7 @@ export function SignatureForm({ initialData }: SignatureFormProps) {
             }
             className="peer sr-only"
           />
-          <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300"></div>
+          <div className="peer h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300"></div>
         </label>
         <span className="text-sm font-medium text-gray-700">
           Afficher la signature sur les passeports
@@ -989,7 +989,7 @@ export function PriorityForm({ priorityThresholds }: PriorityFormProps) {
           return (
             <div key={level.key} className="flex items-start gap-4">
               {/* Badge priorité */}
-              <div className="flex-shrink-0 pt-1">
+              <div className="shrink-0 pt-1">
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${level.badgeBg}`}
                 >
@@ -1026,7 +1026,7 @@ export function PriorityForm({ priorityThresholds }: PriorityFormProps) {
 
         {/* Faible — automatique */}
         <div className="flex items-start gap-4 opacity-60">
-          <div className="flex-shrink-0 pt-1">
+          <div className="shrink-0 pt-1">
             <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-700 border border-green-200">
               Faible
             </span>

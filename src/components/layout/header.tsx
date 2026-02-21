@@ -452,9 +452,7 @@ export function Header({ user }: HeaderProps) {
             <User className="h-4 w-4 text-[#173B56]" />
           </div>
           <div className="text-sm">
-            <p className="font-semibold text-[#173B56]">
-              {displayName}
-            </p>
+            <p className="font-semibold text-[#173B56]">{displayName}</p>
             <p className="text-xs text-slate-500">{displayEmail}</p>
           </div>
         </Link>

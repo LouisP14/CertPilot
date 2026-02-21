@@ -7,11 +7,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Download,
   Eye,
   FileText,
   Filter,
   GraduationCap,
   History,
+  Loader2,
   Mail,
   PenTool,
   Search,
@@ -112,6 +114,7 @@ const ENTITY_ICONS: Record<string, React.ReactNode> = {
 export default function AuditTrailPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
@@ -156,6 +159,39 @@ export default function AuditTrailPage() {
     fetchLogs();
   }, [fetchLogs]);
 
+  const handleExportExcel = async () => {
+    setExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.append("search", search);
+      if (entityTypeFilter) params.append("entityType", entityTypeFilter);
+      if (actionFilter) params.append("action", actionFilter);
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+
+      const response = await fetch(`/api/audit/export?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Échec de l'export Excel");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const datePart = new Date().toISOString().split("T")[0];
+      link.download = `audit-trail-${datePart}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      link.remove();
+    } catch (error) {
+      console.error("Erreur lors de l'export Excel:", error);
+      alert("Erreur lors de l'export Excel de l'audit trail");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleString("fr-FR", {
       day: "2-digit",
@@ -196,6 +232,24 @@ export default function AuditTrailPage() {
             </p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleExportExcel}
+          disabled={exporting}
+          className="inline-flex items-center gap-2 rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {exporting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Export en cours...
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              Exporter Excel
+            </>
+          )}
+        </button>
       </div>
 
       {/* Filtres */}
@@ -527,4 +581,3 @@ export default function AuditTrailPage() {
     </div>
   );
 }
-

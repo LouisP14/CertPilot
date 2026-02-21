@@ -94,7 +94,7 @@ export function CalendarListView({
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-50">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <Input
@@ -105,7 +105,7 @@ export function CalendarListView({
                 />
               </div>
             </div>
-            <div className="w-[200px]">
+            <div className="w-50">
               <Select
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
@@ -208,18 +208,12 @@ export function CalendarListView({
                     <table className="w-full text-sm table-fixed">
                       <thead>
                         <tr className="border-b text-left text-gray-700">
-                          <th className="pb-2 font-semibold w-[100px]">Date</th>
-                          <th className="pb-2 font-semibold w-[180px]">
-                            Employé
-                          </th>
-                          <th className="pb-2 font-semibold w-[120px]">
-                            Service
-                          </th>
+                          <th className="pb-2 font-semibold w-25">Date</th>
+                          <th className="pb-2 font-semibold w-45">Employé</th>
+                          <th className="pb-2 font-semibold w-30">Service</th>
                           <th className="pb-2 font-semibold">Formation</th>
-                          <th className="pb-2 font-semibold w-[120px]">
-                            Catégorie
-                          </th>
-                          <th className="pb-2 font-semibold w-[100px] text-right">
+                          <th className="pb-2 font-semibold w-30">Catégorie</th>
+                          <th className="pb-2 font-semibold w-25 text-right">
                             Jours
                           </th>
                         </tr>
@@ -297,4 +291,3 @@ export function CalendarListView({
     </div>
   );
 }
-
