@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Récupérer les employés avec leurs coûts (filtrés par entreprise)
+    // 2. Récupérer les employés avec leurs coûts (filtrés par entreprise, actifs uniquement)
     const employees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds }, companyId },
+      where: { id: { in: employeeIds }, companyId, isActive: true },
       select: {
         id: true,
         firstName: true,

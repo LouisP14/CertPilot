@@ -28,16 +28,16 @@ export async function GET() {
       where: { isActive: true, companyId },
     });
 
-    // Total formations actives (non archivées)
+    // Total formations actives (non archivées, employés actifs uniquement)
     const totalCertificates = await prisma.certificate.count({
-      where: { isArchived: false, employee: { companyId } },
+      where: { isArchived: false, employee: { companyId, isActive: true } },
     });
 
     // Formations expirant ce mois
     const expiringThisMonth = await prisma.certificate.count({
       where: {
         isArchived: false,
-        employee: { companyId },
+        employee: { companyId, isActive: true },
         expiryDate: {
           not: null,
           gte: now,
@@ -50,7 +50,7 @@ export async function GET() {
     const expired = await prisma.certificate.count({
       where: {
         isArchived: false,
-        employee: { companyId },
+        employee: { companyId, isActive: true },
         expiryDate: {
           not: null,
           lt: now,

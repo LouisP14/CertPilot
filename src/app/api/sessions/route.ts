@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
         formationType: true,
         trainingCenter: true,
         attendees: {
+          where: {
+            employee: { isActive: true },
+          },
           include: {
             employee: {
               select: {
@@ -127,14 +130,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // SÉCURITÉ : vérifier que tous les employés appartiennent à l'entreprise
+    // SÉCURITÉ : vérifier que tous les employés appartiennent à l'entreprise et sont actifs
     if (employeeIds && employeeIds.length > 0) {
       const validCount = await prisma.employee.count({
-        where: { id: { in: employeeIds }, companyId },
+        where: { id: { in: employeeIds }, companyId, isActive: true },
       });
       if (validCount !== employeeIds.length) {
         return NextResponse.json(
-          { error: "Un ou plusieurs employés sont invalides" },
+          { error: "Un ou plusieurs employés sont invalides ou désactivés" },
           { status: 400 },
         );
       }

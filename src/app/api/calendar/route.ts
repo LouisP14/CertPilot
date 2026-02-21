@@ -71,6 +71,9 @@ export async function GET(request: NextRequest) {
           },
         },
         attendees: {
+          where: {
+            employee: { isActive: true },
+          },
           include: {
             employee: {
               select: {
@@ -88,11 +91,11 @@ export async function GET(request: NextRequest) {
       orderBy: { startDate: "asc" },
     });
 
-    // 2. Expirations de certificats
+    // 2. Expirations de certificats (uniquement employés actifs)
     const expirations = await prisma.certificate.findMany({
       where: {
         isArchived: false,
-        employee: { companyId },
+        employee: { companyId, isActive: true },
         expiryDate: {
           gte: startDate,
           lte: endDate,
@@ -243,14 +246,14 @@ export async function GET(request: NextRequest) {
       prisma.certificate.count({
         where: {
           isArchived: false,
-          employee: { companyId },
+          employee: { companyId, isActive: true },
           expiryDate: { gte: today, lte: in30Days },
         },
       }),
       prisma.certificate.count({
         where: {
           isArchived: false,
-          employee: { companyId },
+          employee: { companyId, isActive: true },
           expiryDate: { lt: today },
         },
       }),

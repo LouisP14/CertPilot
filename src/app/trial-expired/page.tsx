@@ -104,7 +104,7 @@ export default function TrialExpiredPage() {
                 <span className="text-3xl font-bold text-slate-900">
                   {plan.price}€
                 </span>
-                <span className="text-slate-500">/mois</span>
+                <span className="text-slate-500">/mois HT</span>
               </div>
 
               <button

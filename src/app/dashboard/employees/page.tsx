@@ -99,19 +99,20 @@ export default async function EmployeesPage() {
               Gérer les passeports formation de vos employés
             </p>
             {limit !== null && (
-              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeCls}`}>
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${badgeCls}`}
+              >
                 <Users className="h-3 w-3" />
                 {currentCount} / {limit} employés
-                {plan && (
-                  <span className="ml-1 opacity-70">· {plan}</span>
-                )}
+                {plan && <span className="ml-1 opacity-70">· {plan}</span>}
               </span>
             )}
           </div>
           {atLimit && (
             <p className="flex items-center gap-1 text-sm text-red-600 mt-1">
               <AlertCircle className="h-4 w-4" />
-              Limite atteinte — passez à un plan supérieur pour ajouter des employés.
+              Limite atteinte — passez à un plan supérieur pour ajouter des
+              employés.
             </p>
           )}
         </div>

@@ -16,11 +16,11 @@ export async function GET() {
     }
     const companyId = session.user.companyId;
 
-    // Récupérer tous les besoins en attente
+    // Récupérer tous les besoins en attente (employés actifs uniquement)
     const needs = await prisma.trainingNeed.findMany({
       where: {
         status: "PENDING",
-        employee: { companyId },
+        employee: { companyId, isActive: true },
       },
       include: {
         employee: {

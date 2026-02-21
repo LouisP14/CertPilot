@@ -18,11 +18,11 @@ export async function GET() {
     const now = new Date();
     const in90Days = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
-    // Get certificates expiring within 90 days or already expired
+    // Get certificates expiring within 90 days or already expired (uniquement employés actifs)
     const certificates = await prisma.certificate.findMany({
       where: {
         isArchived: false,
-        employee: { companyId },
+        employee: { companyId, isActive: true },
         expiryDate: {
           not: null,
           lte: in90Days,

@@ -22,6 +22,9 @@ export async function GET(
         formationType: true,
         trainingCenter: true,
         attendees: {
+          where: {
+            employee: { isActive: true },
+          },
           include: {
             employee: {
               select: {

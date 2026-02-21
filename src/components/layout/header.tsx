@@ -438,7 +438,10 @@ export function Header({ user }: HeaderProps) {
         </div>
 
         {/* User menu */}
-        <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+        <Link
+          href="/dashboard/profile"
+          className="flex items-center gap-3 pl-4 border-l border-slate-200 hover:bg-slate-50 rounded-lg px-3 py-1.5 transition-colors cursor-pointer"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#173B56]/10">
             <User className="h-4 w-4 text-[#173B56]" />
           </div>
@@ -448,7 +451,7 @@ export function Header({ user }: HeaderProps) {
             </p>
             <p className="text-xs text-slate-500">{user?.email}</p>
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );

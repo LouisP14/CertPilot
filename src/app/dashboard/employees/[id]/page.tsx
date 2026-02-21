@@ -22,8 +22,9 @@ import { CertificatesTable } from "./certificates-table";
 import { SignatureStatus } from "./signature-status";
 
 async function getEmployee(id: string) {
-  const employee = await prisma.employee.findUnique({
-    where: { id },
+  const companyFilter = await getCompanyFilter();
+  const employee = await prisma.employee.findFirst({
+    where: { id, ...companyFilter },
     select: {
       id: true,
       firstName: true,

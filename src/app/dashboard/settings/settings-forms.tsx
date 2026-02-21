@@ -1032,7 +1032,9 @@ export function PriorityForm({ priorityThresholds }: PriorityFormProps) {
             </span>
           </div>
           <div className="flex-1 space-y-1">
-            <p className="text-sm text-gray-500">Aucune action urgente requise</p>
+            <p className="text-sm text-gray-500">
+              Aucune action urgente requise
+            </p>
             <p className="text-xs text-gray-400">
               Au-delà de {thresholds.normal} jours (automatique)
             </p>
@@ -1081,10 +1083,7 @@ export function PriorityForm({ priorityThresholds }: PriorityFormProps) {
         </div>
       )}
 
-      <Button
-        type="submit"
-        disabled={loading || !!validationError}
-      >
+      <Button type="submit" disabled={loading || !!validationError}>
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

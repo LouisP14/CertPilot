@@ -20,8 +20,14 @@ export async function POST(request: NextRequest) {
     });
 
     const body = await request.json();
-    const { plan, billing, contactRequestId, customerEmail, companyName, contactName } =
-      body;
+    const {
+      plan,
+      billing,
+      contactRequestId,
+      customerEmail,
+      companyName,
+      contactName,
+    } = body;
 
     const isAnnual = billing === "annual";
 
@@ -39,9 +45,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Plan invalide" }, { status: 400 });
     }
 
-    const selectedPriceId = isAnnual ? planConfig.annualPriceId : planConfig.priceId;
+    const selectedPriceId = isAnnual
+      ? planConfig.annualPriceId
+      : planConfig.priceId;
 
-    console.log("Plan config:", planConfig, "| Billing:", isAnnual ? "annual" : "monthly");
+    console.log(
+      "Plan config:",
+      planConfig,
+      "| Billing:",
+      isAnnual ? "annual" : "monthly",
+    );
 
     // URLs de redirection
     const baseUrl = process.env.NEXTAUTH_URL || "https://www.certpilot.eu";

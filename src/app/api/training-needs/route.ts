@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const formationTypeId = searchParams.get("formationTypeId");
 
     const where: Record<string, unknown> = {
-      employee: { companyId },
+      employee: { companyId, isActive: true },
     };
     if (status) where.status = status;
     if (formationTypeId) where.formationTypeId = formationTypeId;
@@ -109,17 +109,31 @@ export async function POST(request: NextRequest) {
     ];
 
     // Helper : calcul du score de priorité (1-10) selon les seuils configurés
-    const computePriority = (daysUntilExpiry: number): { priority: number; priorityReason: string } => {
+    const computePriority = (
+      daysUntilExpiry: number,
+    ): { priority: number; priorityReason: string } => {
       if (daysUntilExpiry <= 0) {
         return { priority: 10, priorityReason: "⚠️ EXPIRÉ" };
       } else if (daysUntilExpiry <= critiqueDays) {
-        return { priority: 9, priorityReason: `Expire dans ${daysUntilExpiry} jour(s)` };
+        return {
+          priority: 9,
+          priorityReason: `Expire dans ${daysUntilExpiry} jour(s)`,
+        };
       } else if (daysUntilExpiry <= urgentDays) {
-        return { priority: 8, priorityReason: `Expire dans ${daysUntilExpiry} jours` };
+        return {
+          priority: 8,
+          priorityReason: `Expire dans ${daysUntilExpiry} jours`,
+        };
       } else if (daysUntilExpiry <= normalDays) {
-        return { priority: 6, priorityReason: `Expire dans ${Math.ceil(daysUntilExpiry / 7)} semaines` };
+        return {
+          priority: 6,
+          priorityReason: `Expire dans ${Math.ceil(daysUntilExpiry / 7)} semaines`,
+        };
       } else {
-        return { priority: 4, priorityReason: `Expire dans ${Math.ceil(daysUntilExpiry / 30)} mois` };
+        return {
+          priority: 4,
+          priorityReason: `Expire dans ${Math.ceil(daysUntilExpiry / 30)} mois`,
+        };
       }
     };
 

@@ -18,6 +18,7 @@ export async function GET() {
     const employees = await prisma.employee.findMany({
       where: {
         companyId,
+        isActive: true,
       },
       include: {
         certificates: {

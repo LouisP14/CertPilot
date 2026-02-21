@@ -199,10 +199,57 @@ export async function DELETE(
       );
     }
 
-    // Soft delete - just mark as inactive
-    await prisma.employee.update({
-      where: { id, companyId },
-      data: { isActive: false },
+    // Soft delete - mark as inactive + nettoyer les données liées
+    await prisma.$transaction(async (tx) => {
+      // 1. Retirer l'employé des sessions planifiées (PLANNED/CONFIRMED)
+      await tx.trainingSessionAttendee.deleteMany({
+        where: {
+          employeeId: id,
+          session: {
+            status: { in: ["PLANNED", "CONFIRMED"] },
+          },
+        },
+      });
+
+      // 2. Annuler les besoins de formation en attente
+      await tx.trainingNeed.updateMany({
+        where: {
+          employeeId: id,
+          status: "PENDING",
+        },
+        data: { status: "CANCELLED" },
+      });
+
+      // 3. Supprimer les absences futures
+      await tx.employeeAbsence.deleteMany({
+        where: {
+          employeeId: id,
+          startDate: { gte: new Date() },
+        },
+      });
+
+      // 4. Archiver les certificats actifs
+      await tx.certificate.updateMany({
+        where: {
+          employeeId: id,
+          isArchived: false,
+        },
+        data: { isArchived: true, archivedAt: new Date() },
+      });
+
+      // 5. Supprimer la signature de passeport en cours
+      await tx.passportSignature.deleteMany({
+        where: {
+          employeeId: id,
+          status: { in: ["DRAFT", "PENDING_EMPLOYEE", "PENDING_MANAGER"] },
+        },
+      });
+
+      // 6. Désactiver l'employé
+      await tx.employee.update({
+        where: { id, companyId },
+        data: { isActive: false },
+      });
     });
 
     // Audit Trail

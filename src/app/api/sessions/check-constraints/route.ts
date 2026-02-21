@@ -93,9 +93,9 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Récupérer les informations des employés sélectionnés (filtrés par entreprise)
+    // Récupérer les informations des employés sélectionnés (filtrés par entreprise, actifs uniquement)
     const selectedEmployees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds }, companyId },
+      where: { id: { in: employeeIds }, companyId, isActive: true },
       select: { id: true, site: true, team: true, department: true },
     });
 

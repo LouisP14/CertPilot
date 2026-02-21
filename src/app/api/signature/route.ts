@@ -18,9 +18,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "employeeId requis" }, { status: 400 });
     }
 
-    // SÉCURITÉ : vérifier que l'employé appartient à l'entreprise
+    // SÉCURITÉ : vérifier que l'employé appartient à l'entreprise et est actif
     const employeeCheck = await prisma.employee.findFirst({
-      where: { id: employeeId, companyId: session.user.companyId },
+      where: {
+        id: employeeId,
+        companyId: session.user.companyId,
+        isActive: true,
+      },
     });
     if (!employeeCheck) {
       return NextResponse.json(

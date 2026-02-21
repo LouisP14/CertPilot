@@ -57,12 +57,13 @@ export async function POST(request: Request) {
         ? formatDate(startDate)
         : `du ${formatDate(startDate)} au ${formatDate(endDate)}`;
 
-    // Récupérer les emails des employés depuis la base de données
+    // Récupérer les emails des employés depuis la base de données (actifs uniquement)
     const employeeIds = employees.map((e: { id: string }) => e.id);
     const employeesFromDb = await prisma.employee.findMany({
       where: {
         id: { in: employeeIds },
         companyId,
+        isActive: true,
       },
       select: { id: true, email: true, firstName: true, lastName: true },
     });

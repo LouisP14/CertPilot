@@ -7,7 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Bell, Building, CalendarCog, ChevronDown, TrendingUp, Users } from "lucide-react";
+import {
+  Bell,
+  Building,
+  CalendarCog,
+  ChevronDown,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 import { ReferenceManager } from "./reference-manager";
 import {
@@ -242,4 +249,3 @@ export function SettingsAccordion({ company }: SettingsAccordionProps) {
     </div>
   );
 }
-
