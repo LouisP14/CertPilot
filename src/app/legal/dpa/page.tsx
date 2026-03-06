@@ -2,14 +2,37 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
-  title: "DPA | CertPilot",
+  title: "Accord de traitement des données (DPA) | CertPilot",
   description:
-    "Accord de traitement des données (Data Processing Agreement) de CertPilot",
+    "Accord de traitement des données (Data Processing Agreement) de CertPilot - Conformité RGPD",
+  alternates: {
+    canonical: "/legal/dpa",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
+
+function BreadcrumbJsonLd() {
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.certpilot.eu";
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "DPA", item: `${siteUrl}/legal/dpa` },
+    ],
+  };
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+  );
+}
 
 export default function DpaPage() {
   return (
     <div className="min-h-screen bg-slate-50">
+      <BreadcrumbJsonLd />
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <Link

@@ -1,6 +1,7 @@
 import { auditSendConvocation } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, sendConvocationSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -15,6 +16,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("Convocations - Body reçu:", JSON.stringify(body, null, 2));
 
+    const parsed = parseBody(sendConvocationSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       sessionId,
       convocationId, // ID de la convocation existante (pour mise à jour brouillon → envoyée)
@@ -27,7 +32,7 @@ export async function POST(request: Request) {
       notes,
       employees,
       pdfBase64,
-    } = body;
+    } = parsed.data;
 
     // Récupérer les infos de l'entreprise
     const company = await prisma.company.findUnique({
@@ -55,7 +60,7 @@ export async function POST(request: Request) {
     const dateText =
       startDate === endDate
         ? formatDate(startDate)
-        : `du ${formatDate(startDate)} au ${formatDate(endDate)}`;
+        : `du ${formatDate(startDate)} au ${formatDate(endDate || startDate)}`;
 
     // Récupérer les emails des employés depuis la base de données (actifs uniquement)
     const employeeIds = employees.map((e: { id: string }) => e.id);
@@ -283,10 +288,10 @@ export async function POST(request: Request) {
             formationId: sessionId || formationName,
             formationName,
             startDate,
-            endDate,
-            startTime,
-            endTime,
-            location,
+            endDate: endDate || "",
+            startTime: startTime || "",
+            endTime: endTime || "",
+            location: location || "",
             notes: notes || "",
             status: "sent",
             companyId,

@@ -1,6 +1,7 @@
 import { auditPlanSession } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, createSessionSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET: Liste des sessions planifiées
@@ -84,6 +85,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsed = parseBody(createSessionSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       formationTypeId,
       trainingCenterId,
@@ -104,7 +109,7 @@ export async function POST(request: NextRequest) {
       notes,
       employeeIds, // Liste des employés à inviter
       trainingNeedIds, // Besoins de formation à marquer comme planifiés
-    } = body;
+    } = parsed.data;
 
     // SÉCURITÉ : vérifier que le formationType appartient à l'entreprise
     const formationTypeCheck = await prisma.formationType.findFirst({
@@ -180,14 +185,14 @@ export async function POST(request: NextRequest) {
         location: location || null,
         isIntraCompany: isIntraCompany ?? false,
         trainingMode: trainingMode || "PRESENTIEL",
-        minParticipants: minParticipants || 1,
-        maxParticipants: maxParticipants || 12,
-        trainingCost: trainingCost ? parseFloat(trainingCost) : null,
-        costPerPerson: costPerPerson ? parseFloat(costPerPerson) : null,
+        minParticipants: minParticipants ? Number(minParticipants) : 1,
+        maxParticipants: maxParticipants ? Number(maxParticipants) : 12,
+        trainingCost: trainingCost ? parseFloat(String(trainingCost)) : null,
+        costPerPerson: costPerPerson ? parseFloat(String(costPerPerson)) : null,
         totalAbsenceCost: totalAbsenceCost
-          ? parseFloat(totalAbsenceCost)
+          ? parseFloat(String(totalAbsenceCost))
           : null,
-        totalCost: totalCost ? parseFloat(totalCost) : null,
+        totalCost: totalCost ? parseFloat(String(totalCost)) : null,
         status: status || "PLANNED",
         notes: notes || null,
       },
@@ -236,7 +241,7 @@ export async function POST(request: NextRequest) {
         (sum: number, att: { absenceCost: number }) => sum + att.absenceCost,
         0,
       );
-      const sessionTrainingCost = trainingCost ? parseFloat(trainingCost) : 0;
+      const sessionTrainingCost = trainingCost ? parseFloat(String(trainingCost)) : 0;
       const calculatedTotalCost =
         sessionTrainingCost + calculatedTotalAbsenceCost;
 

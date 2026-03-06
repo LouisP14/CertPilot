@@ -1,4 +1,5 @@
 import { getPlanConfig } from "@/lib/stripe";
+import { parseBody, stripeCheckoutSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -20,6 +21,10 @@ export async function POST(request: NextRequest) {
     });
 
     const body = await request.json();
+    const parsed = parseBody(stripeCheckoutSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       plan,
       billing,
@@ -27,7 +32,7 @@ export async function POST(request: NextRequest) {
       customerEmail,
       companyName,
       contactName,
-    } = body;
+    } = parsed.data;
 
     const isAnnual = billing === "annual";
 

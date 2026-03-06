@@ -1,11 +1,16 @@
 import { sendPaymentLink } from "@/lib/email";
+import { parseBody, paymentLinkSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // POST - Envoyer l'email avec le lien de paiement
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { to, contactName, companyName, plan, billing, paymentUrl } = body;
+    const parsed = parseBody(paymentLinkSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const { to, contactName, companyName, plan, billing, paymentUrl } = parsed.data;
 
     console.log("Envoi email paiement à:", to);
     console.log("SMTP config:", {
@@ -15,19 +20,12 @@ export async function POST(request: NextRequest) {
       from: process.env.SMTP_FROM,
     });
 
-    if (!to || !contactName || !companyName || !plan || !paymentUrl) {
-      return NextResponse.json(
-        { error: "Paramètres manquants" },
-        { status: 400 },
-      );
-    }
-
     await sendPaymentLink({
       to,
       contactName,
       companyName,
       plan,
-      billing: billing ?? "monthly",
+      billing: (billing as "monthly" | "annual") ?? "monthly",
       paymentUrl,
     });
 

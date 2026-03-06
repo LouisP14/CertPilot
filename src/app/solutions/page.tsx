@@ -2,6 +2,9 @@ import { ArrowRight, Heart, Shield, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+// Revalidate every hour - these pages are mostly static
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   title:
     "Solutions par formation | CACES, SST, Habilitation électrique - CertPilot",
@@ -51,9 +54,28 @@ const SOLUTIONS = [
   },
 ];
 
+function BreadcrumbJsonLd() {
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.certpilot.eu";
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Solutions", item: `${siteUrl}/solutions` },
+    ],
+  };
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+    />
+  );
+}
+
 export default function SolutionsPage() {
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-50 to-white">
+      <BreadcrumbJsonLd />
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/70 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-6">

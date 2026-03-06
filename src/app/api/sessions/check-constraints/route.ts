@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, checkConstraintsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // Vérifier les contraintes d'absence pour une date et des employés donnés
@@ -12,14 +13,11 @@ export async function POST(request: NextRequest) {
     const companyId = session.user.companyId;
 
     const body = await request.json();
-    const { date, employeeIds } = body;
-
-    if (!date || !employeeIds || employeeIds.length === 0) {
-      return NextResponse.json(
-        { error: "Date et employés requis" },
-        { status: 400 },
-      );
+    const parsed = parseBody(checkConstraintsSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { date, employeeIds } = parsed.data;
 
     // Récupérer les contraintes de planification
     const company = await prisma.company.findUnique({

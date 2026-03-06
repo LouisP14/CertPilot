@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, updateNeedSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // PUT: Mettre à jour le statut d'un besoin
@@ -15,7 +16,11 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { status, plannedSessionId } = body;
+    const parsed = parseBody(updateNeedSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const { status, plannedSessionId } = parsed.data;
 
     // SÉCURITÉ : vérifier que le besoin appartient à l'entreprise
     const existingNeed = await prisma.trainingNeed.findFirst({

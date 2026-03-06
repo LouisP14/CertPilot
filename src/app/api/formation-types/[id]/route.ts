@@ -1,6 +1,7 @@
 import { auditDelete, auditUpdate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, updateFormationTypeSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -15,14 +16,11 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { name, category, service, defaultValidityMonths } = body;
-
-    if (!name) {
-      return NextResponse.json(
-        { error: "Le nom de la formation est requis" },
-        { status: 400 },
-      );
+    const parsed = parseBody(updateFormationTypeSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { name, category, service, defaultValidityMonths } = parsed.data;
 
     // Récupérer l'ancienne formation pour l'audit + vérification appartenance
     const oldFormation = await prisma.formationType.findFirst({
@@ -42,7 +40,7 @@ export async function PUT(
         category: category || null,
         service: service || null,
         defaultValidityMonths: defaultValidityMonths
-          ? parseInt(defaultValidityMonths)
+          ? parseInt(String(defaultValidityMonths))
           : null,
       },
     });

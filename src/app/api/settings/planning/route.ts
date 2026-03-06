@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, planningSettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET: Récupérer les contraintes de planification
@@ -66,6 +67,10 @@ export async function PUT(request: NextRequest) {
     const companyId = session.user.companyId;
 
     const body = await request.json();
+    const parsed = parseBody(planningSettingsSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       monthlyBudget,
       quarterlyBudget,
@@ -79,7 +84,7 @@ export async function PUT(request: NextRequest) {
       preferGroupSessions,
       preferIntraCompany,
       minDaysBeforeExpiry,
-    } = body;
+    } = parsed.data;
 
     // Récupérer l'entreprise
     const company = await prisma.company.findUnique({
@@ -97,64 +102,64 @@ export async function PUT(request: NextRequest) {
       where: { companyId: company.id },
       create: {
         companyId: company.id,
-        monthlyBudget: monthlyBudget ? parseFloat(monthlyBudget) : null,
-        quarterlyBudget: quarterlyBudget ? parseFloat(quarterlyBudget) : null,
-        yearlyBudget: yearlyBudget ? parseFloat(yearlyBudget) : null,
-        alertThresholdDays: alertThresholdDays || "90,60,30",
-        maxAbsentPerTeam: maxAbsentPerTeam ? parseInt(maxAbsentPerTeam) : 2,
-        maxAbsentPerSite: maxAbsentPerSite ? parseInt(maxAbsentPerSite) : 5,
-        maxAbsentPercent: maxAbsentPercent ? parseFloat(maxAbsentPercent) : 20,
-        blacklistedDates: blacklistedDates || "[]",
-        allowedTrainingDays: allowedTrainingDays ?? 31,
+        monthlyBudget: monthlyBudget ? parseFloat(String(monthlyBudget)) : null,
+        quarterlyBudget: quarterlyBudget ? parseFloat(String(quarterlyBudget)) : null,
+        yearlyBudget: yearlyBudget ? parseFloat(String(yearlyBudget)) : null,
+        alertThresholdDays: alertThresholdDays ? String(alertThresholdDays) : "90,60,30",
+        maxAbsentPerTeam: maxAbsentPerTeam ? parseInt(String(maxAbsentPerTeam)) : 2,
+        maxAbsentPerSite: maxAbsentPerSite ? parseInt(String(maxAbsentPerSite)) : 5,
+        maxAbsentPercent: maxAbsentPercent ? parseFloat(String(maxAbsentPercent)) : 20,
+        blacklistedDates: blacklistedDates ? JSON.stringify(blacklistedDates) : "[]",
+        allowedTrainingDays: allowedTrainingDays ? (Array.isArray(allowedTrainingDays) ? allowedTrainingDays.length : Number(allowedTrainingDays)) : 31,
         preferGroupSessions: preferGroupSessions ?? true,
         preferIntraCompany: preferIntraCompany ?? true,
         minDaysBeforeExpiry: minDaysBeforeExpiry
-          ? parseInt(minDaysBeforeExpiry)
+          ? parseInt(String(minDaysBeforeExpiry))
           : 30,
       },
       update: {
         monthlyBudget:
           monthlyBudget !== undefined
             ? monthlyBudget
-              ? parseFloat(monthlyBudget)
+              ? parseFloat(String(monthlyBudget))
               : null
             : undefined,
         quarterlyBudget:
           quarterlyBudget !== undefined
             ? quarterlyBudget
-              ? parseFloat(quarterlyBudget)
+              ? parseFloat(String(quarterlyBudget))
               : null
             : undefined,
         yearlyBudget:
           yearlyBudget !== undefined
             ? yearlyBudget
-              ? parseFloat(yearlyBudget)
+              ? parseFloat(String(yearlyBudget))
               : null
             : undefined,
-        alertThresholdDays: alertThresholdDays || undefined,
+        alertThresholdDays: alertThresholdDays ? String(alertThresholdDays) : undefined,
         maxAbsentPerTeam:
           maxAbsentPerTeam !== undefined
-            ? parseInt(maxAbsentPerTeam)
+            ? parseInt(String(maxAbsentPerTeam))
             : undefined,
         maxAbsentPerSite:
           maxAbsentPerSite !== undefined
-            ? parseInt(maxAbsentPerSite)
+            ? parseInt(String(maxAbsentPerSite))
             : undefined,
         maxAbsentPercent:
           maxAbsentPercent !== undefined
-            ? parseFloat(maxAbsentPercent)
+            ? parseFloat(String(maxAbsentPercent))
             : undefined,
         blacklistedDates:
-          blacklistedDates !== undefined ? blacklistedDates : undefined,
+          blacklistedDates !== undefined ? JSON.stringify(blacklistedDates) : undefined,
         allowedTrainingDays:
-          allowedTrainingDays !== undefined ? allowedTrainingDays : undefined,
+          allowedTrainingDays !== undefined ? (Array.isArray(allowedTrainingDays) ? allowedTrainingDays.length : Number(allowedTrainingDays)) : undefined,
         preferGroupSessions:
           preferGroupSessions !== undefined ? preferGroupSessions : undefined,
         preferIntraCompany:
           preferIntraCompany !== undefined ? preferIntraCompany : undefined,
         minDaysBeforeExpiry:
           minDaysBeforeExpiry !== undefined
-            ? parseInt(minDaysBeforeExpiry)
+            ? parseInt(String(minDaysBeforeExpiry))
             : undefined,
       },
     });

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { sendEmployeeSignatureLink } from "@/lib/email";
 import prisma from "@/lib/prisma";
+import { parseBody, initiateSignatureSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET - Récupérer le statut de signature d'un employé
@@ -69,11 +70,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { employeeId, siteManagerEmail, siteManagerName } = body;
-
-    if (!employeeId) {
-      return NextResponse.json({ error: "employeeId requis" }, { status: 400 });
+    const parsed = parseBody(initiateSignatureSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { employeeId, siteManagerEmail, siteManagerName } = parsed.data;
 
     // Vérifier que l'employé existe, a un email, et appartient à l'entreprise
     const employee = await prisma.employee.findFirst({
@@ -91,13 +92,6 @@ export async function POST(request: NextRequest) {
     if (!employee.email) {
       return NextResponse.json(
         { error: "L'employé doit avoir une adresse email pour signer" },
-        { status: 400 },
-      );
-    }
-
-    if (!siteManagerEmail) {
-      return NextResponse.json(
-        { error: "Email du responsable requis" },
         { status: 400 },
       );
     }

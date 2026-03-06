@@ -1,6 +1,7 @@
 import { auditCreate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { createEmployeeSchema, parseBody } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -51,6 +52,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsed = parseBody(createEmployeeSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+
     const {
       firstName,
       lastName,
@@ -66,15 +72,7 @@ export async function POST(request: NextRequest) {
       managerId,
       managerEmail,
       medicalCheckupDate,
-    } = body;
-
-    // Validation
-    if (!firstName || !lastName || !employeeId || !position || !department) {
-      return NextResponse.json(
-        { error: "Champs obligatoires manquants" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Check if employeeId already exists (dans la même companyId)
     if (!session.user.companyId) {
@@ -129,10 +127,10 @@ export async function POST(request: NextRequest) {
         department,
         site: site || null,
         team: team || null,
-        hourlyCost: hourlyCost ? parseFloat(hourlyCost) : null,
+        hourlyCost: hourlyCost ? parseFloat(String(hourlyCost)) : null,
         contractType: contractType || null,
         workingHoursPerDay: workingHoursPerDay
-          ? parseFloat(workingHoursPerDay)
+          ? parseFloat(String(workingHoursPerDay))
           : 7,
         managerId: managerId || null,
         managerEmail: managerEmail || null,

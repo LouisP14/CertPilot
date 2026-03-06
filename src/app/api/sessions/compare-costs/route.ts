@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, compareCostsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 interface CenterComparison {
@@ -45,14 +46,11 @@ export async function POST(request: NextRequest) {
     const companyId = session.user.companyId;
 
     const body = await request.json();
-    const { formationTypeId, employeeIds } = body;
-
-    if (!formationTypeId || !employeeIds || employeeIds.length === 0) {
-      return NextResponse.json(
-        { error: "formationTypeId et employeeIds sont requis" },
-        { status: 400 },
-      );
+    const parsed = parseBody(compareCostsSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { formationTypeId, employeeIds } = parsed.data;
 
     // 1. Récupérer le type de formation (vérification appartenance entreprise)
     const formationType = await prisma.formationType.findFirst({

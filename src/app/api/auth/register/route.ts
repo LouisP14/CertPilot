@@ -1,26 +1,28 @@
 import prisma from "@/lib/prisma";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import { parseBody, registerSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting: 5 registrations per minute per IP
+    const ip = getClientIp(request);
+    const rl = rateLimit(`register:${ip}`, { limit: 5, windowSeconds: 60 });
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Trop de tentatives. Veuillez réessayer dans quelques minutes." },
+        { status: 429 },
+      );
+    }
+
     const body = await request.json();
-    const { email, password, name, companyName } = body;
-
-    // Validation
-    if (!email || !password || !name || !companyName) {
-      return NextResponse.json(
-        { error: "Tous les champs sont requis" },
-        { status: 400 },
-      );
+    const parsed = parseBody(registerSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    if (password.length < 8) {
-      return NextResponse.json(
-        { error: "Le mot de passe doit contenir au moins 8 caractères" },
-        { status: 400 },
-      );
-    }
+    const { email, password, name, companyName } = parsed.data;
 
     // Vérifier si l'email existe déjà
     const existingUser = await prisma.user.findUnique({

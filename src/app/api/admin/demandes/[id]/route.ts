@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { parseBody, adminUpdateDemandeSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // PATCH - Mettre à jour une demande de contact
@@ -9,7 +10,11 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status, notes } = body;
+    const parsed = parseBody(adminUpdateDemandeSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const { status, notes } = parsed.data;
 
     // Vérifier que la demande existe
     const existingRequest = await prisma.contactRequest.findUnique({

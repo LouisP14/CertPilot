@@ -1,6 +1,7 @@
 import { auditDelete, auditUpdate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, updateTrainingCenterSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -64,6 +65,10 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
+    const parsed = parseBody(updateTrainingCenterSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       name,
       code,
@@ -83,7 +88,7 @@ export async function PUT(
       hasOwnPremises,
       canTravel,
       rating,
-    } = body;
+    } = parsed.data;
 
     // Récupérer les anciennes valeurs pour l'audit + vérification appartenance
     const oldCenter = await prisma.trainingCenter.findFirst({
@@ -123,13 +128,13 @@ export async function PUT(
         contactPhone: contactPhone || null,
         website: website || null,
         isPartner: isPartner || false,
-        discountPercent: discountPercent ? parseFloat(discountPercent) : null,
+        discountPercent: discountPercent ? parseFloat(String(discountPercent)) : null,
         paymentTerms: paymentTerms || null,
         notes: notes || null,
-        maxCapacity: maxCapacity ? parseInt(maxCapacity) : null,
+        maxCapacity: maxCapacity ? parseInt(String(maxCapacity)) : null,
         hasOwnPremises: hasOwnPremises !== false,
         canTravel: canTravel || false,
-        rating: rating ? parseFloat(rating) : null,
+        rating: rating ? parseFloat(String(rating)) : null,
       },
     });
 

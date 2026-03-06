@@ -1,6 +1,7 @@
 import { auditCreate, auditDelete } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, restoreEmployeeSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET - Liste des employés archivés
@@ -48,11 +49,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const { employeeId, restoreCertificates } = await request.json();
-
-    if (!employeeId) {
-      return NextResponse.json({ error: "ID employé requis" }, { status: 400 });
+    const body = await request.json();
+    const parsed = parseBody(restoreEmployeeSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { employeeId, restoreCertificates } = parsed.data;
 
     // Vérifier que l'employé appartient à la company et est archivé
     const employee = await prisma.employee.findUnique({

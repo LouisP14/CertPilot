@@ -1,6 +1,7 @@
 import { auditCreate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, createFormationTypeSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -42,14 +43,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, category, service, defaultValidityMonths } = body;
-
-    if (!name) {
-      return NextResponse.json(
-        { error: "Le nom est obligatoire" },
-        { status: 400 },
-      );
+    const parsed = parseBody(createFormationTypeSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { name, category, service, defaultValidityMonths } = parsed.data;
 
     const formationType = await prisma.formationType.create({
       data: {
@@ -57,7 +55,7 @@ export async function POST(request: NextRequest) {
         category: category || null,
         service: service || null,
         defaultValidityMonths: defaultValidityMonths
-          ? parseInt(defaultValidityMonths)
+          ? parseInt(String(defaultValidityMonths))
           : null,
         companyId: session.user.companyId, // Ajouter le companyId
       },

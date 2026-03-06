@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, generateNeedsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET: Liste des besoins de formation
@@ -138,7 +139,11 @@ export async function POST(request: NextRequest) {
     };
 
     const body = await request.json();
-    const { horizonDays = 90 } = body; // Horizon de détection (défaut: 90 jours)
+    const parsed = parseBody(generateNeedsSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const { horizonDays = 90 } = parsed.data; // Horizon de détection (défaut: 90 jours)
 
     const today = new Date();
     const horizonDate = new Date();

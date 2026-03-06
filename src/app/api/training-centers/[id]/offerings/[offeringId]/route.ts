@@ -1,6 +1,7 @@
 import { auditDelete, auditUpdate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, updateOfferingSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET: Détail d'une offre
@@ -64,6 +65,10 @@ export async function PUT(
 
     const { offeringId } = await params;
     const body = await request.json();
+    const parsed = parseBody(updateOfferingSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       pricePerPerson,
       pricePerSession,
@@ -75,7 +80,7 @@ export async function PUT(
       certificationCode,
       isOPCOEligible,
       isActive,
-    } = body;
+    } = parsed.data;
 
     // Récupérer les anciennes valeurs pour l'audit + vérification appartenance
     const oldOffering = await prisma.trainingCenterOffering.findFirst({
@@ -93,30 +98,30 @@ export async function PUT(
       where: { id: offeringId },
       data: {
         pricePerPerson:
-          pricePerPerson !== undefined ? parseFloat(pricePerPerson) : undefined,
+          pricePerPerson !== undefined ? parseFloat(String(pricePerPerson)) : undefined,
         pricePerSession:
           pricePerSession !== undefined
             ? pricePerSession
-              ? parseFloat(pricePerSession)
+              ? parseFloat(String(pricePerSession))
               : null
             : undefined,
         minParticipants:
-          minParticipants !== undefined ? parseInt(minParticipants) : undefined,
+          minParticipants !== undefined ? parseInt(String(minParticipants)) : undefined,
         maxParticipants:
-          maxParticipants !== undefined ? parseInt(maxParticipants) : undefined,
+          maxParticipants !== undefined ? parseInt(String(maxParticipants)) : undefined,
         durationHours:
           durationHours !== undefined
             ? durationHours
-              ? parseFloat(durationHours)
+              ? parseFloat(String(durationHours))
               : null
             : undefined,
         durationDays:
           durationDays !== undefined
             ? durationDays
-              ? parseInt(durationDays)
+              ? parseInt(String(durationDays))
               : null
             : undefined,
-        availableModes: availableModes || undefined,
+        availableModes: availableModes ? JSON.stringify(availableModes) : undefined,
         certificationCode:
           certificationCode !== undefined
             ? certificationCode || null

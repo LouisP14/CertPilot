@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { sendWelcomeEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
+import { parseBody, adminCreateClientSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -25,6 +26,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsed = parseBody(adminCreateClientSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       companyName,
       contactName,
@@ -32,15 +37,7 @@ export async function POST(request: NextRequest) {
       password,
       plan,
       subscriptionMonths,
-    } = body;
-
-    // Validation
-    if (!companyName || !contactName || !email || !password) {
-      return NextResponse.json(
-        { error: "Tous les champs obligatoires doivent être remplis" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Vérifier si l'email existe déjà
     const existingUser = await prisma.user.findUnique({

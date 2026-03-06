@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { parseBody, adminProspectionSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -12,7 +13,7 @@ interface ProspectEmail {
   to: string;
   firstName: string;
   company: string;
-  sector: string;
+  sector?: string;
 }
 
 function getEmailContent(prospect: ProspectEmail) {
@@ -34,7 +35,7 @@ function getEmailContent(prospect: ProspectEmail) {
       "habilitations réglementaires, SST, formations obligatoires ou certifications",
   };
 
-  const examples = sectorExamples[prospect.sector] || sectorExamples["autre"];
+  const examples = (prospect.sector && sectorExamples[prospect.sector]) || sectorExamples["autre"];
 
   const subject = `${prospect.company} — vos habilitations sont-elles toutes à jour ?`;
 
@@ -136,14 +137,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { prospects } = body as { prospects: ProspectEmail[] };
-
-    if (!prospects || !Array.isArray(prospects) || prospects.length === 0) {
-      return NextResponse.json(
-        { error: "Liste de prospects requise" },
-        { status: 400 },
-      );
+    const parsed = parseBody(adminProspectionSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+    const { prospects } = parsed.data;
 
     const results: { email: string; status: string; error?: string }[] = [];
 

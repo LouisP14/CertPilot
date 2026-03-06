@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, updateNotificationSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET - Récupérer les notifications
@@ -60,7 +61,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { notificationId, markAllRead } = body;
+    const parsed = parseBody(updateNotificationSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const { notificationId, markAllRead } = parsed.data;
 
     const companyId = session.user?.companyId;
 

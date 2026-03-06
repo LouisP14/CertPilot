@@ -1,6 +1,7 @@
 import { auditDelete, auditUpdate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, updateEmployeeSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -72,6 +73,10 @@ export async function PUT(
     const companyId = session.user.companyId;
     const { id } = await params;
     const body = await request.json();
+    const parsed = parseBody(updateEmployeeSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       firstName,
       lastName,
@@ -88,7 +93,7 @@ export async function PUT(
       managerId,
       managerEmail,
       medicalCheckupDate,
-    } = body;
+    } = parsed.data;
 
     // Récupérer l'employé actuel pour l'audit - avec vérification companyId
     const currentEmployee = await prisma.employee.findUnique({
@@ -129,10 +134,10 @@ export async function PUT(
         department,
         site: site || null,
         team: team || null,
-        hourlyCost: hourlyCost ? parseFloat(hourlyCost) : null,
+        hourlyCost: hourlyCost ? parseFloat(String(hourlyCost)) : null,
         contractType: contractType || null,
         workingHoursPerDay: workingHoursPerDay
-          ? parseFloat(workingHoursPerDay)
+          ? parseFloat(String(workingHoursPerDay))
           : 7,
         managerId: managerId || null,
         managerEmail: managerEmail || null,

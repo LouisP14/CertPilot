@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import {
   ArrowRight,
   Bell,
@@ -82,6 +84,14 @@ function JsonLd() {
               text: "CertPilot planifie automatiquement les sessions de MAC SST en fonction des dates d'expiration. Vous créez une session, inscrivez les SST à renouveler, et les convocations sont envoyées automatiquement par email avec lieu, date et horaires.",
             },
           },
+        ],
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+          { "@type": "ListItem", position: 2, name: "Solutions", item: `${siteUrl}/solutions` },
+          { "@type": "ListItem", position: 3, name: "SST", item: `${siteUrl}/solutions/sst` },
         ],
       },
     ],

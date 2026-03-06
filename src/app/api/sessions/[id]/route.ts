@@ -1,6 +1,7 @@
 import { auditDelete, auditUpdate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, updateSessionSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET: Récupérer une session spécifique
@@ -73,6 +74,10 @@ export async function PATCH(
 
     const { id } = await params;
     const body = await request.json();
+    const parsed = parseBody(updateSessionSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
 
     // Vérifier que la session existe + appartenance entreprise
     const existingSession = await prisma.trainingSession.findFirst({
@@ -87,23 +92,24 @@ export async function PATCH(
       );
     }
 
+    const validatedBody = parsed.data;
     const updateData: Record<string, unknown> = {};
 
     // Mise à jour des champs autorisés
-    if (body.startDate !== undefined) {
-      updateData.startDate = new Date(body.startDate);
+    if (validatedBody.startDate !== undefined) {
+      updateData.startDate = new Date(validatedBody.startDate);
     }
-    if (body.startTime !== undefined) {
-      updateData.startTime = body.startTime ? new Date(body.startTime) : null;
+    if (validatedBody.startTime !== undefined) {
+      updateData.startTime = validatedBody.startTime ? new Date(validatedBody.startTime) : null;
     }
-    if (body.endTime !== undefined) {
-      updateData.endTime = body.endTime ? new Date(body.endTime) : null;
+    if (validatedBody.endTime !== undefined) {
+      updateData.endTime = validatedBody.endTime ? new Date(validatedBody.endTime) : null;
     }
-    if (body.status !== undefined) {
-      updateData.status = body.status;
+    if (validatedBody.status !== undefined) {
+      updateData.status = validatedBody.status;
 
       // Si la session est complétée, créer les certificats pour chaque participant
-      if (body.status === "COMPLETED") {
+      if (validatedBody.status === "COMPLETED") {
         const formationType = await prisma.formationType.findUnique({
           where: { id: existingSession.formationTypeId },
         });
@@ -165,7 +171,7 @@ export async function PATCH(
       }
 
       // Si annulée, remettre les besoins en "PENDING"
-      if (body.status === "CANCELLED") {
+      if (validatedBody.status === "CANCELLED") {
         for (const attendee of existingSession.attendees) {
           await prisma.trainingNeed.updateMany({
             where: {
@@ -178,20 +184,20 @@ export async function PATCH(
         }
       }
     }
-    if (body.location !== undefined) {
-      updateData.location = body.location;
+    if (validatedBody.location !== undefined) {
+      updateData.location = validatedBody.location;
     }
-    if (body.notes !== undefined) {
-      updateData.notes = body.notes;
+    if (validatedBody.notes !== undefined) {
+      updateData.notes = validatedBody.notes;
     }
-    if (body.trainingCost !== undefined) {
-      updateData.trainingCost = body.trainingCost;
+    if (validatedBody.trainingCost !== undefined) {
+      updateData.trainingCost = validatedBody.trainingCost;
       // Recalculer le coût total
       updateData.totalCost =
-        body.trainingCost + (existingSession.totalAbsenceCost || 0);
+        Number(validatedBody.trainingCost) + (existingSession.totalAbsenceCost || 0);
     }
-    if (body.convocationsSentAt !== undefined) {
-      updateData.convocationsSentAt = new Date(body.convocationsSentAt);
+    if (validatedBody.convocationsSentAt !== undefined) {
+      updateData.convocationsSentAt = new Date(validatedBody.convocationsSentAt);
     }
 
     const updatedSession = await prisma.trainingSession.update({

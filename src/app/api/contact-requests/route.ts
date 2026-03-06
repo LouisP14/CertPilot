@@ -4,6 +4,12 @@ import {
   sendNewContactNotification,
 } from "@/lib/email";
 import prisma from "@/lib/prisma";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
+import {
+  contactRequestPatchSchema,
+  contactRequestSchema,
+  parseBody,
+} from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET - Récupérer toutes les demandes (SUPER_ADMIN only)
@@ -35,30 +41,23 @@ export async function GET() {
 // POST - Créer une nouvelle demande de contact
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const {
-      companyName,
-      contactName,
-      email,
-      phone,
-      employeeCount,
-      plan,
-      message,
-    } = body;
-
-    // Validation
-    if (!companyName || !contactName || !email) {
+    // Rate limiting: 3 contact requests per minute per IP
+    const ip = getClientIp(request);
+    const rl = rateLimit(`contact:${ip}`, { limit: 3, windowSeconds: 60 });
+    if (!rl.success) {
       return NextResponse.json(
-        { error: "Les champs entreprise, nom et email sont requis" },
-        { status: 400 },
+        { error: "Trop de tentatives. Veuillez réessayer dans quelques minutes." },
+        { status: 429 },
       );
     }
 
-    // Validation email basique
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json({ error: "Email invalide" }, { status: 400 });
+    const body = await request.json();
+    const parsed = parseBody(contactRequestSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+
+    const { companyName, contactName, email, phone, employeeCount, plan, message } = parsed.data;
 
     // Créer la demande
     const contactRequest = await prisma.contactRequest.create({
@@ -150,11 +149,12 @@ export async function DELETE(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, status, notes } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: "ID requis" }, { status: 400 });
+    const parsed = parseBody(contactRequestPatchSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+
+    const { id, status, notes } = parsed.data;
 
     const updated = await prisma.contactRequest.update({
       where: { id },

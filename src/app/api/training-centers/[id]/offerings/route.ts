@@ -1,6 +1,7 @@
 import { auditCreate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, createOfferingSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET: Liste des offres d'un centre
@@ -71,6 +72,10 @@ export async function POST(
 
     const { id } = await params;
     const body = await request.json();
+    const parsed = parseBody(createOfferingSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       formationTypeId,
       pricePerPerson,
@@ -83,7 +88,7 @@ export async function POST(
       certificationCode,
       isOPCOEligible,
       isActive,
-    } = body;
+    } = parsed.data;
 
     // Vérifier que le centre existe et appartient à l'entreprise
     const center = await prisma.trainingCenter.findFirst({
@@ -124,13 +129,13 @@ export async function POST(
       data: {
         trainingCenterId: id,
         formationTypeId,
-        pricePerPerson: parseFloat(pricePerPerson),
-        pricePerSession: pricePerSession ? parseFloat(pricePerSession) : null,
-        minParticipants: minParticipants ? parseInt(minParticipants) : 1,
-        maxParticipants: maxParticipants ? parseInt(maxParticipants) : 12,
-        durationHours: durationHours ? parseFloat(durationHours) : null,
-        durationDays: durationDays ? parseInt(durationDays) : null,
-        availableModes: availableModes || "PRESENTIEL",
+        pricePerPerson: parseFloat(String(pricePerPerson)),
+        pricePerSession: pricePerSession ? parseFloat(String(pricePerSession)) : null,
+        minParticipants: minParticipants ? parseInt(String(minParticipants)) : 1,
+        maxParticipants: maxParticipants ? parseInt(String(maxParticipants)) : 12,
+        durationHours: durationHours ? parseFloat(String(durationHours)) : null,
+        durationDays: durationDays ? parseInt(String(durationDays)) : null,
+        availableModes: availableModes ? (Array.isArray(availableModes) ? availableModes.join(",") : String(availableModes)) : "PRESENTIEL",
         certificationCode: certificationCode || null,
         isOPCOEligible: isOPCOEligible ?? true,
         isActive: isActive ?? true,

@@ -2,6 +2,7 @@ import { auditDelete, auditUpdate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { invalidateSignatureIfExists } from "@/lib/signature-utils";
+import { parseBody, updateCertificateSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
@@ -16,8 +17,12 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
+    const parsed = parseBody(updateCertificateSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const { formationTypeId, obtainedDate, expiryDate, organism, details } =
-      body;
+      parsed.data;
 
     // Récupérer le certificat actuel + vérification appartenance entreprise
     const currentCertificate = await prisma.certificate.findFirst({

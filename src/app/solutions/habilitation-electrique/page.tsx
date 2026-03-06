@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import {
   ArrowRight,
   Bell,
@@ -81,6 +83,14 @@ function JsonLd() {
               text: "Oui, le décret 2010-1118 du 22 septembre 2010 rend obligatoire l'habilitation électrique pour tout travailleur effectuant des opérations sur ou à proximité d'installations électriques. L'employeur doit s'assurer que ses salariés sont formés et habilités. CertPilot vous aide à maintenir cette conformité.",
             },
           },
+        ],
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+          { "@type": "ListItem", position: 2, name: "Solutions", item: `${siteUrl}/solutions` },
+          { "@type": "ListItem", position: 3, name: "Habilitations electriques", item: `${siteUrl}/solutions/habilitation-electrique` },
         ],
       },
     ],

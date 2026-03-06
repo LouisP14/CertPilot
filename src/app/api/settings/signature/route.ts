@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, signatureSettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -54,12 +55,16 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsed = parseBody(signatureSettingsSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       signatureEnabled,
       signatureImage,
       signatureResponsable,
       signatureTitre,
-    } = body;
+    } = parsed.data;
 
     // Récupérer ou créer la company
     let company = await prisma.company.findFirst();

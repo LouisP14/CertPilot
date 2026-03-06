@@ -1,6 +1,7 @@
 import { auditCreate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, createTrainingCenterSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -60,6 +61,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsed = parseBody(createTrainingCenterSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       name,
       code,
@@ -78,15 +83,7 @@ export async function POST(request: NextRequest) {
       maxCapacity,
       hasOwnPremises,
       canTravel,
-    } = body;
-
-    // Validation
-    if (!name) {
-      return NextResponse.json(
-        { error: "Le nom est obligatoire" },
-        { status: 400 },
-      );
-    }
+    } = parsed.data;
 
     // Vérifier que le code est unique si fourni
     if (code) {
@@ -114,10 +111,10 @@ export async function POST(request: NextRequest) {
         contactPhone: contactPhone || null,
         website: website || null,
         isPartner: isPartner || false,
-        discountPercent: discountPercent ? parseFloat(discountPercent) : null,
+        discountPercent: discountPercent ? parseFloat(String(discountPercent)) : null,
         paymentTerms: paymentTerms || null,
         notes: notes || null,
-        maxCapacity: maxCapacity ? parseInt(maxCapacity) : null,
+        maxCapacity: maxCapacity ? parseInt(String(maxCapacity)) : null,
         hasOwnPremises: hasOwnPremises !== false,
         canTravel: canTravel || false,
         companyId: session.user.companyId, // Ajouter le companyId

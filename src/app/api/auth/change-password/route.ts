@@ -1,7 +1,12 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
+
+const changePasswordSchema = z.object({
+  newPassword: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,14 +17,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { newPassword } = body;
-
-    if (!newPassword || newPassword.length < 8) {
+    const parsed = changePasswordSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Le mot de passe doit contenir au moins 8 caractères" },
+        { error: parsed.error.issues?.[0]?.message || "Données invalides" },
         { status: 400 },
       );
     }
+
+    const { newPassword } = parsed.data;
 
     // Hash du nouveau mot de passe
     const hashedPassword = await bcrypt.hash(newPassword, 12);

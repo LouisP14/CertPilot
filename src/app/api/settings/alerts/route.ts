@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, alertSettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
@@ -11,7 +12,11 @@ export async function PUT(request: NextRequest) {
     const companyId = session.user.companyId;
 
     const body = await request.json();
-    const { alertThresholds } = body;
+    const parsed = parseBody(alertSettingsSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const { alertThresholds } = parsed.data;
 
     // Get or create company liée à la session
     let company = await prisma.company.findUnique({
@@ -22,7 +27,7 @@ export async function PUT(request: NextRequest) {
       company = await prisma.company.update({
         where: { id: company.id },
         data: {
-          alertThresholds: alertThresholds || "90,60,30,7",
+          alertThresholds: String(alertThresholds) || "90,60,30,7",
         },
       });
     } else {
@@ -30,7 +35,7 @@ export async function PUT(request: NextRequest) {
         data: {
           id: companyId,
           name: "Mon Entreprise",
-          alertThresholds: alertThresholds || "90,60,30,7",
+          alertThresholds: String(alertThresholds) || "90,60,30,7",
         },
       });
     }

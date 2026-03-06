@@ -2,6 +2,7 @@ import { auditCreate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { invalidateSignatureIfExists } from "@/lib/signature-utils";
+import { createCertificateSchema, parseBody } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -12,21 +13,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      employeeId,
-      formationTypeId,
-      obtainedDate,
-      expiryDate,
-      organism,
-      details,
-    } = body;
-
-    if (!employeeId || !formationTypeId || !obtainedDate) {
-      return NextResponse.json(
-        { error: "Champs obligatoires manquants" },
-        { status: 400 },
-      );
+    const parsed = parseBody(createCertificateSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+
+    const { employeeId, formationTypeId, obtainedDate, expiryDate, organism, details } = parsed.data;
 
     // SÉCURITÉ : vérifier que l'employé appartient bien à l'entreprise de l'utilisateur
     if (!session.user.companyId) {

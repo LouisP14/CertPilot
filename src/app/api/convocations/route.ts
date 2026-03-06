@@ -1,6 +1,7 @@
 import { auditDelete } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, createConvocationSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
 
 // GET - Récupérer les convocations sauvegardées
@@ -66,6 +67,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+    const parsed = parseBody(createConvocationSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
     const {
       formationId,
       formationName,
@@ -77,27 +82,27 @@ export async function POST(request: Request) {
       notes,
       employees,
       status = "draft",
-    } = body;
+    } = parsed.data;
 
     // Créer la convocation avec ses participants ET le companyId
     const convocation = await prisma.convocation.create({
       data: {
-        formationId,
+        formationId: formationId || "",
         formationName,
         startDate,
-        endDate,
-        startTime,
-        endTime,
-        location,
-        notes,
-        status,
+        endDate: endDate || "",
+        startTime: startTime || "",
+        endTime: endTime || "",
+        location: location || "",
+        notes: notes || "",
+        status: status || "draft",
         companyId: session.user.companyId,
         attendees: {
-          create: employees.map(
-            (emp: { id: string; name: string; email: string | null }) => ({
-              employeeId: emp.id,
-              employeeName: emp.name,
-              employeeEmail: emp.email,
+          create: (employees as Array<Record<string, string | null>>).map(
+            (emp) => ({
+              employeeId: emp.id as string,
+              employeeName: (emp.name as string) || "",
+              employeeEmail: emp.email || null,
             }),
           ),
         },

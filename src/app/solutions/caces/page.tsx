@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import {
   ArrowRight,
   Bell,
@@ -81,6 +83,14 @@ function JsonLd() {
               text: "CertPilot permet de suivre toutes les catégories CACES : R489 (chariots automoteurs), R486 (PEMP nacelles), R482 (engins de chantier), R490 (grues de chargement), R487 (grues à tour), R483 (grues mobiles), et toute autre catégorie personnalisée.",
             },
           },
+        ],
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
+          { "@type": "ListItem", position: 2, name: "Solutions", item: `${siteUrl}/solutions` },
+          { "@type": "ListItem", position: 3, name: "CACES", item: `${siteUrl}/solutions/caces` },
         ],
       },
     ],

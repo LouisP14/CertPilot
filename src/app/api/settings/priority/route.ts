@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { parseBody, prioritySettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -29,7 +30,12 @@ export async function PUT(request: NextRequest) {
     }
     const companyId = session.user.companyId;
 
-    const { priorityThresholds } = await request.json();
+    const body = await request.json();
+    const parsed = parseBody(prioritySettingsSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
+    const { priorityThresholds } = parsed.data;
 
     // Validation : 3 nombres positifs croissants
     const parts = String(priorityThresholds)
