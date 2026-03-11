@@ -153,10 +153,18 @@ function buildAlertEmailHtml(params: {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const secret = searchParams.get("secret");
+    const authHeader = request.headers.get("authorization");
+    const secret = authHeader?.replace("Bearer ", "") ??
+      new URL(request.url).searchParams.get("secret");
 
-    if (process.env.CRON_SECRET && secret !== process.env.CRON_SECRET) {
+    if (!process.env.CRON_SECRET) {
+      return NextResponse.json(
+        { error: "CRON_SECRET non configuré sur le serveur" },
+        { status: 500 }
+      );
+    }
+
+    if (secret !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "./prisma";
+import { rateLimit } from "./rate-limit";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -21,6 +22,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const email = String(credentials.email).trim().toLowerCase();
         const password = String(credentials.password);
+
+        // Rate limit: 5 tentatives par email par 15 minutes
+        const rl = rateLimit(`login:${email}`, { limit: 5, windowSeconds: 900 });
+        if (!rl.success) {
+          throw new Error("Trop de tentatives. Réessayez dans quelques minutes.");
+        }
 
         if (process.env.NODE_ENV !== "production") {
           console.log("[auth] Login attempt", {

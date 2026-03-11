@@ -68,10 +68,9 @@ export async function POST(
       );
     }
 
-    // Créer le dossier uploads/certificates s'il n'existe pas
+    // Créer le dossier uploads/certificates (hors de public/ pour sécurité)
     const uploadDir = path.join(
       process.cwd(),
-      "public",
       "uploads",
       "certificates",
     );
@@ -88,8 +87,8 @@ export async function POST(
     const buffer = Buffer.from(bytes);
     await writeFile(filePath, buffer);
 
-    // Mettre à jour le certificat avec l'URL du fichier
-    const attachmentUrl = `/uploads/certificates/${fileName}`;
+    // URL via la route API protégée (plus /public)
+    const attachmentUrl = `/api/uploads/certificates/${fileName}`;
     await prisma.certificate.update({
       where: { id },
       data: { attachmentUrl },

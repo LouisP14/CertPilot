@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# credentials (ne jamais commiter)
+IDENTIFIANTS.md
+
 # vercel
 .vercel
 
@@ -51,3 +54,6 @@ next-env.d.ts
 /public/uploads/certificates/*
 !/public/uploads/photos/.gitkeep
 !/public/uploads/certificates/.gitkeep
+
+# private uploads (served via API)
+/uploads/
