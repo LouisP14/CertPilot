@@ -216,66 +216,117 @@ export default async function PassportPage({
                 Aucune formation valide enregistrée.
               </p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-left text-slate-600">
-                      <th className="pb-3 font-semibold">Formation</th>
-                      <th className="pb-3 font-semibold">Catégorie</th>
-                      <th className="pb-3 font-semibold">Date formation</th>
-                      <th className="pb-3 font-semibold">Fin validité</th>
-                      <th className="pb-3 font-semibold">Détails</th>
-                      <th className="pb-3 font-semibold">Statut</th>
-                      <th className="pb-3 font-semibold">Justificatif</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {validCertificates.map((cert) => {
-                      const status = getCertificateStatus(cert.expiryDate);
-                      return (
-                        <tr
-                          key={cert.id}
-                          className="border-b border-slate-100 last:border-0"
-                        >
-                          <td className="py-3 font-semibold text-[#173B56]">
+              <>
+                {/* Mobile: cards */}
+                <div className="space-y-3 md:hidden">
+                  {validCertificates.map((cert) => {
+                    const status = getCertificateStatus(cert.expiryDate);
+                    return (
+                      <div
+                        key={cert.id}
+                        className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+                      >
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h4 className="font-semibold text-[#173B56] text-sm leading-tight">
                             {cert.formationType.name}
-                          </td>
-                          <td className="py-3 text-slate-600">
-                            {cert.formationType.category || "-"}
-                          </td>
-                          <td className="py-3 text-slate-600">
-                            {formatDate(cert.obtainedDate)}
-                          </td>
-                          <td className="py-3 text-slate-700 font-medium">
-                            {formatDate(cert.expiryDate)}
-                          </td>
-                          <td className="py-3 text-slate-500">
-                            {cert.details || "-"}
-                          </td>
-                          <td className="py-3">
-                            <StatusBadge status={status} />
-                          </td>
-                          <td className="py-3">
-                            {cert.attachmentUrl ? (
-                              <a
-                                href={cert.attachmentUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-lg bg-[#173B56]/10 px-2.5 py-1 text-xs font-medium text-[#173B56] hover:bg-[#173B56]/20 transition-colors"
-                              >
-                                <FileText className="h-3 w-3" />
-                                Voir PDF
-                              </a>
-                            ) : (
-                              <span className="text-slate-400 text-xs">-</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          </h4>
+                          <StatusBadge status={status} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                          {cert.formationType.category && (
+                            <>
+                              <span className="text-slate-500">Catégorie</span>
+                              <span className="text-slate-700 font-medium">{cert.formationType.category}</span>
+                            </>
+                          )}
+                          <span className="text-slate-500">Date formation</span>
+                          <span className="text-slate-700 font-medium">{formatDate(cert.obtainedDate)}</span>
+                          <span className="text-slate-500">Fin validité</span>
+                          <span className="text-slate-700 font-medium">{formatDate(cert.expiryDate)}</span>
+                          {cert.details && (
+                            <>
+                              <span className="text-slate-500">Détails</span>
+                              <span className="text-slate-700 font-medium">{cert.details}</span>
+                            </>
+                          )}
+                        </div>
+                        {cert.attachmentUrl && (
+                          <a
+                            href={cert.attachmentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-3 inline-flex items-center gap-1 rounded-lg bg-[#173B56]/10 px-2.5 py-1.5 text-xs font-medium text-[#173B56] hover:bg-[#173B56]/20 transition-colors"
+                          >
+                            <FileText className="h-3 w-3" />
+                            Voir PDF
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {/* Desktop: table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-left text-slate-600">
+                        <th className="pb-3 font-semibold">Formation</th>
+                        <th className="pb-3 font-semibold">Catégorie</th>
+                        <th className="pb-3 font-semibold">Date formation</th>
+                        <th className="pb-3 font-semibold">Fin validité</th>
+                        <th className="pb-3 font-semibold">Détails</th>
+                        <th className="pb-3 font-semibold">Statut</th>
+                        <th className="pb-3 font-semibold">Justificatif</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {validCertificates.map((cert) => {
+                        const status = getCertificateStatus(cert.expiryDate);
+                        return (
+                          <tr
+                            key={cert.id}
+                            className="border-b border-slate-100 last:border-0"
+                          >
+                            <td className="py-3 font-semibold text-[#173B56]">
+                              {cert.formationType.name}
+                            </td>
+                            <td className="py-3 text-slate-600">
+                              {cert.formationType.category || "-"}
+                            </td>
+                            <td className="py-3 text-slate-600">
+                              {formatDate(cert.obtainedDate)}
+                            </td>
+                            <td className="py-3 text-slate-700 font-medium">
+                              {formatDate(cert.expiryDate)}
+                            </td>
+                            <td className="py-3 text-slate-500">
+                              {cert.details || "-"}
+                            </td>
+                            <td className="py-3">
+                              <StatusBadge status={status} />
+                            </td>
+                            <td className="py-3">
+                              {cert.attachmentUrl ? (
+                                <a
+                                  href={cert.attachmentUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 rounded-lg bg-[#173B56]/10 px-2.5 py-1 text-xs font-medium text-[#173B56] hover:bg-[#173B56]/20 transition-colors"
+                                >
+                                  <FileText className="h-3 w-3" />
+                                  Voir PDF
+                                </a>
+                              ) : (
+                                <span className="text-slate-400 text-xs">-</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -294,7 +345,44 @@ export default async function PassportPage({
               </div>
             </div>
             <div className="p-6">
-              <div className="overflow-x-auto">
+              {/* Mobile: cards */}
+              <div className="space-y-3 md:hidden">
+                {expiredCertificates.map((cert) => (
+                  <div
+                    key={cert.id}
+                    className="rounded-xl border border-red-200 bg-red-50/50 p-4"
+                  >
+                    <h4 className="font-semibold text-slate-700 text-sm mb-2">
+                      {cert.formationType.name}
+                    </h4>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                      {cert.formationType.category && (
+                        <>
+                          <span className="text-slate-500">Catégorie</span>
+                          <span className="text-slate-700 font-medium">{cert.formationType.category}</span>
+                        </>
+                      )}
+                      <span className="text-slate-500">Date formation</span>
+                      <span className="text-slate-700 font-medium">{formatDate(cert.obtainedDate)}</span>
+                      <span className="text-slate-500">Fin validité</span>
+                      <span className="text-red-600 font-semibold">{formatDate(cert.expiryDate)}</span>
+                    </div>
+                    {cert.attachmentUrl && (
+                      <a
+                        href={cert.attachmentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-3 inline-flex items-center gap-1 rounded-lg bg-[#173B56]/10 px-2.5 py-1.5 text-xs font-medium text-[#173B56] hover:bg-[#173B56]/20 transition-colors"
+                      >
+                        <FileText className="h-3 w-3" />
+                        Voir PDF
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Desktop: table */}
+              <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 text-left text-slate-600">
