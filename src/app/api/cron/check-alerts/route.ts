@@ -1,6 +1,6 @@
+import { sendAlertEmail, sendOnboardingEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import nodemailer from "nodemailer";
 
 type AlertItem = {
   threshold: number;
@@ -24,143 +24,17 @@ function getAlertType(daysLeft: number, threshold: number): string {
   return daysLeft < 0 ? "EXPIRED" : `${threshold}_DAYS`;
 }
 
-function buildAlertEmailHtml(params: {
-  companyName: string;
-  groupedAlerts: Record<string, AlertItem[]>;
-}) {
-  const { companyName, groupedAlerts } = params;
-
-  let html = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 0 auto; background: #f8fafc;">
-      <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">🔔 Alertes Habilitations</h1>
-        <p style="color: #e2e8f0; margin: 10px 0 0 0;">CertPilot - ${new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
-      </div>
-      <div style="padding: 30px;">
-        <p style="color: #475569; font-size: 16px; margin-bottom: 20px;">Bonjour,<br><br>Voici le récapitulatif des habilitations nécessitant votre attention :</p>
-  `;
-
-  if (groupedAlerts.EXPIRED) {
-    html += `
-      <div style="margin-bottom: 25px;">
-        <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
-          <h3 style="color: #dc2626; margin: 0 0 5px 0;">❌ Expirées (${groupedAlerts.EXPIRED.length})</h3>
-          <p style="color: #991b1b; margin: 0; font-size: 14px;">Ces habilitations sont déjà expirées !</p>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <thead>
-            <tr style="background: #fef2f2;">
-              <th style="padding: 12px; text-align: left; color: #991b1b; font-size: 13px;">Employé</th>
-              <th style="padding: 12px; text-align: left; color: #991b1b; font-size: 13px;">Formation</th>
-              <th style="padding: 12px; text-align: left; color: #991b1b; font-size: 13px;">Service</th>
-              <th style="padding: 12px; text-align: center; color: #991b1b; font-size: 13px;">Expiré depuis</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${groupedAlerts.EXPIRED.map(
-              (item) => `
-                <tr style="border-top: 1px solid #fee2e2;">
-                  <td style="padding: 12px; color: #1f2937;">${item.employeeName}</td>
-                  <td style="padding: 12px; color: #1f2937;">${item.formationName}</td>
-                  <td style="padding: 12px; color: #6b7280;">${item.department}${item.site ? ` - ${item.site}` : ""}</td>
-                  <td style="padding: 12px; text-align: center;"><span style="background: #dc2626; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">${Math.abs(item.daysLeft)} jour(s)</span></td>
-                </tr>
-              `,
-            ).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  const sortedThresholds = Object.keys(groupedAlerts)
-    .filter((key) => key !== "EXPIRED")
-    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-
-  for (const thresholdKey of sortedThresholds) {
-    const days = parseInt(thresholdKey, 10);
-    const alerts = groupedAlerts[thresholdKey];
-
-    let bgColor = "#eff6ff";
-    let borderColor = "#3b82f6";
-    let textColor = "#1e40af";
-    let badgeColor = "#3b82f6";
-
-    if (days <= 7) {
-      bgColor = "#fef3c7";
-      borderColor = "#f59e0b";
-      textColor = "#92400e";
-      badgeColor = "#f59e0b";
-    } else if (days <= 30) {
-      bgColor = "#fef9c3";
-      borderColor = "#eab308";
-      textColor = "#854d0e";
-      badgeColor = "#eab308";
-    } else if (days <= 60) {
-      bgColor = "#ecfdf5";
-      borderColor = "#10b981";
-      textColor = "#065f46";
-      badgeColor = "#10b981";
-    }
-
-    html += `
-      <div style="margin-bottom: 25px;">
-        <div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
-          <h3 style="color: ${textColor}; margin: 0 0 5px 0;">⚠️ Expire dans ${days} jours ou moins (${alerts.length})</h3>
-        </div>
-        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <thead>
-            <tr style="background: #f8fafc;">
-              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Employé</th>
-              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Formation</th>
-              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Service</th>
-              <th style="padding: 12px; text-align: center; color: #475569; font-size: 13px;">Jours restants</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${alerts
-              .map(
-                (item) => `
-                  <tr style="border-top: 1px solid #e5e7eb;">
-                    <td style="padding: 12px; color: #1f2937;">${item.employeeName}</td>
-                    <td style="padding: 12px; color: #1f2937;">${item.formationName}</td>
-                    <td style="padding: 12px; color: #6b7280;">${item.department}${item.site ? ` - ${item.site}` : ""}</td>
-                    <td style="padding: 12px; text-align: center;"><span style="background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">${item.daysLeft} jour(s)</span></td>
-                  </tr>
-                `,
-              )
-              .join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
-  }
-
-  html += `
-        <div style="margin-top: 30px; padding: 20px; background: #f1f5f9; border-radius: 8px; text-align: center;">
-          <p style="color: #64748b; margin: 0 0 15px 0; font-size: 14px;">Accédez au tableau de bord pour planifier les recyclages</p>
-          <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/dashboard/formations" style="display: inline-block; background: #173B56; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">📋 Voir le tableau de bord</a>
-        </div>
-      </div>
-      <div style="background: #173B56; padding: 20px; text-align: center;">
-        <p style="color: #94a3b8; margin: 0; font-size: 12px;">Cet email a été envoyé automatiquement par CertPilot<br>${companyName}</p>
-      </div>
-    </div>
-  `;
-
-  return html;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization");
-    const secret = authHeader?.replace("Bearer ", "") ??
+    const secret =
+      authHeader?.replace("Bearer ", "") ??
       new URL(request.url).searchParams.get("secret");
 
     if (!process.env.CRON_SECRET) {
       return NextResponse.json(
         { error: "CRON_SECRET non configuré sur le serveur" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -188,27 +62,11 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const smtpConfigured = !!(
-      process.env.SMTP_USER && process.env.SMTP_PASSWORD
-    );
-    const transporter = smtpConfigured
-      ? nodemailer.createTransport({
-          host: process.env.SMTP_HOST || "smtp.gmail.com",
-          port: parseInt(process.env.SMTP_PORT || "587", 10),
-          secure: process.env.SMTP_SECURE === "true",
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASSWORD,
-          },
-        })
-      : null;
-
     const now = new Date();
     now.setHours(0, 0, 0, 0);
 
     const today = now.toISOString().split("T")[0];
     let totalAlertsSent = 0;
-    let totalAlertsPending = 0;
     let totalConvocationsClosed = 0;
 
     const byCompany: Array<{
@@ -216,7 +74,6 @@ export async function GET(request: NextRequest) {
       companyName: string;
       alertsReady: number;
       alertsSent: number;
-      alertsPending: number;
       convocationsClosed: number;
     }> = [];
 
@@ -231,7 +88,6 @@ export async function GET(request: NextRequest) {
           companyName: company.name,
           alertsReady: 0,
           alertsSent: 0,
-          alertsPending: 0,
           convocationsClosed: 0,
         });
         continue;
@@ -306,31 +162,42 @@ export async function GET(request: NextRequest) {
       }
 
       let alertsSentForCompany = 0;
-      let alertsPendingForCompany = 0;
 
       if (alertsToSend.length > 0) {
-        if (transporter) {
-          const groupedAlerts = alertsToSend.reduce(
-            (acc, alert) => {
-              const key =
-                alert.daysLeft < 0 ? "EXPIRED" : `${alert.threshold}_DAYS`;
-              if (!acc[key]) acc[key] = [];
-              acc[key].push(alert);
-              return acc;
-            },
-            {} as Record<string, AlertItem[]>,
-          );
+        const groupedAlerts = alertsToSend.reduce(
+          (acc, alert) => {
+            const key =
+              alert.daysLeft < 0 ? "EXPIRED" : `${alert.threshold}_DAYS`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push({
+              employeeName: alert.employeeName,
+              formationName: alert.formationName,
+              daysLeft: alert.daysLeft,
+              department: alert.department,
+              site: alert.site,
+            });
+            return acc;
+          },
+          {} as Record<
+            string,
+            {
+              employeeName: string;
+              formationName: string;
+              daysLeft: number;
+              department: string;
+              site: string | null;
+            }[]
+          >,
+        );
 
-          await transporter.sendMail({
-            from: `"CertPilot - ${company.name}" <${process.env.SMTP_USER}>`,
-            to: company.adminEmail,
-            subject: `🔔 Alertes Habilitations - ${alertsToSend.length} habilitation(s) à surveiller`,
-            html: buildAlertEmailHtml({
-              companyName: company.name,
-              groupedAlerts,
-            }),
-          });
+        const { error } = await sendAlertEmail({
+          to: company.adminEmail,
+          companyName: company.name,
+          alertCount: alertsToSend.length,
+          groupedAlerts,
+        });
 
+        if (!error) {
           for (const alert of alertsToSend) {
             await prisma.alertLog.create({
               data: {
@@ -346,7 +213,7 @@ export async function GET(request: NextRequest) {
               type: "FORMATION_EXPIRED",
               title: "Alertes habilitations envoyées",
               message: `${alertsToSend.length} alerte(s) envoyée(s) à ${company.adminEmail}`,
-              link: "/dashboard/formations",
+              link: "/dashboard",
               companyId: company.id,
             },
           });
@@ -354,8 +221,10 @@ export async function GET(request: NextRequest) {
           alertsSentForCompany = alertsToSend.length;
           totalAlertsSent += alertsToSend.length;
         } else {
-          alertsPendingForCompany = alertsToSend.length;
-          totalAlertsPending += alertsToSend.length;
+          console.error(
+            `[cron/check-alerts] Erreur envoi email pour ${company.name}:`,
+            error,
+          );
         }
       }
 
@@ -377,19 +246,72 @@ export async function GET(request: NextRequest) {
         companyName: company.name,
         alertsReady: alertsToSend.length,
         alertsSent: alertsSentForCompany,
-        alertsPending: alertsPendingForCompany,
         convocationsClosed: closedConvocations.count,
       });
     }
 
+    // ========== ONBOARDING EMAILS ==========
+    // Envoi séquencé : J+1 (step 1), J+3 (step 2), J+7 (step 3), J+12 (step 4)
+    let onboardingEmailsSent = 0;
+
+    const ONBOARDING_SCHEDULE: Record<number, number> = {
+      1: 1,  // step 1 → après 1 jour
+      2: 3,  // step 2 → après 3 jours
+      3: 7,  // step 3 → après 7 jours
+      4: 12, // step 4 → après 12 jours
+    };
+
+    try {
+      const trialCompanies = await prisma.company.findMany({
+        where: {
+          subscriptionStatus: "TRIAL",
+          trialEndsAt: { not: null },
+          onboardingStep: { lt: 4 },
+        },
+        include: {
+          users: {
+            where: { role: "ADMIN", emailVerified: true },
+            select: { email: true, name: true },
+            take: 1,
+          },
+        },
+      });
+
+      for (const company of trialCompanies) {
+        const admin = company.users[0];
+        if (!admin || !company.trialEndsAt) continue;
+
+        const daysSinceCreation = Math.floor(
+          (now.getTime() - company.createdAt.getTime()) / (1000 * 60 * 60 * 24),
+        );
+
+        const nextStep = company.onboardingStep + 1;
+        const requiredDays = ONBOARDING_SCHEDULE[nextStep];
+
+        if (requiredDays && daysSinceCreation >= requiredDays) {
+          await sendOnboardingEmail({
+            to: admin.email,
+            name: admin.name,
+            step: nextStep,
+          });
+
+          await prisma.company.update({
+            where: { id: company.id },
+            data: { onboardingStep: nextStep },
+          });
+
+          onboardingEmailsSent++;
+        }
+      }
+    } catch (error) {
+      console.error("CRON onboarding error:", error);
+    }
+
     return NextResponse.json({
       success: true,
-      smtpConfigured,
-      message: smtpConfigured
-        ? `${totalAlertsSent} alerte(s) envoyée(s)`
-        : `${totalAlertsPending} alerte(s) prêtes mais SMTP non configuré`,
+      message: `${totalAlertsSent} alerte(s) envoyée(s), ${onboardingEmailsSent} onboarding email(s)`,
       alertsSent: totalAlertsSent,
-      alertsPending: totalAlertsPending,
+      onboardingEmailsSent,
       convocationsClosed: totalConvocationsClosed,
       companiesProcessed: companies.length,
       byCompany,

@@ -81,6 +81,123 @@ export async function sendVerificationEmail(params: {
   });
 }
 
+// Emails onboarding trial
+const ONBOARDING_EMAILS: Record<
+  number,
+  { subject: string; getHtml: (name: string, appUrl: string) => string }
+> = {
+  1: {
+    subject: "Bienvenue sur CertPilot - Par où commencer ?",
+    getHtml: (name, appUrl) => `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="background:linear-gradient(135deg,#173B56,#1e4a6b);padding:30px;text-align:center;border-radius:10px 10px 0 0;">
+          <h1 style="color:white;margin:0;">CertPilot</h1>
+        </div>
+        <div style="padding:30px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Bonjour ${name},</p>
+          <p>Bienvenue sur CertPilot ! Voici <strong>3 étapes</strong> pour être opérationnel en 15 minutes :</p>
+          <ol style="line-height:2;">
+            <li><strong>Importez vos employés</strong> — via Excel ou manuellement</li>
+            <li><strong>Ajoutez leurs habilitations</strong> — CACES, SST, électriques...</li>
+            <li><strong>Configurez vos alertes</strong> — 30, 60 ou 90 jours avant expiration</li>
+          </ol>
+          <div style="text-align:center;margin:25px 0;">
+            <a href="${appUrl}/dashboard" style="background:#059669;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Accéder à mon tableau de bord</a>
+          </div>
+          <p style="color:#888;font-size:13px;">Besoin d'aide ? Répondez simplement à cet email.</p>
+        </div>
+      </div>`,
+  },
+  2: {
+    subject: "Astuce CertPilot : importez vos données en 2 clics",
+    getHtml: (name, appUrl) => `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="background:linear-gradient(135deg,#173B56,#1e4a6b);padding:30px;text-align:center;border-radius:10px 10px 0 0;">
+          <h1 style="color:white;margin:0;">CertPilot</h1>
+        </div>
+        <div style="padding:30px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Bonjour ${name},</p>
+          <p>Saviez-vous que vous pouvez <strong>importer tous vos employés et habilitations</strong> depuis un fichier Excel ?</p>
+          <p>Fini la saisie manuelle. En quelques clics :</p>
+          <ul style="line-height:2;">
+            <li>Téléchargez le modèle Excel depuis l'onglet Import/Export</li>
+            <li>Remplissez-le avec vos données</li>
+            <li>Importez — CertPilot fait le reste</li>
+          </ul>
+          <div style="text-align:center;margin:25px 0;">
+            <a href="${appUrl}/dashboard/export" style="background:#059669;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Importer mes données</a>
+          </div>
+        </div>
+      </div>`,
+  },
+  3: {
+    subject: "Vos habilitations expirent-elles bientôt ?",
+    getHtml: (name, appUrl) => `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="background:linear-gradient(135deg,#173B56,#1e4a6b);padding:30px;text-align:center;border-radius:10px 10px 0 0;">
+          <h1 style="color:white;margin:0;">CertPilot</h1>
+        </div>
+        <div style="padding:30px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Bonjour ${name},</p>
+          <p>CertPilot surveille automatiquement les dates d'expiration de vos habilitations et vous alerte avant qu'il ne soit trop tard.</p>
+          <p><strong>Ce que nos clients évitent grâce aux alertes :</strong></p>
+          <ul style="line-height:2;">
+            <li>Arrêts de chantier pour CACES expirés</li>
+            <li>Sanctions lors des audits DREAL</li>
+            <li>Non-conformité aux obligations SST</li>
+          </ul>
+          <p>Vérifiez dès maintenant l'état de vos habilitations :</p>
+          <div style="text-align:center;margin:25px 0;">
+            <a href="${appUrl}/dashboard" style="background:#059669;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Voir mon tableau de bord</a>
+          </div>
+        </div>
+      </div>`,
+  },
+  4: {
+    subject: "Plus que 2 jours d'essai - Passez au plan payant",
+    getHtml: (name, appUrl) => `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+        <div style="background:linear-gradient(135deg,#173B56,#1e4a6b);padding:30px;text-align:center;border-radius:10px 10px 0 0;">
+          <h1 style="color:white;margin:0;">CertPilot</h1>
+        </div>
+        <div style="padding:30px;border:1px solid #e5e7eb;border-top:none;">
+          <p>Bonjour ${name},</p>
+          <p>Votre essai gratuit CertPilot touche à sa fin. Pour continuer à bénéficier de :</p>
+          <ul style="line-height:2;">
+            <li>Alertes automatiques d'expiration</li>
+            <li>Passeport formation PDF avec QR code</li>
+            <li>Convocations automatiques</li>
+            <li>Signature électronique</li>
+          </ul>
+          <p><strong>Choisissez votre plan dès maintenant</strong> — à partir de 49€/mois :</p>
+          <div style="text-align:center;margin:25px 0;">
+            <a href="${appUrl}/dashboard/settings?tab=subscription" style="background:#059669;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Choisir mon plan</a>
+          </div>
+          <p style="color:#888;font-size:13px;">Des questions ? Répondez simplement à cet email, nous sommes là pour vous aider.</p>
+        </div>
+      </div>`,
+  },
+};
+
+export async function sendOnboardingEmail(params: {
+  to: string;
+  name: string;
+  step: number;
+}) {
+  const { to, name, step } = params;
+  const template = ONBOARDING_EMAILS[step];
+  if (!template) return;
+
+  const appUrl = getAppBaseUrl();
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: template.subject,
+    html: template.getHtml(name, appUrl),
+  });
+}
+
 // Email 1 : Confirmation de demande de contact
 export async function sendContactConfirmation(params: {
   to: string;

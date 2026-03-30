@@ -11,6 +11,8 @@ const publicRoutes = [
   "/legal",
   "/api/auth",
   "/api/contact-requests",
+  "/api/lead-magnet",
+  "/checklist",
   "/api/webhooks",
   "/api/signature/employee",
   "/api/signature/manager",
