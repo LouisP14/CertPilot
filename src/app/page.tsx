@@ -271,6 +271,12 @@ export default function Home() {
             >
               Tarifs
             </a>
+            <Link
+              href="/blog"
+              className="text-sm font-medium text-slate-600 transition-colors hover:text-[#173B56]"
+            >
+              Blog
+            </Link>
             <a
               href="#contact"
               className="text-sm font-medium text-slate-600 transition-colors hover:text-[#173B56]"
@@ -687,6 +693,12 @@ export default function Home() {
                 </Link>
                 <Link href="/login" className="hover:text-[#173B56]">
                   Connexion
+                </Link>
+                <Link href="/blog" className="hover:text-[#173B56]">
+                  Blog
+                </Link>
+                <Link href="/comparaison" className="hover:text-[#173B56]">
+                  CertPilot vs Excel
                 </Link>
                 <Link href="/checklist" className="hover:text-[#173B56]">
                   Checklist gratuite
