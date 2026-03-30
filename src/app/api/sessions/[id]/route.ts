@@ -1,4 +1,4 @@
-import { auditDelete, auditUpdate } from "@/lib/audit";
+import { auditDelete, auditUpdate, createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { parseBody, updateSessionSchema } from "@/lib/validations";
@@ -221,20 +221,34 @@ export async function PATCH(
     });
 
     // Audit Trail
-    await auditUpdate(
-      "TRAINING_SESSION",
-      id,
-      `Session ${updatedSession.formationType.name}`,
-      { status: existingSession.status, location: existingSession.location },
-      { status: updatedSession.status, location: updatedSession.location },
-      session.user
-        ? {
-            id: session.user.id,
-            name: session.user.name || undefined,
-            email: session.user.email || undefined,
-          }
-        : null,
-    );
+    if (updatedSession.status === "CANCELLED" && existingSession.status !== "CANCELLED") {
+      await createAuditLog({
+        userId: session.user?.id,
+        userName: session.user?.name,
+        userEmail: session.user?.email,
+        companyId: session.user?.companyId,
+        action: "CANCEL_SESSION",
+        entityType: "TRAINING_SESSION",
+        entityId: id,
+        entityName: `Session ${updatedSession.formationType.name}`,
+        description: `Annulation de la session ${updatedSession.formationType.name}`,
+      });
+    } else {
+      await auditUpdate(
+        "TRAINING_SESSION",
+        id,
+        `Session ${updatedSession.formationType.name}`,
+        { status: existingSession.status, location: existingSession.location },
+        { status: updatedSession.status, location: updatedSession.location },
+        session.user
+          ? {
+              id: session.user.id,
+              name: session.user.name || undefined,
+              email: session.user.email || undefined,
+            }
+          : null,
+      );
+    }
 
     return NextResponse.json(updatedSession);
   } catch (error) {

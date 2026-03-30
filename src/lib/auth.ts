@@ -1,3 +1,4 @@
+import { createAuditLog } from "./audit";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
@@ -61,6 +62,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!user.emailVerified && user.role !== "SUPER_ADMIN" && !user.mustChangePassword) {
           throw new Error("Veuillez vérifier votre email avant de vous connecter.");
         }
+
+        // Audit Trail - Connexion
+        createAuditLog({
+          userId: user.id,
+          userName: user.name,
+          userEmail: user.email,
+          companyId: user.companyId,
+          action: "LOGIN",
+          entityType: "USER",
+          entityId: user.id,
+          entityName: user.name,
+          description: `Connexion de ${user.name} (${user.email})`,
+        }).catch(() => {}); // Fire and forget
 
         return {
           id: user.id,

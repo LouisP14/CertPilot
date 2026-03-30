@@ -1,3 +1,4 @@
+import { createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import { mkdir, writeFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
@@ -71,6 +72,20 @@ export async function POST(request: NextRequest) {
 
     // Utiliser l'API route pour servir les images (fonctionne en prod)
     const photoUrl = `/api/uploads/photos/${fileName}`;
+
+    // Audit Trail
+    await createAuditLog({
+      userId: session.user?.id,
+      userName: session.user?.name,
+      userEmail: session.user?.email,
+      companyId: session.user?.companyId,
+      action: "UPLOAD",
+      entityType: "EMPLOYEE",
+      entityId: employeeId,
+      entityName: `Photo employé ${employeeId}`,
+      description: `Upload photo pour l'employé ${employeeId}`,
+    });
+
     return NextResponse.json({ url: photoUrl });
   } catch (error) {
     console.error("Upload error:", error);

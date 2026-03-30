@@ -1,3 +1,4 @@
+import { auditExportPdf } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -36,6 +37,16 @@ export async function GET() {
       where: { id: companyId },
       select: { name: true },
     });
+
+    // Audit Trail
+    await auditExportPdf(
+      "EMPLOYEE",
+      companyId,
+      `Export PDF ${employees.length} employé(s)`,
+      session.user
+        ? { id: session.user.id, name: session.user.name || undefined, email: session.user.email || undefined, companyId }
+        : null,
+    );
 
     return NextResponse.json({
       employees,

@@ -1,3 +1,4 @@
+import { createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { mkdir, writeFile } from "fs/promises";
@@ -92,6 +93,19 @@ export async function POST(
     await prisma.certificate.update({
       where: { id },
       data: { attachmentUrl },
+    });
+
+    // Audit Trail
+    await createAuditLog({
+      userId: session.user?.id,
+      userName: session.user?.name,
+      userEmail: session.user?.email,
+      companyId,
+      action: "UPLOAD",
+      entityType: "CERTIFICATE",
+      entityId: id,
+      entityName: `Certificat ${id}`,
+      description: `Upload PDF attestation pour le certificat ${id}`,
     });
 
     return NextResponse.json({
