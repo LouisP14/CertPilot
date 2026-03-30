@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Demander une démo gratuite | CertPilot - Logiciel gestion formations",
   description:
-    "Demandez une démonstration gratuite de CertPilot : logiciel SaaS de gestion des formations, habilitations CACES, SST, habilitations électriques. Réponse sous 24h. À partir de 199€/mois.",
+    "Demandez une démonstration gratuite de CertPilot : logiciel SaaS de gestion des formations, habilitations CACES, SST, habilitations électriques. Réponse sous 24h. À partir de 49€/mois.",
   keywords: [
     "démo logiciel formation",
     "gestion habilitations devis",

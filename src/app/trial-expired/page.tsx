@@ -16,26 +16,20 @@ export default function TrialExpiredPage() {
   const plans = [
     {
       name: "Starter",
-      price: "199",
-      employees: "1-50 employés",
+      price: "49",
+      employees: "1-20 employés",
       popular: false,
+    },
+    {
+      name: "Pro",
+      price: "149",
+      employees: "21-100 employés",
+      popular: true,
     },
     {
       name: "Business",
       price: "349",
-      employees: "51-100 employés",
-      popular: true,
-    },
-    {
-      name: "Enterprise",
-      price: "599",
-      employees: "101-200 employés",
-      popular: false,
-    },
-    {
-      name: "Corporate",
-      price: "1199",
-      employees: "201-500 employés",
+      employees: "101-300 employés",
       popular: false,
     },
   ];

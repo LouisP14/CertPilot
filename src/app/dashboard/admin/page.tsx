@@ -470,10 +470,10 @@ function CreateClientModal({
   };
 
   const plans = [
-    { name: "Starter", limit: 50, price: "199€" },
-    { name: "Business", limit: 100, price: "349€" },
-    { name: "Enterprise", limit: 200, price: "599€" },
-    { name: "Corporate", limit: 500, price: "1199€" },
+    { name: "Starter", limit: 20, price: "49€" },
+    { name: "Pro", limit: 100, price: "149€" },
+    { name: "Business", limit: 300, price: "349€" },
+    { name: "Enterprise", limit: 1000, price: "Sur devis" },
   ];
 
   return (
