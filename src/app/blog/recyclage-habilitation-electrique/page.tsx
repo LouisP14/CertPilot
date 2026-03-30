@@ -103,7 +103,7 @@ export default function ArticleRecyclageHabilitationElectrique() {
           pratiques
         </h1>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none text-slate-800 prose-li:text-slate-800">
           <p className="lead text-lg text-slate-600">
             L&apos;habilitation electrique est une obligation incontournable pour
             tout travailleur intervenant sur ou a proximite d&apos;installations

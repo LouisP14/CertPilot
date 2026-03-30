@@ -110,7 +110,7 @@ export default function GuidePilier() {
           Guide complet : gestion des habilitations en entreprise (2026)
         </h1>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none text-slate-800 prose-li:text-slate-800">
           <p className="lead text-lg text-slate-600">
             La gestion des habilitations et formations obligatoires est un enjeu
             majeur pour toute entreprise. Entre les obligations legales, les

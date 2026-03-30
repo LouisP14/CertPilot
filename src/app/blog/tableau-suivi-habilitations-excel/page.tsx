@@ -102,7 +102,7 @@ export default function ArticleTableauSuiviHabilitations() {
           Tableau de suivi des habilitations : pourquoi Excel ne suffit plus
         </h1>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none text-slate-800 prose-li:text-slate-800">
           <p className="lead text-lg text-slate-600">
             Pendant des annees, le tableur Excel a ete l&apos;outil de reference
             pour suivre les habilitations et les formations des salaries. Mais

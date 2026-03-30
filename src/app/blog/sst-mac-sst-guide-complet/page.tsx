@@ -102,7 +102,7 @@ export default function ArticleSSTMacSST() {
           SST et MAC SST : le guide complet pour les entreprises
         </h1>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none text-slate-800 prose-li:text-slate-800">
           <p className="lead text-lg text-slate-600">
             La formation Sauveteur Secouriste du Travail (SST) est l&apos;une
             des formations obligatoires les plus repandues en entreprise.

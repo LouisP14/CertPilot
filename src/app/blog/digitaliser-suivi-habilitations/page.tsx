@@ -95,7 +95,7 @@ export default function ArticleDigitaliser() {
           Pourquoi digitaliser le suivi des habilitations ?
         </h1>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none text-slate-800 prose-li:text-slate-800">
           <p className="lead text-lg text-slate-600">
             De nombreuses entreprises gerent encore leurs formations et
             habilitations sur des fichiers Excel. Cette approche, si elle

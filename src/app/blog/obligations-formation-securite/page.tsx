@@ -97,7 +97,7 @@ export default function ArticleObligations() {
           Obligations de formation securite : ce que dit la loi
         </h1>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none text-slate-800 prose-li:text-slate-800">
           <p className="lead text-lg text-slate-600">
             L&apos;employeur a une obligation generale de securite envers ses
             salaries (article L4121-1 du Code du travail). Cela inclut la

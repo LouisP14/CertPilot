@@ -95,7 +95,7 @@ export default function ArticleCACES() {
           Comment bien gerer les CACES en entreprise ?
         </h1>
 
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none text-slate-800 prose-li:text-slate-800">
           <p className="lead text-lg text-slate-600">
             Le Certificat d&apos;Aptitude a la Conduite En Securite (CACES) est
             un element incontournable de la securite au travail pour les
