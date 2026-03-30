@@ -358,13 +358,16 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Preview Dashboard - Real screenshot */}
-            <div className="relative">
-              <div className="absolute -inset-4 rounded-3xl bg-linear-to-br from-emerald-500/20 to-teal-500/20 blur-2xl" />
-              <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
+            {/* Hub orbital */}
+            <div className="relative hidden lg:block">
+              <FeatureHub />
+            </div>
+            {/* Mobile fallback */}
+            <div className="relative lg:hidden">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
                 <img
                   src="/screenshots/Mock.png"
-                  alt="CertPilot - Tableau de bord avec suivi des habilitations, couverture par formation et conformité par service"
+                  alt="CertPilot - Tableau de bord"
                   className="w-full h-auto"
                   loading="eager"
                 />
@@ -986,6 +989,146 @@ function PlayIcon() {
     <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
       <path d="M4 2.5v11l9.5-5.5L4 2.5z" />
     </svg>
+  );
+}
+
+// ============ FEATURE HUB ============
+
+const HUB_NODES = [
+  { label: "Alertes\nautomatiques", angle: 270, color: "#dc2626", bg: "#fef2f2", icon: "M16 3C9.4 3 4 8.4 4 15c0 9.5-3 12-3 12h30s-3-2.5-3-12c0-6.6-5.4-12-12-12z|M12.5 27a3.5 3.5 0 0 0 7 0" },
+  { label: "Convocations\nautomatiques", angle: 315, color: "#2563eb", bg: "#eff6ff", icon: "M3 8l13 8 13-8|M3 8v16h26V8" },
+  { label: "Signature\nélectronique", angle: 0, color: "#16a34a", bg: "#f0fdf4", icon: "M4 26c0 0 3-3 7-3s6 4 10 4 6-3 6-3|M20 6l4 4L12 22H8v-4L20 6z" },
+  { label: "Passeport\nformation", angle: 45, color: "#7c3aed", bg: "#f5f3ff", icon: "M5 3h22v26H5z|M10 11h12|M10 15h12|M10 19h8" },
+  { label: "Audit\nTrail", angle: 90, color: "#0ea5e9", bg: "#f0f9ff", icon: "M3 16l5 0 3-7 5 14 5-11 4 4 4 0" },
+  { label: "Suivi\nbudget", angle: 135, color: "#10b981", bg: "#ecfdf5", icon: "M3 4h26v24H3z|M3 11h26|M16 4v24" },
+  { label: "Planning\n& Sessions", angle: 180, color: "#d97706", bg: "#fffbeb", icon: "M3 5h26v24H3z|M3 13h26|M10 3v5|M22 3v5" },
+  { label: "Détection\ndes besoins", angle: 225, color: "#a21caf", bg: "#fdf4ff", icon: "M13 5a8 8 0 1 0 0 16 8 8 0 0 0 0-16z|M19 19l8 8" },
+];
+
+function FeatureHub() {
+  const r = 210;
+  const cx = 250;
+  const cy = 250;
+
+  return (
+    <div className="relative mx-auto" style={{ width: 500, height: 500 }}>
+      {/* SVG rings + connectors */}
+      <svg
+        className="absolute inset-0"
+        viewBox="0 0 500 500"
+        fill="none"
+      >
+        {/* Dot grid */}
+        <defs>
+          <pattern id="dots" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse">
+            <circle cx="12.5" cy="12.5" r="0.8" fill="rgba(16,185,129,0.15)" />
+          </pattern>
+        </defs>
+        <circle cx={cx} cy={cy} r="245" fill="url(#dots)" />
+
+        {/* Orbital rings */}
+        <circle cx={cx} cy={cy} r={r} stroke="rgba(16,185,129,0.12)" strokeWidth="1.5" strokeDasharray="6 8" />
+        <circle cx={cx} cy={cy} r={r * 0.55} stroke="rgba(16,185,129,0.08)" strokeWidth="1" strokeDasharray="4 10" />
+
+        {/* Connector lines + traveling dots */}
+        {HUB_NODES.map((node, i) => {
+          const rad = (node.angle * Math.PI) / 180;
+          const nx = cx + r * Math.cos(rad);
+          const ny = cy + r * Math.sin(rad);
+          const sx = cx + 55 * Math.cos(rad);
+          const sy = cy + 55 * Math.sin(rad);
+          return (
+            <g key={i}>
+              <line
+                x1={sx} y1={sy} x2={nx} y2={ny}
+                stroke="rgba(16,185,129,0.18)" strokeWidth="1.2" strokeDasharray="4 6"
+              />
+              <circle r="3" fill="#16a34a" opacity="0.6">
+                <animateMotion
+                  dur={`${3 + i * 0.2}s`}
+                  repeatCount="indefinite"
+                  begin={`${-i * 0.4}s`}
+                  path={`M${sx},${sy} L${nx},${ny}`}
+                />
+              </circle>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Center logo */}
+      <div
+        className="absolute flex flex-col items-center justify-center gap-2 rounded-3xl border border-emerald-200/50 bg-white shadow-xl"
+        style={{
+          width: 110, height: 110,
+          left: cx - 55, top: cy - 55,
+          boxShadow: "0 0 0 8px rgba(16,185,129,0.06), 0 0 0 20px rgba(16,185,129,0.03), 0 20px 60px rgba(15,23,42,0.12)",
+          zIndex: 10,
+        }}
+      >
+        <svg width="40" height="40" viewBox="0 0 52 52" fill="none">
+          <path d="M26 4L8 11v14c0 11.5 8.3 22.3 18 24.8C35.7 47.3 44 36.5 44 25V11L26 4z" fill="rgba(16,185,129,0.12)" stroke="#16a34a" strokeWidth="2" />
+          <polyline points="17,26 23,32 35,20" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+        <span className="text-xs font-extrabold tracking-tight text-[#173B56]">
+          Cert<span className="text-emerald-600">Pilot</span>
+        </span>
+      </div>
+
+      {/* Feature nodes */}
+      {HUB_NODES.map((node, i) => {
+        const rad = (node.angle * Math.PI) / 180;
+        const nx = cx + r * Math.cos(rad);
+        const ny = cy + r * Math.sin(rad);
+        const paths = node.icon.split("|");
+
+        return (
+          <div
+            key={i}
+            className="absolute flex flex-col items-center gap-1.5"
+            style={{
+              left: nx, top: ny,
+              transform: "translate(-50%, -50%)",
+              zIndex: 10,
+              animation: `hubFloat${i % 4} ${4.5 + i * 0.3}s ease-in-out infinite`,
+            }}
+          >
+            <div
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border bg-white shadow-md transition-transform hover:scale-110"
+              style={{
+                borderColor: `${node.color}20`,
+                background: `linear-gradient(135deg, #fff 60%, ${node.bg})`,
+              }}
+            >
+              <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+                {paths.map((d, j) => (
+                  <path
+                    key={j}
+                    d={d}
+                    stroke={node.color}
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill={j === 0 ? `${node.color}10` : "none"}
+                  />
+                ))}
+              </svg>
+            </div>
+            <span className="text-center text-[10px] font-semibold leading-tight text-slate-700 whitespace-pre-line">
+              {node.label}
+            </span>
+          </div>
+        );
+      })}
+
+      {/* Float animations */}
+      <style>{`
+        @keyframes hubFloat0 { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(-8px)} }
+        @keyframes hubFloat1 { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(-6px)} }
+        @keyframes hubFloat2 { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(7px)} }
+        @keyframes hubFloat3 { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(-7px)} }
+      `}</style>
+    </div>
   );
 }
 
