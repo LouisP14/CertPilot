@@ -17,10 +17,10 @@ import { Suspense, useState } from "react";
 
 // Configuration des plans
 const PLANS = {
-  starter: { name: "Starter", price: 199, employees: "1-50" },
-  business: { name: "Business", price: 349, employees: "51-100" },
-  enterprise: { name: "Enterprise", price: 599, employees: "101-200" },
-  corporate: { name: "Corporate", price: 1199, employees: "201-500" },
+  starter: { name: "Starter", price: 49, employees: "1-20" },
+  pro: { name: "Pro", price: 149, employees: "21-100" },
+  business: { name: "Business", price: 349, employees: "101-300" },
+  enterprise: { name: "Enterprise", price: null, employees: "300+" },
 } as const;
 
 type PlanKey = keyof typeof PLANS;
@@ -147,7 +147,7 @@ function ContactForm() {
                   Offre {selectedPlan.name} sélectionnée
                 </p>
                 <p className="text-sm text-emerald-600">
-                  {selectedPlan.employees} employés • {selectedPlan.price}€/mois
+                  {selectedPlan.employees} employés{selectedPlan.price ? ` • ${selectedPlan.price}€/mois` : " • Sur devis"}
                 </p>
               </div>
               <Link
@@ -255,20 +255,19 @@ function ContactForm() {
                       const count = e.target.value;
                       // Auto-sélectionner le plan correspondant
                       let plan = "";
-                      if (count === "1-50") plan = "starter";
-                      else if (count === "51-100") plan = "business";
-                      else if (count === "101-200") plan = "enterprise";
-                      else if (count === "201-500") plan = "corporate";
+                      if (count === "1-20") plan = "starter";
+                      else if (count === "21-100") plan = "pro";
+                      else if (count === "101-300") plan = "business";
+                      else if (count === "300+") plan = "enterprise";
                       setFormData({ ...formData, employeeCount: count, plan });
                     }}
                     className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm text-slate-900 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                   >
                     <option value="">Sélectionnez une tranche</option>
-                    <option value="1-50">1 à 50 employés</option>
-                    <option value="51-100">51 à 100 employés</option>
-                    <option value="101-200">101 à 200 employés</option>
-                    <option value="201-500">201 à 500 employés</option>
-                    <option value="500+">Plus de 500 employés</option>
+                    <option value="1-20">1 à 20 employés</option>
+                    <option value="21-100">21 à 100 employés</option>
+                    <option value="101-300">101 à 300 employés</option>
+                    <option value="300+">Plus de 300 employés</option>
                   </select>
                 </div>
               )}

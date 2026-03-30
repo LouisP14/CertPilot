@@ -116,33 +116,32 @@ export default function CGV() {
                 <tbody className="divide-y divide-slate-100">
                   <tr>
                     <td className="px-4 py-3">Starter</td>
-                    <td className="px-4 py-3">1 à 50</td>
-                    <td className="px-4 py-3">199 € HT</td>
-                    <td className="px-4 py-3">1 990 € HT (-17%)</td>
+                    <td className="px-4 py-3">1 à 20</td>
+                    <td className="px-4 py-3">49 € HT</td>
+                    <td className="px-4 py-3">490 € HT (-17%)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Pro</td>
+                    <td className="px-4 py-3">21 à 100</td>
+                    <td className="px-4 py-3">149 € HT</td>
+                    <td className="px-4 py-3">1 490 € HT (-17%)</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3">Business</td>
-                    <td className="px-4 py-3">51 à 100</td>
+                    <td className="px-4 py-3">101 à 300</td>
                     <td className="px-4 py-3">349 € HT</td>
                     <td className="px-4 py-3">3 490 € HT (-17%)</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3">Enterprise</td>
-                    <td className="px-4 py-3">101 à 200</td>
-                    <td className="px-4 py-3">599 € HT</td>
-                    <td className="px-4 py-3">5 990 € HT (-17%)</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3">Corporate</td>
-                    <td className="px-4 py-3">201 à 500</td>
-                    <td className="px-4 py-3">1 199 € HT</td>
-                    <td className="px-4 py-3">11 990 € HT (-17%)</td>
+                    <td className="px-4 py-3">300+</td>
+                    <td className="px-4 py-3" colSpan={2}>Sur devis</td>
                   </tr>
                 </tbody>
               </table>
             </div>
             <p className="mt-4 text-sm text-slate-500">
-              Pour les entreprises de plus de 500 employés, un devis
+              Pour les entreprises de plus de 300 employés, un devis
               personnalisé sera établi sur demande.
             </p>
           </section>

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title:
     "CertPilot - Gestion des Formations et Habilitations | Logiciel SaaS B2B",
   description:
-    "CertPilot centralise la gestion de vos habilitations et formations professionnelles. Alertes automatiques, convocations, signatures électroniques, passeport formation PDF. Solution B2B à partir de 199€ HT/mois.",
+    "CertPilot centralise la gestion de vos habilitations et formations professionnelles. Alertes automatiques, convocations, signatures électroniques, passeport formation PDF. Solution B2B à partir de 49€ HT/mois.",
   alternates: {
     canonical: "/",
   },
@@ -77,15 +77,28 @@ function JsonLd() {
           {
             "@type": "Offer",
             name: "Starter",
-            price: "199",
+            price: "49",
             priceCurrency: "EUR",
             priceSpecification: {
               "@type": "UnitPriceSpecification",
-              price: "199",
+              price: "49",
               priceCurrency: "EUR",
               unitText: "MONTH",
             },
-            description: "Pour 1 à 50 employés",
+            description: "Pour 1 à 20 employés",
+          },
+          {
+            "@type": "Offer",
+            name: "Pro",
+            price: "149",
+            priceCurrency: "EUR",
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: "149",
+              priceCurrency: "EUR",
+              unitText: "MONTH",
+            },
+            description: "Pour 21 à 100 employés",
           },
           {
             "@type": "Offer",
@@ -98,33 +111,13 @@ function JsonLd() {
               priceCurrency: "EUR",
               unitText: "MONTH",
             },
-            description: "Pour 51 à 100 employés",
+            description: "Pour 101 à 300 employés",
           },
           {
             "@type": "Offer",
             name: "Enterprise",
-            price: "599",
             priceCurrency: "EUR",
-            priceSpecification: {
-              "@type": "UnitPriceSpecification",
-              price: "599",
-              priceCurrency: "EUR",
-              unitText: "MONTH",
-            },
-            description: "Pour 101 à 200 employés",
-          },
-          {
-            "@type": "Offer",
-            name: "Corporate",
-            price: "1199",
-            priceCurrency: "EUR",
-            priceSpecification: {
-              "@type": "UnitPriceSpecification",
-              price: "1199",
-              priceCurrency: "EUR",
-              unitText: "MONTH",
-            },
-            description: "Pour 201 à 500 employés",
+            description: "Plus de 300 employés - sur devis",
           },
         ],
         featureList: [
@@ -156,7 +149,7 @@ function JsonLd() {
             name: "Combien coûte CertPilot ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "CertPilot propose des plans à partir de 199€ HT/mois pour 1 à 50 employés. Le plan Business (51-100 employés) est à 349€ HT/mois, Enterprise (101-200) à 599€ HT/mois et Corporate (201-500) à 1199€ HT/mois. Toutes les fonctionnalités sont incluses dans chaque plan.",
+              text: "CertPilot propose des plans à partir de 49€ HT/mois pour 1 à 20 employés. Le plan Pro (21-100 employés) est à 149€ HT/mois, Business (101-300) à 349€ HT/mois. Au-delà de 300 employés, contactez-nous pour un devis. Toutes les fonctionnalités sont incluses dans chaque plan. Essai gratuit 14 jours.",
             },
           },
           {
@@ -571,38 +564,38 @@ export default function Home() {
             <div className="mx-auto mt-16 grid max-w-5xl gap-6 lg:grid-cols-4">
               <PricingCard
                 name="Starter"
-                price={199}
-                employees="1-50"
+                price={49}
+                employees="1-20"
                 featured={false}
+              />
+              <PricingCard
+                name="Pro"
+                price={149}
+                employees="21-100"
+                featured={true}
               />
               <PricingCard
                 name="Business"
                 price={349}
-                employees="51-100"
-                featured={true}
-              />
-              <PricingCard
-                name="Enterprise"
-                price={599}
-                employees="101-200"
+                employees="101-300"
                 featured={false}
               />
               <PricingCard
-                name="Corporate"
-                price={1199}
-                employees="201-500"
+                name="Enterprise"
+                price={null}
+                employees="300+"
                 featured={false}
               />
             </div>
 
             <div className="mt-12 text-center">
               <p className="text-sm text-slate-500">
-                Plus de 500 employés ?{" "}
+                Besoin d&apos;un devis sur mesure ?{" "}
                 <Link
                   href="/contact"
                   className="font-semibold text-[#173B56] hover:underline"
                 >
-                  Contactez-nous pour un devis personnalisé
+                  Contactez-nous
                 </Link>
               </p>
             </div>
@@ -832,11 +825,11 @@ function PricingCard({
   featured,
 }: {
   name: string;
-  price: number;
+  price: number | null;
   employees: string;
   featured: boolean;
 }) {
-  const yearlyPrice = Math.round(price * 10);
+  const yearlyPrice = price ? Math.round(price * 10) : null;
 
   return (
     <div
@@ -856,14 +849,28 @@ function PricingCard({
       <p className="mt-1 text-sm text-slate-500">{employees} employés</p>
 
       <div className="mt-4">
-        <span className="text-4xl font-black text-[#173B56]">{price}€</span>
-        <span className="text-slate-500">/mois HT</span>
+        {price ? (
+          <>
+            <span className="text-4xl font-black text-[#173B56]">{price}€</span>
+            <span className="text-slate-500">/mois HT</span>
+          </>
+        ) : (
+          <span className="text-3xl font-black text-[#173B56]">Sur devis</span>
+        )}
       </div>
 
-      <p className="mt-2 text-sm font-semibold text-emerald-700">
-        {yearlyPrice}€/an HT
-      </p>
-      <p className="text-xs text-slate-500">Économisez 17% en annuel</p>
+      {yearlyPrice ? (
+        <>
+          <p className="mt-2 text-sm font-semibold text-emerald-700">
+            {yearlyPrice}€/an HT
+          </p>
+          <p className="text-xs text-slate-500">Économisez 17% en annuel</p>
+        </>
+      ) : (
+        <p className="mt-2 text-sm text-slate-500">
+          Tarif adapté à vos besoins
+        </p>
+      )}
 
       <div className="mt-6 space-y-3">
         <IncludedFeature>Toutes les fonctionnalités</IncludedFeature>
@@ -883,7 +890,7 @@ function PricingCard({
             : "border border-slate-300 bg-white text-[#173B56] hover:border-slate-400 hover:bg-slate-50"
         }`}
       >
-        Demander un devis
+        {price ? "Démarrer l\u0027essai gratuit" : "Nous contacter"}
         <ArrowRight className="h-4 w-4" />
       </Link>
     </div>
