@@ -114,7 +114,7 @@ export async function POST(
       where: { employeeToken: token },
       include: {
         employee: {
-          select: { firstName: true, lastName: true, email: true },
+          select: { firstName: true, lastName: true, email: true, companyId: true },
         },
       },
     });
@@ -172,6 +172,7 @@ export async function POST(
       `Passeport ${signature.employee.firstName} ${signature.employee.lastName}`,
       signatureName,
       "EMPLOYEE",
+      signature.employee.companyId,
     );
 
     if (signature.siteManagerEmail) {

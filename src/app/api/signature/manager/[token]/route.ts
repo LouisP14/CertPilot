@@ -180,6 +180,7 @@ export async function POST(
 
       // Audit Trail - Rejet
       await createAuditLog({
+        companyId: signature.employee.companyId,
         action: "SIGN",
         entityType: "EMPLOYEE",
         entityId: signature.employee.id,
@@ -250,6 +251,7 @@ export async function POST(
       `Passeport ${signature.employee.firstName} ${signature.employee.lastName}`,
       signatureName,
       "MANAGER",
+      signature.employee.companyId,
     );
 
     // TODO: Envoyer email de confirmation à l'employé
