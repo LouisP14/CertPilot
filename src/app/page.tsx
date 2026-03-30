@@ -539,10 +539,9 @@ export default function Home() {
               <div className="absolute -inset-4 rounded-3xl bg-linear-to-br from-emerald-500/10 to-teal-500/10 blur-2xl" />
               <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-2xl shadow-slate-900/20">
                 <video
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                   controls
                   preload="metadata"
-                  poster=""
                 >
                   <source src="/demo.mp4" type="video/mp4" />
                   Votre navigateur ne supporte pas la lecture vidéo.
