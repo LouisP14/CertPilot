@@ -7,7 +7,6 @@ import {
   Bell,
   Calendar,
   Check,
-  CheckCircle2,
   FileText,
   GraduationCap,
   Mail,
@@ -366,65 +365,16 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Preview Dashboard */}
+            {/* Preview Dashboard - Real screenshot */}
             <div className="relative">
               <div className="absolute -inset-4 rounded-3xl bg-linear-to-br from-emerald-500/20 to-teal-500/20 blur-2xl" />
               <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
-                <div className="flex items-center justify-between border-b border-slate-200 bg-linear-to-r from-[#173B56] to-[#1e4a6b] px-5 py-4">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      Tableau de bord
-                    </p>
-                    <p className="text-xs text-white/60">Suivi en temps réel</p>
-                  </div>
-                  <span className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white">
-                    En ligne
-                  </span>
-                </div>
-
-                <div className="p-5">
-                  <div className="grid gap-3">
-                    <PreviewRow
-                      icon={Users}
-                      title="Employés"
-                      value="142 actifs"
-                      color="blue"
-                    />
-                    <PreviewRow
-                      icon={Shield}
-                      title="Habilitations"
-                      value="98% conformes"
-                      color="emerald"
-                    />
-                    <PreviewRow
-                      icon={Bell}
-                      title="Alertes"
-                      value="3 à traiter"
-                      color="amber"
-                    />
-                    <PreviewRow
-                      icon={Calendar}
-                      title="Sessions"
-                      value="2 planifiées"
-                      color="violet"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Floating card */}
-              <div className="absolute -bottom-4 -left-4 hidden w-56 rounded-xl border border-slate-200 bg-white p-4 shadow-xl lg:block">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-[#173B56]">
-                      Alerte traitée
-                    </p>
-                    <p className="text-xs text-slate-500">Il y a 2 min</p>
-                  </div>
-                </div>
+                <img
+                  src="/screenshots/Mock.png"
+                  alt="CertPilot - Tableau de bord avec suivi des habilitations, couverture par formation et conformité par service"
+                  className="w-full h-auto"
+                  loading="eager"
+                />
               </div>
             </div>
           </div>
@@ -849,39 +799,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-    </div>
-  );
-}
-
-function PreviewRow({
-  icon: Icon,
-  title,
-  value,
-  color,
-}: {
-  icon: ComponentType<{ className?: string }>;
-  title: string;
-  value: string;
-  color: "blue" | "emerald" | "amber" | "violet";
-}) {
-  const colorClasses = {
-    blue: "bg-blue-100 text-blue-600",
-    emerald: "bg-emerald-100 text-emerald-600",
-    amber: "bg-amber-100 text-amber-600",
-    violet: "bg-violet-100 text-violet-600",
-  };
-
-  return (
-    <div className="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
-      <div className="flex items-center gap-3">
-        <div
-          className={`flex h-8 w-8 items-center justify-center rounded-lg ${colorClasses[color]}`}
-        >
-          <Icon className="h-4 w-4" />
-        </div>
-        <span className="text-sm font-medium text-slate-700">{title}</span>
-      </div>
-      <span className="text-sm font-semibold text-slate-900">{value}</span>
     </div>
   );
 }
