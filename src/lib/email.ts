@@ -46,6 +46,41 @@ async function sendEmail(
   return result;
 }
 
+// Email : Vérification d'email lors de l'inscription
+export async function sendVerificationEmail(params: {
+  to: string;
+  name: string;
+  token: string;
+}) {
+  const { to, name, token } = params;
+  const link = `${getAppBaseUrl()}/verify-email?token=${token}`;
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: "Confirmez votre email - CertPilot",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">CertPilot</h1>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+          <p style="font-size: 16px; color: #333;">Bonjour ${name},</p>
+          <p style="color: #555;">Merci de vous être inscrit sur CertPilot. Pour activer votre compte et démarrer votre essai gratuit de 14 jours, confirmez votre adresse email :</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${link}" style="display: inline-block; background: #059669; color: white; padding: 14px 32px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 16px;">Confirmer mon email</a>
+          </div>
+          <p style="color: #888; font-size: 13px;">Ce lien expire dans 24 heures. Si vous n'avez pas créé de compte, ignorez cet email.</p>
+        </div>
+        <div style="background: #f9fafb; padding: 15px; text-align: center; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
+          <p style="color: #888; font-size: 12px; margin: 0;">CertPilot - Gestion des formations et habilitations</p>
+        </div>
+      </div>
+    `,
+    text: `Bonjour ${name},\n\nConfirmez votre email pour activer votre compte CertPilot :\n${link}\n\nCe lien expire dans 24 heures.\n\nL'équipe CertPilot`,
+  });
+}
+
 // Email 1 : Confirmation de demande de contact
 export async function sendContactConfirmation(params: {
   to: string;

@@ -263,8 +263,19 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* Lien inscription */}
+          <p className="mt-6 text-center text-sm text-slate-600">
+            Pas encore de compte ?{" "}
+            <Link
+              href="/register"
+              className="font-semibold text-emerald-600 hover:underline"
+            >
+              Essai gratuit 14 jours
+            </Link>
+          </p>
+
           {/* Lien retour */}
-          <div className="mt-8 text-center">
+          <div className="mt-4 text-center">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-[#173B56] transition-colors"

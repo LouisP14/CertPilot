@@ -39,6 +39,7 @@ export async function GET() {
           password: hashedAdminPassword,
           role: "SUPER_ADMIN",
           companyId: adminCompany.id,
+          emailVerified: true,
         },
       });
       results.admin = "updated";
@@ -51,6 +52,7 @@ export async function GET() {
           role: "SUPER_ADMIN",
           companyId: adminCompany.id,
           mustChangePassword: false,
+          emailVerified: true,
         },
       });
       results.admin = "created";
@@ -88,6 +90,7 @@ export async function GET() {
           password: hashedDemoPassword,
           role: "ADMIN",
           companyId: demoCompany.id,
+          emailVerified: true,
         },
       });
       results.demo = "updated";
@@ -100,6 +103,7 @@ export async function GET() {
           role: "ADMIN",
           companyId: demoCompany.id,
           mustChangePassword: false,
+          emailVerified: true,
         },
       });
       results.demo = "created";

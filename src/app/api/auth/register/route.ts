@@ -1,7 +1,9 @@
+import { sendVerificationEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { parseBody, registerSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -11,7 +13,10 @@ export async function POST(request: NextRequest) {
     const rl = rateLimit(`register:${ip}`, { limit: 5, windowSeconds: 60 });
     if (!rl.success) {
       return NextResponse.json(
-        { error: "Trop de tentatives. Veuillez réessayer dans quelques minutes." },
+        {
+          error:
+            "Trop de tentatives. Veuillez réessayer dans quelques minutes.",
+        },
         { status: 429 },
       );
     }
@@ -23,10 +28,11 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, password, name, companyName } = parsed.data;
+    const emailLower = email.toLowerCase();
 
     // Vérifier si l'email existe déjà
     const existingUser = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: emailLower },
     });
 
     if (existingUser) {
@@ -47,39 +53,56 @@ export async function POST(request: NextRequest) {
     const company = await prisma.company.create({
       data: {
         name: companyName,
-        adminEmail: email.toLowerCase(),
+        adminEmail: emailLower,
         trialEndsAt,
         subscriptionStatus: "TRIAL",
-        subscriptionPlan: "Starter", // Plan par défaut pendant le trial
-        employeeLimit: 50, // Limite par défaut
+        subscriptionPlan: "Starter",
+        employeeLimit: 20,
       },
     });
 
-    // Créer l'utilisateur admin lié à l'entreprise
-    const user = await prisma.user.create({
+    // Créer l'utilisateur admin (non vérifié)
+    await prisma.user.create({
       data: {
-        email: email.toLowerCase(),
+        email: emailLower,
         password: hashedPassword,
         name,
         role: "ADMIN",
         companyId: company.id,
+        emailVerified: false,
       },
+    });
+
+    // Générer un token de vérification (expire dans 24h)
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24);
+
+    // Supprimer les anciens tokens pour cet email
+    await prisma.emailVerificationToken.deleteMany({
+      where: { email: emailLower },
+    });
+
+    await prisma.emailVerificationToken.create({
+      data: {
+        email: emailLower,
+        token,
+        expiresAt,
+      },
+    });
+
+    // Envoyer l'email de vérification
+    await sendVerificationEmail({
+      to: emailLower,
+      name,
+      token,
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: "Compte créé avec succès",
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-        },
-        company: {
-          id: company.id,
-          name: company.name,
-          trialEndsAt: company.trialEndsAt,
-        },
+        message: "Compte créé. Vérifiez votre email pour activer votre essai.",
+        requiresVerification: true,
       },
       { status: 201 },
     );

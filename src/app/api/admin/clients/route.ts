@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
         role: "ADMIN",
         companyId: company.id,
         mustChangePassword: true, // Forcer le changement de mdp
+        emailVerified: true, // Créé par admin = vérifié
       },
     });
 

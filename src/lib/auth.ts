@@ -57,6 +57,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
+        // Bloquer si email non vérifié (sauf SUPER_ADMIN et comptes créés par admin)
+        if (!user.emailVerified && user.role !== "SUPER_ADMIN" && !user.mustChangePassword) {
+          throw new Error("Veuillez vérifier votre email avant de vous connecter.");
+        }
+
         return {
           id: user.id,
           email: user.email,

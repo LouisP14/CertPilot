@@ -23,8 +23,20 @@ model User {
   companyId           String?
   company             Company?  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   mustChangePassword  Boolean   @default(false) // Force changement mdp au premier login
+  emailVerified       Boolean   @default(false) // Email vérifié par token
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([email])
 }
 
 // ============================================
