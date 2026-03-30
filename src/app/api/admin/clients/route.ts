@@ -7,10 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Configuration des plans
 const PLAN_CONFIGS: Record<string, { name: string; employeeLimit: number }> = {
-  starter: { name: "Starter", employeeLimit: 50 },
-  business: { name: "Business", employeeLimit: 100 },
-  enterprise: { name: "Enterprise", employeeLimit: 200 },
-  corporate: { name: "Corporate", employeeLimit: 500 },
+  starter: { name: "Starter", employeeLimit: 20 },
+  pro: { name: "Pro", employeeLimit: 100 },
+  business: { name: "Business", employeeLimit: 300 },
+  enterprise: { name: "Enterprise", employeeLimit: 1000 },
 };
 
 // POST - Créer un compte client (SUPER_ADMIN only)

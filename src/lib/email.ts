@@ -56,10 +56,10 @@ export async function sendContactConfirmation(params: {
   const { to, contactName, companyName, plan } = params;
 
   const planNames: Record<string, string> = {
-    starter: "Starter (199€/mois)",
+    starter: "Starter (49€/mois)",
+    pro: "Pro (149€/mois)",
     business: "Business (349€/mois)",
-    enterprise: "Enterprise (599€/mois)",
-    corporate: "Corporate (1199€/mois)",
+    enterprise: "Enterprise (sur devis)",
   };
 
   await sendEmail({
@@ -155,10 +155,10 @@ export async function sendNewContactNotification(params: {
     process.env.ADMIN_NOTIFICATION_EMAIL || "contact@certpilot.eu";
 
   const planNames: Record<string, string> = {
-    starter: "Starter (1-50 employés) - 199€/mois",
-    business: "Business (51-100 employés) - 349€/mois",
-    enterprise: "Enterprise (101-200 employés) - 599€/mois",
-    corporate: "Corporate (201-500 employés) - 1199€/mois",
+    starter: "Starter (1-20 employés) - 49€/mois",
+    pro: "Pro (21-100 employés) - 149€/mois",
+    business: "Business (101-300 employés) - 349€/mois",
+    enterprise: "Enterprise (300+ employés) - sur devis",
   };
 
   const baseUrl = getAppBaseUrl();
@@ -253,22 +253,19 @@ export async function sendPaymentLink(params: {
   const isAnnual = billing === "annual";
 
   const monthlyPrices: Record<string, number> = {
-    starter: 199,
+    starter: 49,
+    pro: 149,
     business: 349,
-    enterprise: 599,
-    corporate: 1199,
   };
   const annualPrices: Record<string, number> = {
-    starter: 1990,
+    starter: 490,
+    pro: 1490,
     business: 3490,
-    enterprise: 5990,
-    corporate: 11990,
   };
   const planLabels: Record<string, string> = {
     starter: "Starter",
+    pro: "Pro",
     business: "Business",
-    enterprise: "Enterprise",
-    corporate: "Corporate",
   };
 
   const price = isAnnual ? annualPrices[plan] : monthlyPrices[plan];
@@ -588,9 +585,9 @@ export async function sendWelcomeEmail(params: {
 
   const planNames: Record<string, string> = {
     starter: "Starter",
+    pro: "Pro",
     business: "Business",
     enterprise: "Enterprise",
-    corporate: "Corporate",
   };
 
   await sendEmail({

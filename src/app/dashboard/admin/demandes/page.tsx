@@ -86,10 +86,10 @@ const PLAN_CONFIG: Record<
   string,
   { name: string; price: number; employees: string }
 > = {
-  starter: { name: "Starter", price: 199, employees: "1-50" },
-  business: { name: "Business", price: 349, employees: "51-100" },
-  enterprise: { name: "Enterprise", price: 599, employees: "101-200" },
-  corporate: { name: "Corporate", price: 1199, employees: "201-500" },
+  starter: { name: "Starter", price: 49, employees: "1-20" },
+  pro: { name: "Pro", price: 149, employees: "21-100" },
+  business: { name: "Business", price: 349, employees: "101-300" },
+  enterprise: { name: "Enterprise", price: 0, employees: "300+" },
 };
 
 export default function DemandesAdminPage() {
