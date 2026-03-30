@@ -32,7 +32,18 @@ async function sendEmail(
     );
     return { data: null, error: { message: "Email non configuré" } };
   }
-  return resend.emails.send(params);
+  const result = await resend.emails.send(params);
+  if (result.error) {
+    console.error(
+      `[email] Échec envoi à ${params.to} (sujet: ${params.subject}):`,
+      result.error,
+    );
+  } else {
+    console.log(
+      `[email] Email envoyé à ${params.to} (sujet: ${params.subject}) - ID: ${result.data?.id}`,
+    );
+  }
+  return result;
 }
 
 // Email 1 : Confirmation de demande de contact
@@ -410,6 +421,158 @@ Ce lien expire le ${expiresAt.toLocaleDateString("fr-FR")}.
 
 Cordialement,
 L'équipe CertPilot`,
+  });
+}
+
+// Email : Alertes habilitations (utilisé par le cron)
+type AlertEmailItem = {
+  employeeName: string;
+  formationName: string;
+  daysLeft: number;
+  department: string;
+  site: string | null;
+};
+
+function buildAlertEmailHtml(params: {
+  companyName: string;
+  groupedAlerts: Record<string, AlertEmailItem[]>;
+}) {
+  const { companyName, groupedAlerts } = params;
+
+  let html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 700px; margin: 0 auto; background: #f8fafc;">
+      <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">🔔 Alertes Habilitations</h1>
+        <p style="color: #e2e8f0; margin: 10px 0 0 0;">CertPilot - ${new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+      </div>
+      <div style="padding: 30px;">
+        <p style="color: #475569; font-size: 16px; margin-bottom: 20px;">Bonjour,<br><br>Voici le récapitulatif des habilitations nécessitant votre attention :</p>
+  `;
+
+  if (groupedAlerts.EXPIRED) {
+    html += `
+      <div style="margin-bottom: 25px;">
+        <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
+          <h3 style="color: #dc2626; margin: 0 0 5px 0;">❌ Expirées (${groupedAlerts.EXPIRED.length})</h3>
+          <p style="color: #991b1b; margin: 0; font-size: 14px;">Ces habilitations sont déjà expirées !</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <thead>
+            <tr style="background: #fef2f2;">
+              <th style="padding: 12px; text-align: left; color: #991b1b; font-size: 13px;">Employé</th>
+              <th style="padding: 12px; text-align: left; color: #991b1b; font-size: 13px;">Formation</th>
+              <th style="padding: 12px; text-align: left; color: #991b1b; font-size: 13px;">Service</th>
+              <th style="padding: 12px; text-align: center; color: #991b1b; font-size: 13px;">Expiré depuis</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${groupedAlerts.EXPIRED.map(
+              (item) => `
+                <tr style="border-top: 1px solid #fee2e2;">
+                  <td style="padding: 12px; color: #1f2937;">${item.employeeName}</td>
+                  <td style="padding: 12px; color: #1f2937;">${item.formationName}</td>
+                  <td style="padding: 12px; color: #6b7280;">${item.department}${item.site ? ` - ${item.site}` : ""}</td>
+                  <td style="padding: 12px; text-align: center;"><span style="background: #dc2626; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">${Math.abs(item.daysLeft)} jour(s)</span></td>
+                </tr>
+              `,
+            ).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  const sortedThresholds = Object.keys(groupedAlerts)
+    .filter((key) => key !== "EXPIRED")
+    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+  for (const thresholdKey of sortedThresholds) {
+    const days = parseInt(thresholdKey, 10);
+    const alerts = groupedAlerts[thresholdKey];
+
+    let bgColor = "#eff6ff";
+    let borderColor = "#3b82f6";
+    let textColor = "#1e40af";
+    let badgeColor = "#3b82f6";
+
+    if (days <= 7) {
+      bgColor = "#fef3c7";
+      borderColor = "#f59e0b";
+      textColor = "#92400e";
+      badgeColor = "#f59e0b";
+    } else if (days <= 30) {
+      bgColor = "#fef9c3";
+      borderColor = "#eab308";
+      textColor = "#854d0e";
+      badgeColor = "#eab308";
+    } else if (days <= 60) {
+      bgColor = "#ecfdf5";
+      borderColor = "#10b981";
+      textColor = "#065f46";
+      badgeColor = "#10b981";
+    }
+
+    html += `
+      <div style="margin-bottom: 25px;">
+        <div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
+          <h3 style="color: ${textColor}; margin: 0 0 5px 0;">⚠️ Expire dans ${days} jours ou moins (${alerts.length})</h3>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <thead>
+            <tr style="background: #f8fafc;">
+              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Employé</th>
+              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Formation</th>
+              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Service</th>
+              <th style="padding: 12px; text-align: center; color: #475569; font-size: 13px;">Jours restants</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${alerts
+              .map(
+                (item) => `
+                  <tr style="border-top: 1px solid #e5e7eb;">
+                    <td style="padding: 12px; color: #1f2937;">${item.employeeName}</td>
+                    <td style="padding: 12px; color: #1f2937;">${item.formationName}</td>
+                    <td style="padding: 12px; color: #6b7280;">${item.department}${item.site ? ` - ${item.site}` : ""}</td>
+                    <td style="padding: 12px; text-align: center;"><span style="background: ${badgeColor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px;">${item.daysLeft} jour(s)</span></td>
+                  </tr>
+                `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  const appUrl = process.env.APP_URL || process.env.NEXTAUTH_URL || "https://www.certpilot.eu";
+  html += `
+        <div style="margin-top: 30px; padding: 20px; background: #f1f5f9; border-radius: 8px; text-align: center;">
+          <p style="color: #64748b; margin: 0 0 15px 0; font-size: 14px;">Accédez au tableau de bord pour planifier les recyclages</p>
+          <a href="${appUrl}/dashboard" style="display: inline-block; background: #173B56; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">📋 Voir le tableau de bord</a>
+        </div>
+      </div>
+      <div style="background: #173B56; padding: 20px; text-align: center;">
+        <p style="color: #94a3b8; margin: 0; font-size: 12px;">Cet email a été envoyé automatiquement par CertPilot<br>${companyName}</p>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+export async function sendAlertEmail(params: {
+  to: string;
+  companyName: string;
+  alertCount: number;
+  groupedAlerts: Record<string, AlertEmailItem[]>;
+}) {
+  const { to, companyName, alertCount, groupedAlerts } = params;
+  return sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: `🔔 Alertes Habilitations - ${alertCount} habilitation(s) à surveiller`,
+    html: buildAlertEmailHtml({ companyName, groupedAlerts }),
   });
 }
 

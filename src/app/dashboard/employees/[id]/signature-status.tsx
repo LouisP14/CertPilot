@@ -83,6 +83,7 @@ export function SignatureStatus({
   const [showModal, setShowModal] = useState(false);
   const [siteManagerEmail, setSiteManagerEmail] = useState(managerEmail || "");
   const [siteManagerName, setSiteManagerName] = useState(managerName || "");
+  const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -112,6 +113,34 @@ export function SignatureStatus({
 
     return () => clearInterval(interval);
   }, [employeeId]);
+
+  const handleCancelSignature = async () => {
+    setCancelling(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(
+        `/api/signature?employeeId=${employeeId}`,
+        { method: "DELETE" },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error);
+        return;
+      }
+
+      setSignature(null);
+      setSuccess("Processus de signature annulé.");
+      router.refresh();
+    } catch {
+      setError("Erreur lors de l'annulation");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   const handleSendForSignature = async () => {
     if (!siteManagerEmail) {
@@ -194,6 +223,25 @@ export function SignatureStatus({
               <p className="text-amber-600 mt-1 text-xs">
                 Le lien expire après 7 jours
               </p>
+              <Button
+                onClick={handleCancelSignature}
+                disabled={cancelling}
+                variant="outline"
+                size="sm"
+                className="mt-2 text-red-600 border-red-300 hover:bg-red-50"
+              >
+                {cancelling ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Annulation...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Annuler le processus de signature
+                  </>
+                )}
+              </Button>
             </div>
           )}
 
@@ -212,6 +260,25 @@ export function SignatureStatus({
                   {signature.siteManagerName || signature.siteManagerEmail}
                 </strong>
               </p>
+              <Button
+                onClick={handleCancelSignature}
+                disabled={cancelling}
+                variant="outline"
+                size="sm"
+                className="mt-2 text-red-600 border-red-300 hover:bg-red-50"
+              >
+                {cancelling ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Annulation...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="mr-2 h-4 w-4" />
+                    Annuler le processus de signature
+                  </>
+                )}
+              </Button>
             </div>
           )}
 

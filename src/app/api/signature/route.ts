@@ -160,3 +160,55 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// DELETE - Annuler le processus de signature
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (
+      !session ||
+      (session.user?.role !== "ADMIN" && session.user?.role !== "SUPER_ADMIN")
+    ) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const employeeId = searchParams.get("employeeId");
+
+    if (!employeeId) {
+      return NextResponse.json(
+        { error: "employeeId requis" },
+        { status: 400 },
+      );
+    }
+
+    // Vérifier que l'employé appartient à l'entreprise
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId: session.user.companyId },
+      select: { id: true },
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        { error: "Employé non trouvé" },
+        { status: 404 },
+      );
+    }
+
+    // Supprimer le processus de signature
+    await prisma.passportSignature.deleteMany({
+      where: { employeeId },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Processus de signature annulé",
+    });
+  } catch (error) {
+    console.error("DELETE signature error:", error);
+    return NextResponse.json(
+      { error: "Erreur lors de l'annulation" },
+      { status: 500 },
+    );
+  }
+}
