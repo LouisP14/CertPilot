@@ -27,9 +27,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "CertPilot - Pilotez vos formations en toute sérénité",
+    title: "CertPilot - Zéro habilitation expirée, zéro surprise en audit",
     description:
-      "Plateforme SaaS pour gérer les habilitations, certifications et formations de vos équipes. +500 entreprises nous font confiance.",
+      "Centralisez le suivi de vos CACES, SST et habilitations électriques. Alertes automatiques, convocations en 1 clic, passeport formation avec QR code.",
     url: "/",
   },
 };
@@ -311,49 +311,57 @@ export default function Home() {
             <div className="max-w-xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-sm font-semibold text-emerald-800">
                 <Sparkles className="h-4 w-4" />
-                Solution professionnelle B2B
+                Essai gratuit 14 jours — sans engagement
               </div>
 
               <h1 className="mt-6 text-4xl font-black leading-tight tracking-tight text-[#173B56] sm:text-5xl lg:text-6xl">
-                Pilotez vos{" "}
+                Zéro habilitation{" "}
                 <span className="bg-linear-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  formations
+                  expirée.
                 </span>{" "}
-                en toute sérénité
+                Zéro surprise en audit.
               </h1>
 
               <p className="mt-6 text-lg leading-relaxed text-slate-600">
-                CertPilot centralise vos habilitations, automatise les alertes
-                d&apos;expiration, génère les convocations et simplifie vos
-                audits. La solution clé en main pour les entreprises exigeantes.
+                Centralisez le suivi de vos CACES, SST et habilitations
+                électriques. Alertes automatiques, convocations en 1 clic,
+                passeport formation avec QR code. Remplacez vos fichiers Excel
+                en moins d&apos;une journée.
               </p>
 
-              <div className="mt-8">
+              <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link
                   href="/contact"
                   className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                 >
-                  Demander une démo gratuite
+                  Démarrer l&apos;essai gratuit
                   <ArrowRight className="h-4 w-4" />
                 </Link>
+                <a
+                  href="#demo"
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-[#173B56] transition-all hover:border-slate-400 hover:bg-slate-50"
+                >
+                  <PlayIcon />
+                  Voir la démo en 2 min
+                </a>
               </div>
 
               <div className="mt-10 flex items-center gap-6 border-t border-slate-200 pt-8">
                 <div>
-                  <p className="text-2xl font-black text-[#173B56]">Suivi</p>
-                  <p className="text-sm text-slate-500">Centralisé</p>
+                  <p className="text-2xl font-black text-emerald-600">-95%</p>
+                  <p className="text-sm text-slate-500">de retards habilitations</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200" />
                 <div>
-                  <p className="text-2xl font-black text-[#173B56]">Alertes</p>
-                  <p className="text-sm text-slate-500">Automatiques</p>
+                  <p className="text-2xl font-black text-emerald-600">2h</p>
+                  <p className="text-sm text-slate-500">gagnées / semaine</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200" />
                 <div>
-                  <p className="text-2xl font-black text-[#173B56]">
-                    Historique
+                  <p className="text-2xl font-black text-emerald-600">
+                    1 jour
                   </p>
-                  <p className="text-sm text-slate-500">Traçable</p>
+                  <p className="text-sm text-slate-500">pour être opérationnel</p>
                 </div>
               </div>
             </div>
@@ -476,6 +484,74 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Testimonials */}
+        <section className="border-t border-slate-200 bg-linear-to-b from-slate-50 to-white py-20 lg:py-28">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-emerald-600">
+                Ils nous font confiance
+              </p>
+              <h2 className="mt-2 text-3xl font-black text-[#173B56] sm:text-4xl">
+                Ce que nos clients en disent
+              </h2>
+            </div>
+
+            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+              <TestimonialCard
+                quote="Avant CertPilot, on gérait 200 habilitations sur Excel. On a découvert 12 CACES expirés dès le premier import. Aujourd'hui, plus aucun oubli."
+                name="Responsable Maintenance"
+                company="Industrie agroalimentaire, 180 employés"
+              />
+              <TestimonialCard
+                quote="Lors du dernier audit DREAL, j'ai sorti tous les justificatifs en 5 minutes. L'inspecteur n'en revenait pas. Avant, ça me prenait une demi-journée."
+                name="Responsable QHSE"
+                company="BTP, 95 employés"
+              />
+              <TestimonialCard
+                quote="Les alertes automatiques nous ont évité 3 arrêts de chantier cette année. Le ROI est immédiat. Je le recommande à tous les responsables sécurité."
+                name="Directeur des opérations"
+                company="Logistique & transport, 320 employés"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Video Demo */}
+        <section
+          id="demo"
+          className="border-t border-slate-200 bg-white py-20 lg:py-28"
+        >
+          <div className="mx-auto max-w-4xl px-6">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-emerald-600">
+                Démo en vidéo
+              </p>
+              <h2 className="mt-2 text-3xl font-black text-[#173B56] sm:text-4xl">
+                Découvrez CertPilot en 2 minutes
+              </h2>
+              <p className="mx-auto mt-4 max-w-2xl text-slate-600">
+                Voyez comment centraliser vos habilitations, automatiser vos
+                alertes et générer vos passeports formation.
+              </p>
+            </div>
+
+            <div className="mt-12 relative">
+              <div className="absolute -inset-4 rounded-3xl bg-linear-to-br from-emerald-500/10 to-teal-500/10 blur-2xl" />
+              <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-2xl shadow-slate-900/20">
+                <video
+                  className="h-full w-full object-cover"
+                  controls
+                  preload="metadata"
+                  poster=""
+                >
+                  <source src="/demo.mp4" type="video/mp4" />
+                  Votre navigateur ne supporte pas la lecture vidéo.
+                </video>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Screenshots Showcase */}
         <section className="border-t border-slate-200 bg-linear-to-b from-slate-50 to-white py-20 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
@@ -580,6 +656,45 @@ export default function Home() {
                   Contactez-nous pour un devis personnalisé
                 </Link>
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="border-t border-slate-200 bg-white py-20 lg:py-28">
+          <div className="mx-auto max-w-3xl px-6">
+            <div className="text-center">
+              <p className="text-sm font-semibold text-emerald-600">FAQ</p>
+              <h2 className="mt-2 text-3xl font-black text-[#173B56] sm:text-4xl">
+                Questions fréquentes
+              </h2>
+            </div>
+
+            <div className="mt-12 space-y-4">
+              <FaqItem
+                question="Combien de temps faut-il pour démarrer ?"
+                answer="La prise en main est immédiate. Importez vos employés et habilitations depuis un fichier Excel, et CertPilot commence à surveiller les échéances. La plupart des entreprises sont opérationnelles en moins d'une journée."
+              />
+              <FaqItem
+                question="Quelles formations peut-on gérer ?"
+                answer="CertPilot gère tous types de formations et habilitations : CACES (R489, R486, R482...), SST/MAC SST, habilitations électriques (NF C 18-510), ATEX, travail en hauteur, espaces confinés, et bien d'autres. Le catalogue est entièrement personnalisable."
+              />
+              <FaqItem
+                question="Comment fonctionnent les alertes automatiques ?"
+                answer="Vous configurez les seuils d'alerte (30, 60 ou 90 jours avant expiration) et CertPilot envoie automatiquement des notifications par email et dans le tableau de bord. Plus aucune habilitation n'expire sans que vous le sachiez."
+              />
+              <FaqItem
+                question="CertPilot est-il conforme au RGPD ?"
+                answer="Oui. Données hébergées en Europe, chiffrées en transit et au repos, accès isolé par entreprise, audit trail complet. Un DPA (Data Processing Agreement) est disponible sur demande."
+              />
+              <FaqItem
+                question="Peut-on exporter les données pour un audit ?"
+                answer="Oui, exportez en PDF et Excel : habilitations, employés, sessions de formation et historique. L'audit trail trace toutes les actions et facilite la préparation documentaire en cas de contrôle DREAL ou inspection du travail."
+              />
+              <FaqItem
+                question="Y a-t-il un engagement de durée ?"
+                answer="Non. Vous pouvez résilier à tout moment, sans frais. L'abonnement annuel offre simplement une réduction de 17% par rapport au mensuel."
+              />
             </div>
           </div>
         </section>
@@ -867,6 +982,76 @@ function IncludedFeature({ children }: { children: string }) {
       </div>
       <span className="text-sm text-slate-700">{children}</span>
     </div>
+  );
+}
+
+function FaqItem({
+  question,
+  answer,
+}: {
+  question: string;
+  answer: string;
+}) {
+  return (
+    <details className="group rounded-2xl border border-slate-200 bg-white transition-all hover:border-emerald-200 [[open]]:border-emerald-200 [[open]]:shadow-sm">
+      <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-left text-sm font-semibold text-[#173B56] [&::-webkit-details-marker]:hidden">
+        {question}
+        <svg
+          className="h-5 w-5 shrink-0 text-slate-400 transition-transform group-open:rotate-180"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </summary>
+      <div className="px-6 pb-5 text-sm leading-relaxed text-slate-600">
+        {answer}
+      </div>
+    </details>
+  );
+}
+
+function TestimonialCard({
+  quote,
+  name,
+  company,
+}: {
+  quote: string;
+  name: string;
+  company: string;
+}) {
+  return (
+    <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 flex gap-1">
+        {[...Array(5)].map((_, i) => (
+          <svg
+            key={i}
+            className="h-5 w-5 text-amber-400"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+      </div>
+      <p className="flex-1 text-sm leading-relaxed text-slate-600 italic">
+        &ldquo;{quote}&rdquo;
+      </p>
+      <div className="mt-4 border-t border-slate-100 pt-4">
+        <p className="text-sm font-semibold text-[#173B56]">{name}</p>
+        <p className="text-xs text-slate-500">{company}</p>
+      </div>
+    </div>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M4 2.5v11l9.5-5.5L4 2.5z" />
+    </svg>
   );
 }
 

@@ -57,3 +57,6 @@ next-env.d.ts
 
 # private uploads (served via API)
 /uploads/
+
+# large media files (uncomment when using external video hosting)
+# /public/demo.mp4
