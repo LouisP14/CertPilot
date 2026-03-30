@@ -167,6 +167,27 @@ export default function SolutionsPage() {
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
+
+          {/* Lead Magnet */}
+          <div className="mx-auto mt-16 max-w-3xl rounded-2xl border border-emerald-200 bg-linear-to-br from-emerald-50 to-teal-50 p-8 text-center">
+            <p className="text-sm font-semibold text-emerald-700">
+              Ressource gratuite
+            </p>
+            <h3 className="mt-2 text-xl font-bold text-[#173B56]">
+              Votre entreprise est-elle en conformité ?
+            </h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Téléchargez notre checklist 2026 : 23 points de contrôle CACES,
+              SST, habilitations électriques.
+            </p>
+            <Link
+              href="/checklist"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700"
+            >
+              Télécharger le PDF gratuit
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </section>
       </main>
 

@@ -189,7 +189,7 @@ function JsonLd() {
             name: "Qu'est-ce que le passeport formation ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Le passeport formation est un document PDF récapitulant toutes les formations et habilitations d'un employé. Il inclut un QR code de vérification, les dates de validité et l'historique complet. Il peut être généré en un clic depuis CertPilot.",
+              text: "Le passeport formation est un document PDF récapitulant toutes les formations et habilitations d'un employé. Il inclut un QR code de vérification, les dates de validité et l'historique complet. Compatible avec la logique du Passeport de Prévention, il peut être généré en un clic depuis CertPilot.",
             },
           },
           {
@@ -399,7 +399,7 @@ export default function Home() {
               <FeatureCard
                 icon={Users}
                 title="Gestion des employés"
-                description="Fiches complètes avec photo, poste, service et historique de formations. Passeport formation exportable en PDF."
+                description="Fiches complètes avec photo, poste, service et historique. Passeport formation PDF avec QR code, compatible Passeport de Prévention."
               />
               <FeatureCard
                 icon={Shield}
@@ -587,6 +587,10 @@ export default function Home() {
                 answer="Oui, exportez en PDF et Excel : habilitations, employés, sessions de formation et historique. L'audit trail trace toutes les actions et facilite la préparation documentaire en cas de contrôle DREAL ou inspection du travail."
               />
               <FaqItem
+                question="CertPilot est-il compatible avec le Passeport de Prévention ?"
+                answer="Oui. CertPilot génère un passeport formation numérique pour chaque employé avec QR code de vérification, conforme à la logique du Passeport de Prévention (moncompteformation.gouv.fr). Vous pouvez exporter les données de formation pour alimenter le dispositif national."
+              />
+              <FaqItem
                 question="Y a-t-il un engagement de durée ?"
                 answer="Non. Vous pouvez résilier à tout moment, sans frais. L'abonnement annuel offre simplement une réduction de 17% par rapport au mensuel."
               />
@@ -683,6 +687,9 @@ export default function Home() {
                 </Link>
                 <Link href="/login" className="hover:text-[#173B56]">
                   Connexion
+                </Link>
+                <Link href="/checklist" className="hover:text-[#173B56]">
+                  Checklist gratuite
                 </Link>
               </nav>
             </div>

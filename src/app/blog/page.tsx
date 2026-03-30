@@ -15,6 +15,46 @@ export const metadata: Metadata = {
 
 const ARTICLES = [
   {
+    slug: "guide-gestion-habilitations-entreprise",
+    title: "Guide complet : gestion des habilitations en entreprise (2026)",
+    excerpt:
+      "Le guide de reference : obligations legales, CACES, SST, habilitations electriques, Passeport de Prevention, organisation du suivi et outils. 3500+ mots.",
+    date: "2026-03-25",
+    readTime: "18 min",
+    category: "Guide complet",
+    categoryColor: "bg-[#173B56] text-white",
+  },
+  {
+    slug: "recyclage-habilitation-electrique",
+    title: "Recyclage habilitation electrique : delais, obligations et bonnes pratiques",
+    excerpt:
+      "Tout savoir sur le recyclage de l'habilitation electrique : delais de renouvellement, exigences NF C 18-510, consequences en cas d'expiration et comment automatiser le suivi.",
+    date: "2026-03-15",
+    readTime: "7 min",
+    category: "Reglementation",
+    categoryColor: "bg-blue-100 text-blue-700",
+  },
+  {
+    slug: "sst-mac-sst-guide-complet",
+    title: "SST et MAC SST : le guide complet pour les entreprises",
+    excerpt:
+      "Guide complet sur la formation SST et le recyclage MAC SST : obligations legales, nombre de sauveteurs secouristes requis, periodicite de 24 mois et suivi avec CertPilot.",
+    date: "2026-03-01",
+    readTime: "9 min",
+    category: "Formation",
+    categoryColor: "bg-emerald-100 text-emerald-700",
+  },
+  {
+    slug: "tableau-suivi-habilitations-excel",
+    title: "Tableau de suivi des habilitations : pourquoi Excel ne suffit plus",
+    excerpt:
+      "Decouvrez pourquoi les tableaux Excel ne suffisent plus pour suivre les habilitations de vos salaries. Alertes oubliees, fichiers en double, audits complexes : passez a un logiciel dedie.",
+    date: "2026-02-15",
+    readTime: "6 min",
+    category: "Digitalisation",
+    categoryColor: "bg-emerald-100 text-emerald-700",
+  },
+  {
     slug: "gestion-caces-entreprise",
     title: "Comment bien gerer les CACES en entreprise ?",
     excerpt:
@@ -164,6 +204,31 @@ export default function BlogPage() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Lead Magnet */}
+      <section className="mx-auto max-w-5xl px-6 pb-16">
+        <div className="rounded-2xl border border-emerald-200 bg-linear-to-br from-emerald-50 to-teal-50 p-8 md:flex md:items-center md:justify-between md:gap-8">
+          <div>
+            <p className="text-sm font-semibold text-emerald-700">
+              Ressource gratuite
+            </p>
+            <h3 className="mt-1 text-xl font-bold text-[#173B56]">
+              Checklist conformite habilitations 2026
+            </h3>
+            <p className="mt-2 text-sm text-slate-600">
+              23 points de controle pour verifier votre conformite CACES, SST,
+              habilitations electriques. PDF gratuit.
+            </p>
+          </div>
+          <Link
+            href="/checklist"
+            className="mt-4 inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 md:mt-0"
+          >
+            Telecharger le PDF
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 

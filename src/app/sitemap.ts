@@ -48,10 +48,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${siteUrl}/comparaison`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${siteUrl}/blog`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.7,
+    },
+    {
+      url: `${siteUrl}/blog/guide-gestion-habilitations-entreprise`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${siteUrl}/blog/recyclage-habilitation-electrique`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${siteUrl}/blog/sst-mac-sst-guide-complet`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${siteUrl}/blog/tableau-suivi-habilitations-excel`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
     {
       url: `${siteUrl}/blog/gestion-caces-entreprise`,
