@@ -3,9 +3,9 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
+import { useConfirm } from "@/hooks/use-confirm";
 import { generateConvocationPDF } from "@/lib/generate-convocation-pdf";
 import {
   Building2,
@@ -107,9 +107,8 @@ export default function SessionsPage() {
   const [sendingConvocations, setSendingConvocations] = useState<string | null>(
     null,
   );
-  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
   const [companyName, setCompanyName] = useState("Entreprise");
+  const { confirm, ConfirmDialog } = useConfirm();
 
   useEffect(() => {
     fetchSessions();
@@ -271,7 +270,6 @@ export default function SessionsPage() {
   };
 
   const deleteSession = async (sessionId: string) => {
-    setDeleting(true);
     try {
       const response = await fetch(`/api/sessions/${sessionId}`, {
         method: "DELETE",
@@ -289,9 +287,6 @@ export default function SessionsPage() {
     } catch (error) {
       console.error("Erreur:", error);
       toast.error("Erreur", "Une erreur est survenue");
-    } finally {
-      setDeleting(false);
-      setSessionToDelete(null);
     }
   };
 
@@ -647,17 +642,17 @@ export default function SessionsPage() {
                         {session.status === "CONFIRMED" && (
                           <Button
                             size="sm"
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
                               if (session.convocationsSentAt) {
-                                // Déjà envoyées, demander confirmation pour réenvoyer
-                                if (
-                                  confirm(
-                                    "Les convocations ont déjà été envoyées. Voulez-vous les renvoyer ?",
-                                  )
-                                ) {
-                                  sendConvocations(session);
-                                }
+                                const ok = await confirm({
+                                  title: "Renvoyer les convocations",
+                                  message: "Les convocations ont déjà été envoyées. Voulez-vous les renvoyer ?",
+                                  confirmText: "Renvoyer",
+                                  cancelText: "Annuler",
+                                  variant: "warning",
+                                });
+                                if (ok) sendConvocations(session);
                               } else {
                                 sendConvocations(session);
                               }
@@ -719,9 +714,16 @@ export default function SessionsPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={(e) => {
+                          onClick={async (e) => {
                             e.stopPropagation();
-                            setSessionToDelete(session.id);
+                            const ok = await confirm({
+                              title: "Supprimer la session",
+                              message: "Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible et supprimera également toutes les convocations associées.",
+                              confirmText: "Supprimer",
+                              cancelText: "Annuler",
+                              variant: "danger",
+                            });
+                            if (ok) deleteSession(session.id);
                           }}
                           className="text-red-600 hover:text-red-700"
                         >
@@ -738,17 +740,7 @@ export default function SessionsPage() {
         )}
       </div>
 
-      {/* Dialog de confirmation de suppression */}
-      <ConfirmDialog
-        open={!!sessionToDelete}
-        onClose={() => setSessionToDelete(null)}
-        title="Supprimer la session"
-        message="Êtes-vous sûr de vouloir supprimer cette session ? Cette action est irréversible et supprimera également toutes les convocations associées."
-        confirmText={deleting ? "Suppression..." : "Supprimer"}
-        cancelText="Annuler"
-        variant="danger"
-        onConfirm={() => sessionToDelete && deleteSession(sessionToDelete)}
-      />
+      <ConfirmDialog />
     </div>
   );
 }
