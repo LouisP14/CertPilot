@@ -265,6 +265,9 @@ export default function TrainingNeedsPage() {
             </>
           )}
         </Button>
+        <p className="text-xs text-gray-400 mt-1">
+          Détection automatique chaque matin à 7h
+        </p>
       </div>
 
       {/* Stats */}

@@ -1,3 +1,4 @@
+import { detectTrainingNeeds } from "@/lib/detect-training-needs";
 import { sendAlertEmail, sendOnboardingEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -307,11 +308,26 @@ export async function GET(request: NextRequest) {
       console.error("CRON onboarding error:", error);
     }
 
+    // ========== DÉTECTION AUTO DES BESOINS ==========
+    let totalNeedsCreated = 0;
+    let totalNeedsUpdated = 0;
+
+    for (const company of companies) {
+      try {
+        const result = await detectTrainingNeeds(company.id);
+        totalNeedsCreated += result.created;
+        totalNeedsUpdated += result.updated;
+      } catch (error) {
+        console.error(`[cron] Détection besoins ${company.name}:`, error);
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: `${totalAlertsSent} alerte(s) envoyée(s), ${onboardingEmailsSent} onboarding email(s)`,
+      message: `${totalAlertsSent} alerte(s) envoyée(s), ${onboardingEmailsSent} onboarding email(s), ${totalNeedsCreated} besoin(s) détecté(s)`,
       alertsSent: totalAlertsSent,
       onboardingEmailsSent,
+      trainingNeeds: { created: totalNeedsCreated, updated: totalNeedsUpdated },
       convocationsClosed: totalConvocationsClosed,
       companiesProcessed: companies.length,
       byCompany,
