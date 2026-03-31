@@ -1,6 +1,13 @@
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+function checkAuth(request: NextRequest): boolean {
+  if (process.env.NODE_ENV !== "production") return true;
+  const secret = request.headers.get("authorization")?.replace("Bearer ", "")
+    ?? new URL(request.url).searchParams.get("secret");
+  return !!process.env.INIT_SECRET && secret === process.env.INIT_SECRET;
+}
 
 /**
  * Crée 2 comptes :
@@ -14,10 +21,6 @@ async function createAccounts() {
     return NextResponse.json({
       success: true,
       message: "Les comptes existent déjà",
-      accounts: [
-        { email: "admin@certpilot.fr", password: "Admin2026!" },
-        { email: "demo@certpilot.fr", password: "demo123!" },
-      ],
     });
   }
 
@@ -74,22 +77,13 @@ async function createAccounts() {
   return NextResponse.json({
     success: true,
     message: "Comptes créés avec succès",
-    accounts: [
-      {
-        email: "admin@certpilot.fr",
-        password: "Admin2026!",
-        usage: "Votre compte admin principal",
-      },
-      {
-        email: "demo@certpilot.fr",
-        password: "demo123!",
-        usage: "Compte pour démos clients (base vide)",
-      },
-    ],
   });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  if (!checkAuth(request)) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  }
   try {
     return await createAccounts();
   } catch (error) {
@@ -101,7 +95,10 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  if (!checkAuth(request)) {
+    return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+  }
   try {
     return await createAccounts();
   } catch (error) {

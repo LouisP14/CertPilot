@@ -1,9 +1,18 @@
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // Cette route initialise la base de données PostgreSQL avec Prisma
-export async function GET() {
+// Protégée : uniquement en développement ou avec INIT_SECRET
+export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    const secret = request.headers.get("authorization")?.replace("Bearer ", "")
+      ?? new URL(request.url).searchParams.get("secret");
+    if (!process.env.INIT_SECRET || secret !== process.env.INIT_SECRET) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+  }
+
   try {
     const results: { admin?: string; demo?: string } = {};
 
@@ -112,10 +121,6 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       results,
-      credentials: {
-        admin: { email: "admin@certpilot.fr", password: "Admin123!" },
-        demo: { email: "demo@certpilot.fr", password: "demo123!" },
-      },
     });
   } catch (error) {
     console.error("Erreur init:", error);

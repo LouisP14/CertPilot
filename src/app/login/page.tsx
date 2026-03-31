@@ -23,25 +23,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [initStatus, setInitStatus] = useState<string | null>(null);
 
-  // Initialiser la base de données au chargement (pour Vercel)
-  useEffect(() => {
-    const initDb = async () => {
-      try {
-        const res = await fetch("/api/init");
-        const data = await res.json();
-        if (data.status === "seeded") {
-          setInitStatus(
-            "Base initialisée ! Utilisez demo@certpilot.fr / demo123!",
-          );
-          setEmail("demo@certpilot.fr");
-          setPassword("demo123!");
-        }
-      } catch (e) {
-        console.log("Init check:", e);
-      }
-    };
-    initDb();
-  }, []);
+  // Init status unused but kept for potential future use
+  useEffect(() => {}, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

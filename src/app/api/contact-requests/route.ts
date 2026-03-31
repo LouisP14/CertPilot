@@ -145,9 +145,14 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// PATCH - Mettre à jour le statut d'une demande (admin only)
+// PATCH - Mettre à jour le statut d'une demande (SUPER_ADMIN only)
 export async function PATCH(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
     const body = await request.json();
     const parsed = parseBody(contactRequestPatchSchema, body);
     if (!parsed.success) {
