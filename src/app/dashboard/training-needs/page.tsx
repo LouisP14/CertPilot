@@ -227,6 +227,10 @@ export default function TrainingNeedsPage() {
   }, []);
 
   const totalNeeds = groupedNeeds.reduce((sum, g) => sum + g.totalEmployees, 0);
+  const allNeeds = groupedNeeds.flatMap((g) => g.needs);
+  const criticalCount = allNeeds.filter((n) => n.priority >= 9).length;
+  const urgentCount = allNeeds.filter((n) => n.priority >= 7 && n.priority < 9).length;
+  const normalCount = allNeeds.filter((n) => n.priority < 7).length;
   const totalCost = groupedNeeds.reduce(
     (sum, g) => sum + g.totalEstimatedCost + g.totalAbsenceCost,
     0,
@@ -271,7 +275,7 @@ export default function TrainingNeedsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -280,7 +284,7 @@ export default function TrainingNeedsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{totalNeeds}</p>
-                <p className="text-sm text-gray-500">Besoins détectés</p>
+                <p className="text-sm text-gray-500">Besoins</p>
               </div>
             </div>
           </CardContent>
@@ -292,10 +296,34 @@ export default function TrainingNeedsPage() {
                 <AlertTriangle className="h-5 w-5 text-red-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {certificateStats.expiredCount}
-                </p>
-                <p className="text-sm text-gray-500">Expirés</p>
+                <p className="text-2xl font-bold">{criticalCount}</p>
+                <p className="text-sm text-gray-500">Critique</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-orange-100 p-2">
+                <AlertTriangle className="h-5 w-5 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{urgentCount}</p>
+                <p className="text-sm text-gray-500">Urgent</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-yellow-100 p-2">
+                <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{normalCount}</p>
+                <p className="text-sm text-gray-500">Normal</p>
               </div>
             </div>
           </CardContent>
@@ -308,28 +336,11 @@ export default function TrainingNeedsPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{groupedNeeds.length}</p>
-                <p className="text-sm text-gray-500">Formations concernées</p>
+                <p className="text-sm text-gray-500">Formations</p>
               </div>
             </div>
           </CardContent>
         </Card>
-        {totalCost > 0 && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-lg bg-purple-100 p-2">
-                  <Euro className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">
-                    {totalCost.toLocaleString("fr-FR")} €
-                  </p>
-                  <p className="text-sm text-gray-500">Coût total estimé</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Filtres */}
