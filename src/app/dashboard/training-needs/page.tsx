@@ -203,10 +203,12 @@ export default function TrainingNeedsPage() {
     // Filtre site
     if (filterSite && !group.sites.includes(filterSite)) return false;
 
-    // Filtre priorité
+    // Filtre priorité (par tranche exacte)
     if (filterPriority) {
-      const minPriority = parseInt(filterPriority);
-      if (group.maxPriority < minPriority) return false;
+      const level = parseInt(filterPriority);
+      if (level === 9 && group.maxPriority < 9) return false;
+      if (level === 7 && (group.maxPriority < 7 || group.maxPriority >= 9)) return false;
+      if (level === 5 && group.maxPriority >= 7) return false;
     }
 
     return true;
@@ -373,9 +375,9 @@ export default function TrainingNeedsPage() {
               onChange={(e) => setFilterPriority(e.target.value)}
             >
               <option value="">Toutes priorités</option>
-              <option value="9">🔴 Critique (9+)</option>
-              <option value="7">🟠 Urgent (7+)</option>
-              <option value="5">🟡 Normal (5+)</option>
+              <option value="9">🔴 Critique</option>
+              <option value="7">🟠 Urgent</option>
+              <option value="5">🟡 Normal</option>
             </select>
             {(search || filterSite || filterPriority) && (
               <Button
