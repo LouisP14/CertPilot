@@ -227,10 +227,9 @@ export default function TrainingNeedsPage() {
   }, []);
 
   const totalNeeds = groupedNeeds.reduce((sum, g) => sum + g.totalEmployees, 0);
-  const allNeeds = groupedNeeds.flatMap((g) => g.needs);
-  const criticalCount = allNeeds.filter((n) => n.priority >= 9).length;
-  const urgentCount = allNeeds.filter((n) => n.priority >= 7 && n.priority < 9).length;
-  const normalCount = allNeeds.filter((n) => n.priority < 7).length;
+  const criticalCount = groupedNeeds.filter((g) => g.maxPriority >= 9).length;
+  const urgentCount = groupedNeeds.filter((g) => g.maxPriority >= 7 && g.maxPriority < 9).length;
+  const normalCount = groupedNeeds.filter((g) => g.maxPriority < 7).length;
   const totalCost = groupedNeeds.reduce(
     (sum, g) => sum + g.totalEstimatedCost + g.totalAbsenceCost,
     0,
