@@ -65,6 +65,7 @@ async function createDemoData() {
       role: "ADMIN",
       companyId: company.id,
       mustChangePassword: false, // Compte démo, pas de changement requis
+      emailVerified: true,
     },
   });
 

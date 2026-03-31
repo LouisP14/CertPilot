@@ -137,10 +137,18 @@ export default function TrainingCenterDetailPage() {
         ? `/api/training-centers/${centerId}/offerings/${editingOffering.id}`
         : `/api/training-centers/${centerId}/offerings`;
 
+      const payload = {
+        ...offeringForm,
+        availableModes: offeringForm.availableModes
+          .split(",")
+          .map((m) => m.trim())
+          .filter((m) => m),
+      };
+
       const response = await fetch(url, {
         method: editingOffering ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(offeringForm),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {

@@ -79,9 +79,9 @@ export function RenewCertificateButton({
           employeeId,
           formationTypeId: certificate.formationType.id,
           obtainedDate: formData.obtainedDate,
-          expiryDate: formData.expiryDate || null,
-          organism: formData.organism || null,
-          details: formData.details || null,
+          expiryDate: formData.expiryDate || undefined,
+          organism: formData.organism || undefined,
+          details: formData.details || undefined,
         }),
       });
 

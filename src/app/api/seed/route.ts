@@ -42,6 +42,7 @@ async function createAccounts() {
       role: "ADMIN",
       companyId: adminCompany.id,
       mustChangePassword: false,
+      emailVerified: true,
     },
   });
 
@@ -66,6 +67,7 @@ async function createAccounts() {
       role: "ADMIN",
       companyId: demoCompany.id,
       mustChangePassword: false,
+      emailVerified: true,
     },
   });
 
