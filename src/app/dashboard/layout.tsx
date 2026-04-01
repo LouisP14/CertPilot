@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { TrialBanner } from "@/components/layout/trial-banner";
 import { Providers } from "@/components/providers";
 import { ToastContainer } from "@/components/ui/toast";
@@ -53,6 +54,7 @@ export default async function DashboardLayout({
 
   return (
     <Providers>
+      <SidebarProvider>
       <div className="flex h-screen bg-slate-50">
         <Sidebar userRole={session.user?.role} />
         <div className="flex flex-1 flex-col overflow-hidden">
@@ -69,6 +71,7 @@ export default async function DashboardLayout({
         </div>
         <ToastContainer />
       </div>
+      </SidebarProvider>
     </Providers>
   );
 }

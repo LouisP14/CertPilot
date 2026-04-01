@@ -20,6 +20,7 @@ import {
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSidebar } from "./sidebar-context";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -41,12 +42,27 @@ interface SidebarProps {
 
 export function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
+  const { isOpen, close } = useSidebar();
 
   // Afficher "Administration" uniquement pour les SUPER_ADMIN
   const isSuperAdmin = userRole === "SUPER_ADMIN";
 
   return (
-    <div className="flex h-full w-64 flex-col bg-linear-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] relative overflow-hidden">
+    <>
+      {/* Backdrop mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={close}
+        />
+      )}
+
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-linear-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] overflow-hidden transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
       {/* Motifs décoratifs subtils */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-20 -left-20 w-40 h-40 bg-emerald-500/5 rounded-full blur-3xl" />
@@ -76,6 +92,7 @@ export function Sidebar({ userRole }: SidebarProps) {
             <Link
               key={item.name}
               href={item.href}
+              onClick={close}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive
@@ -138,5 +155,6 @@ export function Sidebar({ userRole }: SidebarProps) {
         </button>
       </div>
     </div>
+    </>
   );
 }

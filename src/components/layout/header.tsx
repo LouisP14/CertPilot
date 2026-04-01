@@ -6,6 +6,7 @@ import {
   Bell,
   Check,
   CheckCircle2,
+  Menu,
   Search,
   User,
   X,
@@ -14,6 +15,7 @@ import {
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { useSidebar } from "./sidebar-context";
 
 interface HeaderProps {
   user?: {
@@ -52,6 +54,7 @@ interface Employee {
 }
 
 export function Header({ user }: HeaderProps) {
+  const { toggle } = useSidebar();
   // Utiliser useSession pour un nom/email réactif (mis à jour après édition profil)
   const { data: sessionData } = useSession();
   const displayName = sessionData?.user?.name || user?.name || "Administrateur";
@@ -174,14 +177,22 @@ export function Header({ user }: HeaderProps) {
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
-      {/* Search */}
+      {/* Left side */}
       <div className="flex items-center gap-4">
+        {/* Mobile menu button */}
+        <button
+          type="button"
+          onClick={toggle}
+          className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 transition-colors lg:hidden"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
         <div className="relative" ref={searchRef}>
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 z-10" />
           <Input
             type="search"
             placeholder="Rechercher un employé..."
-            className="w-80 pl-10"
+            className="w-40 sm:w-60 lg:w-80 pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() =>
