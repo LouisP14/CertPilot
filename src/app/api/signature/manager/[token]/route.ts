@@ -119,6 +119,7 @@ export async function POST(
             lastName: true,
             email: true,
             companyId: true,
+            qrToken: true,
           },
         },
       },
@@ -254,6 +255,7 @@ export async function POST(
         to: signature.employee.email,
         employeeName: signature.employee.firstName,
         managerName: signatureName,
+        qrToken: signature.employee.qrToken ?? undefined,
       }).catch((err) =>
         console.error("[signature] Erreur envoi email validation:", err),
       );

@@ -1,3 +1,4 @@
+import QRCode from "qrcode";
 import { Resend } from "resend";
 
 // Client Resend - créé seulement si la clé API est présente
@@ -782,9 +783,30 @@ export async function sendPassportValidatedEmail(params: {
   to: string;
   employeeName: string;
   managerName: string;
+  qrToken?: string;
 }) {
-  const { to, employeeName, managerName } = params;
+  const { to, employeeName, managerName, qrToken } = params;
   const appUrl = getAppBaseUrl();
+
+  let qrCodeHtml = "";
+  let qrCodeText = "";
+
+  if (qrToken) {
+    const passportUrl = `${appUrl}/p/${qrToken}`;
+    try {
+      const qrDataUrl = await QRCode.toDataURL(passportUrl, { width: 200, margin: 2 });
+      qrCodeHtml = `
+        <div style="text-align: center; margin: 25px 0;">
+          <p style="color: #475569; margin-bottom: 12px;">Scannez ce QR code pour consulter votre passeport à tout moment :</p>
+          <img src="${qrDataUrl}" alt="QR Code passeport" width="180" height="180" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px;" />
+          <p style="margin-top: 10px; font-size: 12px; color: #94a3b8;">Ou accédez directement via ce lien :<br><a href="${passportUrl}" style="color: #173B56;">${passportUrl}</a></p>
+        </div>
+      `;
+      qrCodeText = `\nConsultez votre passeport : ${passportUrl}\n`;
+    } catch {
+      qrCodeText = `\nConsultez votre passeport : ${passportUrl}\n`;
+    }
+  }
 
   await sendEmail({
     from: FROM_EMAIL,
@@ -802,10 +824,8 @@ export async function sendPassportValidatedEmail(params: {
             <p style="margin: 0; color: #065f46; font-size: 16px;"><strong>✅ Votre passeport formation a été validé !</strong></p>
             <p style="margin: 8px 0 0 0; color: #047857;">Signé par : ${managerName}</p>
           </div>
-          <p>Votre passeport formation est désormais complet et signé. Vous pouvez le consulter à tout moment via votre QR code personnel ou depuis votre espace.</p>
-          <div style="text-align: center; margin: 25px 0;">
-            <a href="${appUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #173B56; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Consulter mon passeport</a>
-          </div>
+          <p>Votre passeport formation est désormais complet et signé.</p>
+          ${qrCodeHtml}
           <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe CertPilot</strong></p>
         </div>
         <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px;">
@@ -816,9 +836,7 @@ export async function sendPassportValidatedEmail(params: {
     text: `Bonjour ${employeeName},
 
 Votre passeport formation a été validé et signé par ${managerName}.
-
-Vous pouvez le consulter à tout moment via votre QR code personnel.
-
+${qrCodeText}
 Cordialement,
 L'équipe CertPilot`,
   });
