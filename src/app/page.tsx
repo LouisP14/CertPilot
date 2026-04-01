@@ -865,17 +865,36 @@ function PricingCard({
 
       <div className="mt-6 flex-1" />
 
-      <Link
-        href={`/contact?plan=${name.toLowerCase()}`}
-        className={`mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
-          featured
-            ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700"
-            : "border border-slate-300 bg-white text-[#173B56] hover:border-slate-400 hover:bg-slate-50"
-        }`}
-      >
-        {price ? "Démarrer l\u0027essai gratuit" : "Nous contacter"}
-        <ArrowRight className="h-4 w-4" />
-      </Link>
+      {price ? (
+        <div className="mt-4 flex flex-col gap-2">
+          <Link
+            href="/register"
+            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
+              featured
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700"
+                : "border border-slate-300 bg-white text-[#173B56] hover:border-slate-400 hover:bg-slate-50"
+            }`}
+          >
+            Démarrer l&apos;essai gratuit
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`/contact?plan=${name.toLowerCase()}`}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-500 transition-all hover:border-slate-300 hover:text-[#173B56] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          >
+            Demander une démo
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      ) : (
+        <Link
+          href="/contact?plan=enterprise"
+          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-[#173B56] transition-all hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+        >
+          Nous contacter
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      )}
     </div>
   );
 }

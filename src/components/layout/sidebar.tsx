@@ -52,14 +52,14 @@ export function Sidebar({ userRole }: SidebarProps) {
       {/* Backdrop mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm xl:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={close}
         />
       )}
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-linear-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] overflow-hidden transition-transform duration-300 ease-in-out xl:relative xl:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex h-full w-64 shrink-0 flex-col bg-linear-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] overflow-hidden transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -82,7 +82,7 @@ export function Sidebar({ userRole }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 flex-1 space-y-1 px-3 py-4 overflow-y-auto">
+      <nav className="relative z-10 flex-1 space-y-1 px-3 py-4 overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]">
         {navigation.map((item) => {
           const isActive =
             item.href === "/dashboard"
