@@ -86,8 +86,9 @@ export default function SecurityPage() {
                 localisés en Europe (Frankfurt, Allemagne) via Railway et son infrastructure cloud.
               </Check>
               <Check>
-                <strong>Aucun transfert hors Union Européenne</strong> — toutes les données restent
-                dans l&apos;espace économique européen, conformément au RGPD.
+                <strong>Sous-traitants encadrés contractuellement</strong> — les prestataires tiers
+                (Resend pour les emails, Stripe pour les paiements) sont soumis aux clauses
+                contractuelles types de la Commission Européenne (CCT/SCC), conformément au RGPD.
               </Check>
               <Check>
                 <strong>Base de données PostgreSQL</strong> dédiée avec volume persistant — vos données
