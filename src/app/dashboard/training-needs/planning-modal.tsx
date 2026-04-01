@@ -252,8 +252,8 @@ export default function PlanningModal({
   };
 
   const createSession = async () => {
-    if (!selectedCenter || !sessionDate) {
-      setError("Veuillez sélectionner un centre et une date");
+    if (!sessionDate) {
+      setError("Veuillez sélectionner une date");
       return;
     }
 
@@ -261,20 +261,23 @@ export default function PlanningModal({
     setError(null);
 
     try {
-      const trainingCost =
-        selectedMode === "INTRA"
+      const trainingCost = selectedCenter
+        ? selectedMode === "INTRA"
           ? selectedCenter.intra.trainingCost
-          : selectedCenter.inter.trainingCost;
+          : selectedCenter.inter.trainingCost
+        : null;
 
-      const costPerPerson =
-        selectedMode === "INTRA"
+      const costPerPerson = selectedCenter
+        ? selectedMode === "INTRA"
           ? selectedCenter.intra.costPerPerson
-          : selectedCenter.inter.costPerPerson;
+          : selectedCenter.inter.costPerPerson
+        : null;
 
-      const totalCost =
-        selectedMode === "INTRA"
+      const totalCost = selectedCenter
+        ? selectedMode === "INTRA"
           ? selectedCenter.intra.totalCost
-          : selectedCenter.inter.totalCost;
+          : selectedCenter.inter.totalCost
+        : null;
 
       // Récupérer les IDs des besoins de formation sélectionnés
       const trainingNeedIds = needs
@@ -286,8 +289,8 @@ export default function PlanningModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           formationTypeId: formationType.id,
-          trainingCenterId: selectedCenter.center.id,
-          isIntraCompany: selectedMode === "INTRA",
+          trainingCenterId: selectedCenter?.center.id || null,
+          isIntraCompany: selectedCenter ? selectedMode === "INTRA" : false,
           startDate: sessionDate,
           endDate: sessionDate, // Pour simplifier, même date
           trainingCost,
@@ -555,13 +558,14 @@ export default function PlanningModal({
 
               {/* Liste des centres */}
               {comparison.centers.length === 0 ? (
-                <div className="rounded-lg border border-orange-200 bg-orange-50 p-4 text-center">
-                  <AlertTriangle className="mx-auto h-8 w-8 text-orange-500" />
-                  <p className="mt-2 font-medium text-orange-700">
-                    Aucun centre ne propose cette formation
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-center">
+                  <Building2 className="mx-auto h-8 w-8 text-blue-400" />
+                  <p className="mt-2 font-medium text-blue-700">
+                    Aucun centre configuré pour cette formation
                   </p>
-                  <p className="text-sm text-orange-600">
-                    Ajoutez des offres de formation aux centres existants
+                  <p className="text-sm text-blue-600">
+                    Vous pouvez continuer sans centre et renseigner les détails
+                    plus tard.
                   </p>
                 </div>
               ) : (
@@ -942,10 +946,10 @@ export default function PlanningModal({
           )}
 
           {/* Step 3: Confirmation */}
-          {step === 3 && selectedCenter && (
+          {step === 3 && (
             <div className="space-y-6">
               {/* Alerte si dépassement de capacité */}
-              {selectedCenter.offering.maxParticipants &&
+              {selectedCenter?.offering.maxParticipants &&
                 selectedEmployees.length >
                   selectedCenter.offering.maxParticipants && (
                   <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 p-4 text-red-700">
@@ -980,17 +984,24 @@ export default function PlanningModal({
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 font-medium">Centre</p>
-                    <p className="font-medium text-gray-900">
-                      {selectedCenter.center.name}
-                      {selectedCenter.offering.maxParticipants && (
-                        <span
-                          className={`ml-2 text-xs ${selectedEmployees.length > selectedCenter.offering.maxParticipants ? "text-red-600" : "text-gray-500"}`}
-                        >
-                          (max {selectedCenter.offering.maxParticipants} pers.)
-                        </span>
-                      )}
-                    </p>
+                    {selectedCenter ? (
+                      <p className="font-medium text-gray-900">
+                        {selectedCenter.center.name}
+                        {selectedCenter.offering.maxParticipants && (
+                          <span
+                            className={`ml-2 text-xs ${selectedEmployees.length > selectedCenter.offering.maxParticipants ? "text-red-600" : "text-gray-500"}`}
+                          >
+                            (max {selectedCenter.offering.maxParticipants} pers.)
+                          </span>
+                        )}
+                      </p>
+                    ) : (
+                      <p className="text-sm text-gray-500 italic">
+                        Non renseigné
+                      </p>
+                    )}
                   </div>
+                  {selectedCenter && (
                   <div>
                     <p className="text-sm text-gray-600 font-medium">Mode</p>
                     <Badge
@@ -1005,6 +1016,7 @@ export default function PlanningModal({
                         : "INTER (employés se déplacent)"}
                     </Badge>
                   </div>
+                  )}
                   <div>
                     <p className="text-sm text-gray-600 font-medium">
                       Participants
@@ -1017,6 +1029,7 @@ export default function PlanningModal({
               </div>
 
               {/* Coûts */}
+              {selectedCenter ? (
               <div className="rounded-lg border bg-emerald-50 p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1064,6 +1077,12 @@ export default function PlanningModal({
                   </div>
                 </div>
               </div>
+              ) : (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center text-sm text-gray-500">
+                Les coûts pourront être renseignés ultérieurement depuis la
+                fiche de la session.
+              </div>
+              )}
 
               {/* Date */}
               <div>
@@ -1173,10 +1192,11 @@ export default function PlanningModal({
             <Button
               onClick={() => setStep(3)}
               disabled={
-                !selectedCenter ||
-                (selectedCenter.offering.maxParticipants !== null &&
-                  selectedEmployees.length >
-                    selectedCenter.offering.maxParticipants)
+                comparison?.centers.length !== 0 &&
+                (!selectedCenter ||
+                  (selectedCenter.offering.maxParticipants !== null &&
+                    selectedEmployees.length >
+                      selectedCenter.offering.maxParticipants))
               }
             >
               Continuer
