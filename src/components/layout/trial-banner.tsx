@@ -65,7 +65,7 @@ export function TrialBanner({
 
         <div className="flex items-center gap-3">
           <Link
-            href="/dashboard/settings?tab=subscription"
+            href="/trial-expired"
             className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
               isUrgent
                 ? "bg-amber-600 text-white hover:bg-amber-700"

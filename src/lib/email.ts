@@ -171,7 +171,7 @@ const ONBOARDING_EMAILS: Record<
           </ul>
           <p><strong>Choisissez votre plan dès maintenant</strong> — à partir de 49€/mois :</p>
           <div style="text-align:center;margin:25px 0;">
-            <a href="${appUrl}/dashboard/settings?tab=subscription" style="background:#059669;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Choisir mon plan</a>
+            <a href="${appUrl}/trial-expired" style="background:#059669;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Choisir mon plan</a>
           </div>
           <p style="color:#888;font-size:13px;">Des questions ? Répondez simplement à cet email, nous sommes là pour vous aider.</p>
         </div>
