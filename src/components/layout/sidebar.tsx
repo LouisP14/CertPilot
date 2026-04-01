@@ -52,14 +52,14 @@ export function Sidebar({ userRole }: SidebarProps) {
       {/* Backdrop mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm xl:hidden"
           onClick={close}
         />
       )}
 
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-linear-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] overflow-hidden transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex h-full w-64 flex-col bg-linear-to-b from-[#173B56] via-[#1e4a6b] to-[#0f2a3d] overflow-hidden transition-transform duration-300 ease-in-out xl:relative xl:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >

@@ -228,7 +228,7 @@ export const prioritySettingsSchema = z.object({
 
 export const createSessionSchema = z.object({
   formationTypeId: z.string().min(1, "Le type de formation est requis"),
-  trainingCenterId: z.string().optional(),
+  trainingCenterId: z.string().nullable().optional(),
   startDate: z.string().min(1, "La date de début est requise"),
   endDate: z.string().optional(),
   startTime: z.string().optional(),

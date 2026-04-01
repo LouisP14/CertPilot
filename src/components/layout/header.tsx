@@ -183,7 +183,7 @@ export function Header({ user }: HeaderProps) {
         <button
           type="button"
           onClick={toggle}
-          className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 transition-colors lg:hidden"
+          className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 transition-colors xl:hidden"
         >
           <Menu className="h-5 w-5" />
         </button>
