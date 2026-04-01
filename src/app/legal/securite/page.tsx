@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
@@ -21,11 +21,29 @@ function BreadcrumbJsonLd() {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Accueil", item: siteUrl },
-      { "@type": "ListItem", position: 2, name: "Securite", item: `${siteUrl}/legal/securite` },
+      { "@type": "ListItem", position: 2, name: "Sécurité", item: `${siteUrl}/legal/securite` },
     ],
   };
   return (
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }} />
+  );
+}
+
+function Check({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex items-start gap-3">
+      <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500" />
+      <span>{children}</span>
+    </li>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h2 className="mb-4 text-lg font-bold text-[#173B56]">{title}</h2>
+      {children}
+    </section>
   );
 }
 
@@ -46,105 +64,203 @@ export default function SecurityPage() {
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-12">
+        <div className="mb-2 inline-block rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700">
+          Référentiel sécurité B2B
+        </div>
         <h1 className="text-3xl font-black text-[#173B56]">
-          Sécurité & disponibilité
+          Sécurité &amp; disponibilité
         </h1>
-        <p className="mt-2 text-slate-600">
-          Référentiel opérationnel client B2B
+        <p className="mt-3 text-slate-600 max-w-2xl">
+          CertPilot est conçu pour des environnements professionnels exigeants. Ce document
+          détaille les mesures techniques et organisationnelles mises en œuvre pour protéger
+          vos données.
         </p>
 
-        <div className="mt-10 space-y-8 text-slate-700">
-          <section>
-            <h2 className="text-xl font-bold text-[#173B56]">
-              1. Contrôle d&apos;accès
-            </h2>
-            <ul className="mt-4 ml-6 list-disc space-y-1">
-              <li>Authentification sécurisée des comptes utilisateurs</li>
-              <li>Gestion des rôles (ADMIN / MANAGER / VIEWER)</li>
-              <li>Isolation des données par entreprise (multi-tenant)</li>
-            </ul>
-          </section>
+        <div className="mt-10 space-y-5">
 
-          <section>
-            <h2 className="text-xl font-bold text-[#173B56]">2. Chiffrement</h2>
-            <ul className="mt-4 ml-6 list-disc space-y-1">
-              <li>Chiffrement en transit via HTTPS/TLS</li>
-              <li>Protection des secrets et mots de passe (hachage)</li>
-              <li>Bonnes pratiques de configuration des accès</li>
+          {/* Hébergement */}
+          <Section title="🌍 Hébergement & localisation des données">
+            <ul className="space-y-3 text-slate-700">
+              <Check>
+                <strong>Données hébergées en Europe</strong> — serveurs d&apos;application et base de données
+                localisés en Europe (Frankfurt, Allemagne) via Railway et son infrastructure cloud.
+              </Check>
+              <Check>
+                <strong>Aucun transfert hors Union Européenne</strong> — toutes les données restent
+                dans l&apos;espace économique européen, conformément au RGPD.
+              </Check>
+              <Check>
+                <strong>Base de données PostgreSQL</strong> dédiée avec volume persistant — vos données
+                ne sont jamais partagées avec d&apos;autres clients.
+              </Check>
             </ul>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#173B56]">
-              3. Journalisation et traçabilité
-            </h2>
-            <ul className="mt-4 ml-6 list-disc space-y-1">
-              <li>Piste d&apos;audit des actions critiques</li>
-              <li>Historique des opérations sensibles</li>
-              <li>Traçabilité des exports et signatures</li>
+          {/* Isolation des données */}
+          <Section title="🔒 Isolation & cloisonnement des données">
+            <ul className="space-y-3 text-slate-700">
+              <Check>
+                <strong>Architecture multi-tenant stricte</strong> — chaque entreprise dispose d&apos;un
+                identifiant unique (<code className="rounded bg-slate-100 px-1 text-sm">companyId</code>)
+                vérifié sur chaque requête API. Aucun accès croisé n&apos;est techniquement possible.
+              </Check>
+              <Check>
+                <strong>Contrôle d&apos;accès par rôle</strong> — trois niveaux de droits distincts :
+                Administrateur, Manager, Lecteur. Chaque utilisateur n&apos;accède qu&apos;aux données
+                de son périmètre.
+              </Check>
+              <Check>
+                <strong>Sessions sécurisées</strong> — authentification par token JWT signé,
+                expiration automatique des sessions inactives.
+              </Check>
             </ul>
-          </section>
+          </Section>
 
-          <section>
-            <h2 className="text-xl font-bold text-[#173B56]">
-              4. Sauvegardes et restauration
+          {/* Authentification */}
+          <Section title="🔑 Authentification & protection des accès">
+            <ul className="space-y-3 text-slate-700">
+              <Check>
+                <strong>Mots de passe hachés avec bcrypt</strong> (facteur de coût 12) —
+                standard utilisé par les banques et institutions financières. Même CertPilot
+                ne peut pas lire vos mots de passe.
+              </Check>
+              <Check>
+                <strong>Vérification d&apos;email obligatoire</strong> à l&apos;inscription —
+                aucun compte actif sans confirmation.
+              </Check>
+              <Check>
+                <strong>Protection anti-brute force</strong> — limitation automatique des tentatives
+                de connexion (5 essais / 15 minutes par adresse IP).
+              </Check>
+              <Check>
+                <strong>Tokens de réinitialisation à usage unique</strong> avec expiration
+                de 24h — aucune réutilisation possible.
+              </Check>
+            </ul>
+          </Section>
+
+          {/* Chiffrement & transport */}
+          <Section title="🔐 Chiffrement des données">
+            <ul className="space-y-3 text-slate-700">
+              <Check>
+                <strong>HTTPS/TLS sur toutes les communications</strong> — aucune donnée
+                ne transite en clair entre votre navigateur et nos serveurs.
+              </Check>
+              <Check>
+                <strong>HSTS activé</strong> (Strict-Transport-Security, max-age 1 an) —
+                votre navigateur refuse automatiquement toute connexion non chiffrée.
+              </Check>
+              <Check>
+                <strong>Headers de sécurité HTTP</strong> — protection contre le
+                clickjacking (X-Frame-Options: DENY), le sniffing de contenu
+                (X-Content-Type-Options) et le XSS (X-XSS-Protection).
+              </Check>
+              <Check>
+                <strong>Chiffrement de la base de données en transit</strong> — connexion
+                chiffrée TLS entre l&apos;application et PostgreSQL.
+              </Check>
+            </ul>
+          </Section>
+
+          {/* Traçabilité */}
+          <Section title="📋 Traçabilité & audit trail">
+            <ul className="space-y-3 text-slate-700">
+              <Check>
+                <strong>Audit Trail complet et exportable</strong> — chaque action sensible
+                (création, modification, suppression, signature, export) est horodatée,
+                associée à l&apos;utilisateur et à son adresse IP.
+              </Check>
+              <Check>
+                <strong>Signature électronique horodatée</strong> — les passeports formation
+                enregistrent la date, l&apos;heure, l&apos;IP et l&apos;image de signature
+                de chaque signataire. Valeur probante en cas de contrôle ou de litige.
+              </Check>
+              <Check>
+                <strong>Export Excel de l&apos;audit trail</strong> — disponible à tout moment
+                depuis le tableau de bord pour vos obligations de conformité.
+              </Check>
+              <Check>
+                <strong>Notifications internes</strong> — chaque action critique génère
+                une notification dans l&apos;interface pour votre équipe RH.
+              </Check>
+            </ul>
+          </Section>
+
+          {/* Sauvegardes */}
+          <Section title="💾 Sauvegardes & continuité de service">
+            <ul className="space-y-3 text-slate-700">
+              <Check>
+                <strong>Sauvegardes automatiques quotidiennes</strong> de la base de données
+                PostgreSQL — gérées par Railway avec rétention intégrée.
+              </Check>
+              <Check>
+                <strong>Volume persistant dédié</strong> — vos fichiers (photos, justificatifs)
+                sont stockés sur un volume persistant indépendant du déploiement applicatif.
+              </Check>
+              <Check>
+                <strong>Export total de vos données à tout moment</strong> — format Excel ou PDF,
+                sans dépendance propriétaire. Vous pouvez quitter CertPilot avec toutes
+                vos données en moins de 5 minutes.
+              </Check>
+              <Check>
+                <strong>Zéro interruption lors des mises à jour</strong> — déploiement continu
+                sans coupure de service.
+              </Check>
+            </ul>
+          </Section>
+
+          {/* RGPD */}
+          <Section title="🇪🇺 Conformité RGPD">
+            <ul className="space-y-3 text-slate-700">
+              <Check>
+                <strong>Accord de traitement des données (DPA)</strong> disponible et
+                signable — CertPilot agit en tant que sous-traitant au sens de l&apos;article 28
+                du RGPD.
+              </Check>
+              <Check>
+                <strong>Droit à l&apos;effacement opérationnel</strong> — suppression complète
+                des données d&apos;un employé ou d&apos;un compte depuis l&apos;interface, sans
+                intervention technique requise.
+              </Check>
+              <Check>
+                <strong>Données en Union Européenne</strong> — aucun sous-traitant
+                situé hors UE pour le traitement ou le stockage des données personnelles.
+              </Check>
+              <Check>
+                <strong>Minimisation des données</strong> — seules les données nécessaires
+                à la gestion des habilitations sont collectées.
+              </Check>
+            </ul>
+          </Section>
+
+          {/* Contact */}
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
+            <h2 className="mb-2 font-bold text-emerald-800">
+              Questionnaire sécurité ou revue de conformité
             </h2>
-            <p className="mt-4">
-              Les sauvegardes et la restauration sont gérées sur
-              l&apos;infrastructure de production. Les paramètres opérationnels
-              (fréquence, durée de rétention, RPO, RTO) sont communiqués au
-              client dans l&apos;annexe sécurité contractuelle.
+            <p className="text-sm text-emerald-700">
+              Votre DSI souhaite approfondir un point ? Nous répondons aux questionnaires
+              de sécurité fournisseur et pouvons fournir une annexe technique détaillée
+              sur demande.
             </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-[#173B56]">
-              5. Gestion des incidents
-            </h2>
-            <ul className="mt-4 ml-6 list-disc space-y-1">
-              <li>Détection et qualification des incidents</li>
-              <li>Mesures de confinement et correction</li>
-              <li>Communication client en cas d&apos;impact significatif</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-[#173B56]">
-              6. Disponibilité de service
-            </h2>
-            <p className="mt-4">
-              CertPilot vise une haute disponibilité de service. Les engagements
-              SLA contractuels (disponibilité cible, maintenance planifiée,
-              support, délais de réponse) sont définis dans les documents de
-              souscription.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-[#173B56]">7. Contact</h2>
-            <p className="mt-4">
-              Pour un questionnaire sécurité client ou une revue de conformité,
-              contactez{" "}
-              <a
-                href="mailto:contact@certpilot.eu"
-                className="text-emerald-600 hover:underline"
-              >
-                contact@certpilot.eu
-              </a>
-              .
-            </p>
-          </section>
-
-          <section className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
-            Document connexe :{" "}
-            <Link
-              href="/legal/dpa"
-              className="text-emerald-600 hover:underline"
+            <a
+              href="mailto:contact@certpilot.eu"
+              className="mt-3 inline-block rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
             >
+              Contacter notre équipe →
+            </a>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-600">
+            Documents liés :{" "}
+            <Link href="/legal/dpa" className="text-emerald-600 hover:underline">
               Accord de traitement des données (DPA)
             </Link>
-            .
-          </section>
+            {" · "}
+            <Link href="/legal/confidentialite" className="text-emerald-600 hover:underline">
+              Politique de confidentialité
+            </Link>
+          </div>
         </div>
       </main>
 
