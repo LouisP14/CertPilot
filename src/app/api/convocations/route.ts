@@ -26,6 +26,7 @@ export async function GET() {
         attendees: true,
       },
       orderBy: { createdAt: "desc" },
+      take: 200,
     });
 
     // Reformater pour correspondre au format attendu par le frontend

@@ -45,6 +45,7 @@ export async function GET() {
       orderBy: {
         expiryDate: "asc",
       },
+      take: 500,
     });
 
     const alerts = certificates.map((cert) => {

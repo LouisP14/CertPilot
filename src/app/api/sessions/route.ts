@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { startDate: "asc" },
+      take: 500,
     });
 
     return NextResponse.json(sessions);

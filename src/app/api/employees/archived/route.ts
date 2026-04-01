@@ -28,6 +28,7 @@ export async function GET() {
           },
         },
       },
+      take: 1000,
       orderBy: { updatedAt: "desc" },
     });
 

@@ -726,6 +726,155 @@ export async function sendAlertEmail(params: {
 }
 
 // Email 3 : Bienvenue + Identifiants après paiement
+// Email : Notification de rejet de passeport à l'employé
+export async function sendPassportRejectedEmail(params: {
+  to: string;
+  employeeName: string;
+  rejectionReason: string;
+  managerName: string;
+}) {
+  const { to, employeeName, rejectionReason, managerName } = params;
+  const appUrl = getAppBaseUrl();
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: "Passeport Formation — Signature refusée",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 22px;">Passeport Formation</h1>
+          <p style="color: #e2e8f0; margin: 8px 0 0 0;">Notification de rejet</p>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+          <p>Bonjour ${employeeName},</p>
+          <p>Votre responsable <strong>${managerName}</strong> a refusé de signer votre passeport formation.</p>
+          <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <p style="margin: 0; color: #991b1b;"><strong>Motif du refus :</strong></p>
+            <p style="margin: 8px 0 0 0; color: #1f2937;">${rejectionReason}</p>
+          </div>
+          <p>Veuillez contacter votre service RH pour régulariser votre situation.</p>
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${appUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #173B56; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Accéder au tableau de bord</a>
+          </div>
+          <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe CertPilot</strong></p>
+        </div>
+        <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0;">CertPilot — Gestion des habilitations et formations réglementaires</p>
+        </div>
+      </div>
+    `,
+    text: `Bonjour ${employeeName},
+
+Votre responsable ${managerName} a refusé de signer votre passeport formation.
+
+Motif du refus : ${rejectionReason}
+
+Veuillez contacter votre service RH pour régulariser votre situation.
+
+Cordialement,
+L'équipe CertPilot`,
+  });
+}
+
+// Email : Confirmation de validation de passeport à l'employé
+export async function sendPassportValidatedEmail(params: {
+  to: string;
+  employeeName: string;
+  managerName: string;
+}) {
+  const { to, employeeName, managerName } = params;
+  const appUrl = getAppBaseUrl();
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: "✅ Passeport Formation — Validé et signé",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 22px;">Passeport Formation</h1>
+          <p style="color: #e2e8f0; margin: 8px 0 0 0;">Validation confirmée</p>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+          <p>Bonjour ${employeeName},</p>
+          <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <p style="margin: 0; color: #065f46; font-size: 16px;"><strong>✅ Votre passeport formation a été validé !</strong></p>
+            <p style="margin: 8px 0 0 0; color: #047857;">Signé par : ${managerName}</p>
+          </div>
+          <p>Votre passeport formation est désormais complet et signé. Vous pouvez le consulter à tout moment via votre QR code personnel ou depuis votre espace.</p>
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${appUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #173B56; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Consulter mon passeport</a>
+          </div>
+          <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe CertPilot</strong></p>
+        </div>
+        <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0;">CertPilot — Gestion des habilitations et formations réglementaires</p>
+        </div>
+      </div>
+    `,
+    text: `Bonjour ${employeeName},
+
+Votre passeport formation a été validé et signé par ${managerName}.
+
+Vous pouvez le consulter à tout moment via votre QR code personnel.
+
+Cordialement,
+L'équipe CertPilot`,
+  });
+}
+
+// Email : Relance paiement échoué (Stripe)
+export async function sendPaymentFailedEmail(params: {
+  to: string;
+  companyName: string;
+}) {
+  const { to, companyName } = params;
+  const appUrl = getAppBaseUrl();
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: "⚠️ CertPilot — Échec de paiement",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 22px;">CertPilot</h1>
+          <p style="color: #e2e8f0; margin: 8px 0 0 0;">Notification de paiement</p>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+          <p>Bonjour,</p>
+          <p>Nous n'avons pas pu débiter le paiement de votre abonnement CertPilot pour <strong>${companyName}</strong>.</p>
+          <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <p style="margin: 0; color: #92400e;"><strong>⚠️ Action requise :</strong></p>
+            <p style="margin: 8px 0 0 0; color: #78350f;">Votre accès pourrait être suspendu si le paiement n'est pas régularisé rapidement. Veuillez mettre à jour votre moyen de paiement.</p>
+          </div>
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${appUrl}/dashboard/settings" style="display: inline-block; padding: 12px 24px; background: #f59e0b; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Mettre à jour mon paiement</a>
+          </div>
+          <p>Si vous avez des questions, contactez-nous à <a href="mailto:contact@certpilot.eu" style="color: #173B56;">contact@certpilot.eu</a>.</p>
+          <p style="margin-top: 30px;">Cordialement,<br><strong>L'équipe CertPilot</strong></p>
+        </div>
+        <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0;">CertPilot — Gestion des habilitations et formations réglementaires</p>
+        </div>
+      </div>
+    `,
+    text: `Bonjour,
+
+Nous n'avons pas pu débiter le paiement de votre abonnement CertPilot pour ${companyName}.
+
+Votre accès pourrait être suspendu si le paiement n'est pas régularisé rapidement.
+
+Mettez à jour votre moyen de paiement : ${appUrl}/dashboard/settings
+
+Pour toute question : contact@certpilot.eu
+
+Cordialement,
+L'équipe CertPilot`,
+  });
+}
+
 export async function sendWelcomeEmail(params: {
   to: string;
   contactName: string;

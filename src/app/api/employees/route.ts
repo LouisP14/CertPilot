@@ -32,6 +32,7 @@ export async function GET() {
         },
       },
       orderBy: { lastName: "asc" },
+      take: 1000,
     });
 
     return NextResponse.json(employees);

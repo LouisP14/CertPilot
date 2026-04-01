@@ -1,3 +1,4 @@
+import { sendPaymentFailedEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import bcrypt from "bcryptjs";
@@ -235,7 +236,18 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     });
     console.log("Paiement échoué pour:", company.name);
 
-    // TODO: Envoyer email de relance
+    const adminUser = await prisma.user.findFirst({
+      where: { companyId: company.id, role: "ADMIN" },
+      select: { email: true },
+    });
+    if (adminUser?.email) {
+      await sendPaymentFailedEmail({
+        to: adminUser.email,
+        companyName: company.name,
+      }).catch((err) =>
+        console.error("[stripe-webhook] Erreur envoi email paiement échoué:", err),
+      );
+    }
   }
 }
 

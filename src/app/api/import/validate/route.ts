@@ -1,8 +1,8 @@
 import { createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import ExcelJS from "exceljs";
 import { NextRequest, NextResponse } from "next/server";
-import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
 
@@ -547,7 +547,8 @@ export async function POST(request: NextRequest) {
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(arrayBuffer);
 
     // Charger les données existantes pour détecter CREATE vs UPDATE
     const [existingEmployees, existingFormations, existingReferences] =
@@ -604,16 +605,36 @@ export async function POST(request: NextRequest) {
       existingFormations.map((f) => [f.name.toLowerCase(), f.id]),
     );
 
+    // Helper : convertit un worksheet ExcelJS en tableau d'objets (comme sheet_to_json)
+    function sheetToJson(ws: ExcelJS.Worksheet): Record<string, unknown>[] {
+      const headers: string[] = [];
+      ws.getRow(1).eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        headers[colNumber] = String(cell.value ?? "");
+      });
+      const result: Record<string, unknown>[] = [];
+      ws.eachRow((row, rowNumber) => {
+        if (rowNumber === 1) return;
+        const obj: Record<string, unknown> = {};
+        row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+          const header = headers[colNumber];
+          if (header) obj[header] = cell.value;
+        });
+        if (Object.keys(obj).length > 0) result.push(obj);
+      });
+      return result;
+    }
+
     // Parser chaque onglet
-    const employeesSheetName = workbook.SheetNames.find((n) =>
+    const sheetNames = workbook.worksheets.map((ws) => ws.name);
+    const employeesSheetName = sheetNames.find((n) =>
       n.toLowerCase().includes("employ"),
     );
-    const formationsSheetName = workbook.SheetNames.find(
+    const formationsSheetName = sheetNames.find(
       (n) =>
         n.toLowerCase().includes("formation") &&
         !n.toLowerCase().includes("certificat"),
     );
-    const certificatesSheetName = workbook.SheetNames.find((n) =>
+    const certificatesSheetName = sheetNames.find((n) =>
       n.toLowerCase().includes("certificat"),
     );
 
@@ -625,52 +646,58 @@ export async function POST(request: NextRequest) {
 
     // Parse Employés
     if (employeesSheetName) {
-      const sheet = workbook.Sheets[employeesSheetName];
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
-      if (rows.length > 0) {
-        const result = parseEmployeesSheet(rows, existingMatricules, refs);
-        parsedEmployees = result.employees;
-        allErrors.push(...result.errors);
-        allWarnings.push(...result.warnings);
+      const sheet = workbook.getWorksheet(employeesSheetName);
+      if (sheet) {
+        const rows = sheetToJson(sheet);
+        if (rows.length > 0) {
+          const result = parseEmployeesSheet(rows, existingMatricules, refs);
+          parsedEmployees = result.employees;
+          allErrors.push(...result.errors);
+          allWarnings.push(...result.warnings);
+        }
       }
     }
 
     // Parse Formations
     if (formationsSheetName) {
-      const sheet = workbook.Sheets[formationsSheetName];
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
-      if (rows.length > 0) {
-        const result = parseFormationsSheet(rows, existingFormationNames, refs);
-        parsedFormations = result.formations;
-        allErrors.push(...result.errors);
-        allWarnings.push(...result.warnings);
+      const sheet = workbook.getWorksheet(formationsSheetName);
+      if (sheet) {
+        const rows = sheetToJson(sheet);
+        if (rows.length > 0) {
+          const result = parseFormationsSheet(rows, existingFormationNames, refs);
+          parsedFormations = result.formations;
+          allErrors.push(...result.errors);
+          allWarnings.push(...result.warnings);
+        }
       }
     }
 
     // Parse Certificats (après employés et formations pour validations croisées)
     if (certificatesSheetName) {
-      const sheet = workbook.Sheets[certificatesSheetName];
-      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet);
-      if (rows.length > 0) {
-        // Construire l'ensemble des matricules valides = existants + fichier
-        const allValidMatricules = new Set(existingMatricules);
-        for (const emp of parsedEmployees) {
-          allValidMatricules.add(emp.matricule);
-        }
+      const sheet = workbook.getWorksheet(certificatesSheetName);
+      if (sheet) {
+        const rows = sheetToJson(sheet);
+        if (rows.length > 0) {
+          // Construire l'ensemble des matricules valides = existants + fichier
+          const allValidMatricules = new Set(existingMatricules);
+          for (const emp of parsedEmployees) {
+            allValidMatricules.add(emp.matricule);
+          }
 
-        // Construire l'ensemble des formations valides = existantes + fichier
-        const allValidFormations = new Set(existingFormationNames);
-        for (const ft of parsedFormations) {
-          allValidFormations.add(ft.name.toLowerCase());
-        }
+          // Construire l'ensemble des formations valides = existantes + fichier
+          const allValidFormations = new Set(existingFormationNames);
+          for (const ft of parsedFormations) {
+            allValidFormations.add(ft.name.toLowerCase());
+          }
 
-        const result = parseCertificatesSheet(
-          rows,
-          allValidMatricules,
-          allValidFormations,
-        );
-        parsedCertificates = result.certificates;
-        allErrors.push(...result.errors);
+          const result = parseCertificatesSheet(
+            rows,
+            allValidMatricules,
+            allValidFormations,
+          );
+          parsedCertificates = result.certificates;
+          allErrors.push(...result.errors);
+        }
       }
     }
 

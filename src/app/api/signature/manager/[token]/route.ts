@@ -1,4 +1,5 @@
 import { auditSign, createAuditLog } from "@/lib/audit";
+import { sendPassportRejectedEmail, sendPassportValidatedEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -189,22 +190,16 @@ export async function POST(
         metadata: { rejectionReason, managerName: signature.siteManagerName },
       });
 
-      // TODO: Envoyer email de notification de rejet
-      console.log(`
-      ========================================
-      📧 EMAIL DE REJET (SIMULATION)
-      ========================================
-      À: ${signature.employee.email}
-      Objet: Passeport Formation rejeté
-      
-      Bonjour ${signature.employee.firstName},
-      
-      Votre passeport formation a été rejeté par le responsable.
-      Raison : ${rejectionReason || "Non spécifié"}
-      
-      Veuillez contacter votre service RH.
-      ========================================
-      `);
+      if (signature.employee.email) {
+        await sendPassportRejectedEmail({
+          to: signature.employee.email,
+          employeeName: signature.employee.firstName,
+          rejectionReason: rejectionReason || "Non spécifié",
+          managerName: signature.siteManagerName || "votre responsable",
+        }).catch((err) =>
+          console.error("[signature] Erreur envoi email rejet:", err),
+        );
+      }
 
       return NextResponse.json({
         success: true,
@@ -254,24 +249,15 @@ export async function POST(
       signature.employee.companyId,
     );
 
-    // TODO: Envoyer email de confirmation à l'employé
-    console.log(`
-    ========================================
-    📧 EMAIL DE VALIDATION (SIMULATION)
-    ========================================
-    À: ${signature.employee.email}
-    Objet: ✅ Passeport Formation validé !
-    
-    Bonjour ${signature.employee.firstName},
-    
-    Votre passeport formation a été signé et validé par le responsable.
-    
-    Vous pouvez le consulter à tout moment via votre QR code personnel.
-    
-    Cordialement,
-    L'équipe RH
-    ========================================
-    `);
+    if (signature.employee.email) {
+      await sendPassportValidatedEmail({
+        to: signature.employee.email,
+        employeeName: signature.employee.firstName,
+        managerName: signatureName,
+      }).catch((err) =>
+        console.error("[signature] Erreur envoi email validation:", err),
+      );
+    }
 
     return NextResponse.json({
       success: true,

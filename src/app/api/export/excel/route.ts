@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import ExcelJS from "exceljs";
 import { NextRequest, NextResponse } from "next/server";
-import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
 
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     });
 
-    const workbook = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
 
     if (exportType === "employees") {
       const rows = employees.map((employee) => ({
@@ -91,8 +91,15 @@ export async function GET(request: NextRequest) {
         Équipe: employee.team || "-",
       }));
 
-      const sheet = XLSX.utils.json_to_sheet(rows);
-      XLSX.utils.book_append_sheet(workbook, sheet, "Employés");
+      const sheet = workbook.addWorksheet("Employés");
+      if (rows.length > 0) {
+        sheet.columns = Object.keys(rows[0]).map((key) => ({
+          header: key,
+          key,
+          width: Math.max(key.length + 2, 15),
+        }));
+        sheet.addRows(rows);
+      }
     } else {
       const rows: Array<Record<string, string>> = [];
 
@@ -152,18 +159,18 @@ export async function GET(request: NextRequest) {
         expired: "Formations expirées",
       };
 
-      const sheet = XLSX.utils.json_to_sheet(rows);
-      XLSX.utils.book_append_sheet(
-        workbook,
-        sheet,
-        sheetNameByType[exportType],
-      );
+      const sheet = workbook.addWorksheet(sheetNameByType[exportType]);
+      if (rows.length > 0) {
+        sheet.columns = Object.keys(rows[0]).map((key) => ({
+          header: key,
+          key,
+          width: Math.max(key.length + 2, 15),
+        }));
+        sheet.addRows(rows);
+      }
     }
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "buffer",
-    });
+    const excelBuffer = await workbook.xlsx.writeBuffer();
 
     const datePart = new Date().toISOString().split("T")[0];
     const filenameByType: Record<ExportType, string> = {

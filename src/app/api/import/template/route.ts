@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
+import ExcelJS from "exceljs";
 import { NextResponse } from "next/server";
-import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
 
@@ -16,7 +16,7 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const workbook = XLSX.utils.book_new();
+    const workbook = new ExcelJS.Workbook();
 
     // ── Onglet 1 : Employés ──
     const employeesHeader = [
@@ -45,15 +45,13 @@ export async function GET() {
       "chef@email.com",
       "15/03/2026",
     ];
-    const employeesSheet = XLSX.utils.aoa_to_sheet([
-      employeesHeader,
-      employeesExample,
-    ]);
-    // Largeur des colonnes
-    employeesSheet["!cols"] = employeesHeader.map((h) => ({
-      wch: Math.max(h.length + 2, 18),
+    const employeesSheet = workbook.addWorksheet("Employés");
+    employeesSheet.columns = employeesHeader.map((h) => ({
+      header: h,
+      key: h,
+      width: Math.max(h.length + 2, 18),
     }));
-    XLSX.utils.book_append_sheet(workbook, employeesSheet, "Employés");
+    employeesSheet.addRow(employeesExample);
 
     // ── Onglet 2 : Types de formation ──
     const formationsHeader = [
@@ -68,14 +66,13 @@ export async function GET() {
       "Maintenance",
       "36",
     ];
-    const formationsSheet = XLSX.utils.aoa_to_sheet([
-      formationsHeader,
-      formationsExample,
-    ]);
-    formationsSheet["!cols"] = formationsHeader.map((h) => ({
-      wch: Math.max(h.length + 2, 18),
+    const formationsSheet = workbook.addWorksheet("Formations");
+    formationsSheet.columns = formationsHeader.map((h) => ({
+      header: h,
+      key: h,
+      width: Math.max(h.length + 2, 18),
     }));
-    XLSX.utils.book_append_sheet(workbook, formationsSheet, "Formations");
+    formationsSheet.addRow(formationsExample);
 
     // ── Onglet 3 : Certificats ──
     const certificatesHeader = [
@@ -94,64 +91,49 @@ export async function GET() {
       "AFPA Rouen",
       "B0 H0V",
     ];
-    const certificatesSheet = XLSX.utils.aoa_to_sheet([
-      certificatesHeader,
-      certificatesExample,
-    ]);
-    certificatesSheet["!cols"] = certificatesHeader.map((h) => ({
-      wch: Math.max(h.length + 2, 20),
+    const certificatesSheet = workbook.addWorksheet("Certificats");
+    certificatesSheet.columns = certificatesHeader.map((h) => ({
+      header: h,
+      key: h,
+      width: Math.max(h.length + 2, 20),
     }));
-    XLSX.utils.book_append_sheet(workbook, certificatesSheet, "Certificats");
+    certificatesSheet.addRow(certificatesExample);
 
     // ── Onglet 4 : Instructions ──
-    const instructions = [
+    const instructionsSheet = workbook.addWorksheet("Instructions");
+    instructionsSheet.getColumn(1).width = 90;
+    const instructionLines = [
       ["=== TEMPLATE IMPORT CERTPILOT ==="],
       [""],
       ["INSTRUCTIONS GÉNÉRALES :"],
-      [
-        "1. Remplissez les onglets Employés, Formations et/ou Certificats selon vos besoins.",
-      ],
+      ["1. Remplissez les onglets Employés, Formations et/ou Certificats selon vos besoins."],
       ["2. Les colonnes marquées d'un astérisque (*) sont obligatoires."],
-      [
-        "3. Vous pouvez importer un seul onglet à la fois ou tous en même temps.",
-      ],
-      [
-        "4. La première ligne de chaque onglet contient les en-têtes — ne la modifiez pas.",
-      ],
-      [
-        "5. La deuxième ligne contient un exemple — supprimez-la avant l'import.",
-      ],
+      ["3. Vous pouvez importer un seul onglet à la fois ou tous en même temps."],
+      ["4. La première ligne de chaque onglet contient les en-têtes — ne la modifiez pas."],
+      ["5. La deuxième ligne contient un exemple — supprimez-la avant l'import."],
       [""],
       ["FORMAT DES DATES :"],
       ["  - Utilisez le format JJ/MM/AAAA (ex: 15/03/2026)"],
       [""],
       ["ONGLET EMPLOYÉS :"],
       ["  - Le Matricule doit être unique par employé."],
-      [
-        "  - Si un matricule existe déjà, l'employé sera mis à jour (pas de doublon).",
-      ],
+      ["  - Si un matricule existe déjà, l'employé sera mis à jour (pas de doublon)."],
       ["  - Manager (matricule) : indiquez le matricule d'un autre employé."],
       [""],
       ["ONGLET FORMATIONS :"],
-      [
-        "  - Le Nom formation doit être unique. S'il existe déjà, il sera mis à jour.",
-      ],
+      ["  - Le Nom formation doit être unique. S'il existe déjà, il sera mis à jour."],
       ["  - Validité (mois) : laissez vide si la formation n'expire pas."],
       [""],
       ["ONGLET CERTIFICATS :"],
-      [
-        "  - Le Matricule employé doit correspondre à un employé existant ou présent dans l'onglet Employés.",
-      ],
-      [
-        "  - Le Nom formation doit correspondre à une formation existante ou présente dans l'onglet Formations.",
-      ],
+      ["  - Le Matricule employé doit correspondre à un employé existant ou présent dans l'onglet Employés."],
+      ["  - Le Nom formation doit correspondre à une formation existante ou présente dans l'onglet Formations."],
       ["  - Date expiration : laissez vide si la formation n'expire pas."],
     ];
-    const instructionsSheet = XLSX.utils.aoa_to_sheet(instructions);
-    instructionsSheet["!cols"] = [{ wch: 90 }];
-    XLSX.utils.book_append_sheet(workbook, instructionsSheet, "Instructions");
+    for (const line of instructionLines) {
+      instructionsSheet.addRow(line);
+    }
 
-    const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+    const buffer = await workbook.xlsx.writeBuffer();
 
     const datePart = new Date().toISOString().split("T")[0];
 

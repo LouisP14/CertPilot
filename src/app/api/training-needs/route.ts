@@ -58,6 +58,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: [{ priority: "desc" }, { expiryDate: "asc" }],
+      take: 500,
     });
 
     return NextResponse.json(needs);

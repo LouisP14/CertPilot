@@ -1,8 +1,8 @@
 import { AuditAction, AuditEntityType } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import ExcelJS from "exceljs";
 import { NextRequest, NextResponse } from "next/server";
-import * as XLSX from "xlsx";
 
 export const runtime = "nodejs";
 
@@ -92,14 +92,18 @@ export async function GET(request: NextRequest) {
       Métadonnées: toJsonString(log.metadata),
     }));
 
-    const workbook = XLSX.utils.book_new();
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Audit Trail");
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Audit Trail");
+    if (rows.length > 0) {
+      worksheet.columns = Object.keys(rows[0]).map((key) => ({
+        header: key,
+        key,
+        width: Math.max(key.length + 2, 15),
+      }));
+      worksheet.addRows(rows);
+    }
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "buffer",
-    });
+    const excelBuffer = await workbook.xlsx.writeBuffer();
 
     const datePart = new Date().toISOString().split("T")[0];
     const filename = `audit-trail-${datePart}.xlsx`;
