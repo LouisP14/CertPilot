@@ -152,11 +152,11 @@ export function Header({ user }: HeaderProps) {
     fetchAlerts();
     fetchNotifications();
 
-    // Polling pour les alertes et notifications toutes les 10 secondes
     const interval = setInterval(() => {
+      if (document.visibilityState === "hidden") return;
       fetchAlerts();
       fetchNotifications();
-    }, 10000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);

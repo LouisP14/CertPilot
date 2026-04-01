@@ -82,7 +82,7 @@ export function Sidebar({ userRole }: SidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-10 flex-1 space-y-1 px-3 py-4 overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none]">
+      <nav className="relative z-10 flex-1 space-y-1 px-3 py-4 overflow-y-auto scrollbar-none">
         {navigation.map((item) => {
           const isActive =
             item.href === "/dashboard"

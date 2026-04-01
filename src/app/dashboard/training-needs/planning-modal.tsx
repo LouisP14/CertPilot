@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
+const LOCATION_PLACEHOLDER = "Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris";
+
 interface Employee {
   id: string;
   firstName: string;
@@ -1147,7 +1149,7 @@ export default function PlanningModal({
                 <Input
                   id="sessionLocation"
                   type="text"
-                  placeholder="Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris"
+                  placeholder={LOCATION_PLACEHOLDER}
                   value={sessionLocation}
                   onChange={(e) => setSessionLocation(e.target.value)}
                   className="mt-1"

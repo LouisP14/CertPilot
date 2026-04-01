@@ -30,6 +30,8 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+const LOCATION_PLACEHOLDER = "Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris";
+
 interface Attendee {
   id: string;
   employee: {
@@ -115,7 +117,6 @@ export default function SessionsPage() {
   const [locationInput, setLocationInput] = useState("");
   const [savingLocation, setSavingLocation] = useState(false);
   const [locationPromptSession, setLocationPromptSession] = useState<TrainingSession | null>(null);
-  const [locationPromptInput, setLocationPromptInput] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
   useEffect(() => {
@@ -190,7 +191,7 @@ export default function SessionsPage() {
     return null;
   };
 
-  const saveLocation = async (sessionId: string, location: string) => {
+  const saveLocation = async (sessionId: string, location: string, onSuccess?: () => void) => {
     setSavingLocation(true);
     try {
       const response = await fetch(`/api/sessions/${sessionId}`, {
@@ -199,9 +200,10 @@ export default function SessionsPage() {
         body: JSON.stringify({ location }),
       });
       if (response.ok) {
-        toast.success("Lieu mis à jour", "Le lieu de la session a été enregistré");
+        setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, location } : s));
         setEditingLocation(null);
-        fetchSessions();
+        toast.success("Lieu mis à jour", "Le lieu de la session a été enregistré");
+        onSuccess?.();
       } else {
         toast.error("Erreur", "Impossible de mettre à jour le lieu");
       }
@@ -652,7 +654,7 @@ export default function SessionsPage() {
                       {editingLocation === session.id ? (
                         <div className="mt-2 flex items-center gap-2">
                           <Input
-                            placeholder="Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris"
+                            placeholder={LOCATION_PLACEHOLDER}
                             value={locationInput}
                             onChange={(e) => setLocationInput(e.target.value)}
                             onClick={(e) => e.stopPropagation()}
@@ -749,7 +751,7 @@ export default function SessionsPage() {
                               const loc = getSessionLocation(session);
                               if (!loc) {
                                 setLocationPromptSession(session);
-                                setLocationPromptInput("");
+                                setLocationInput("");
                                 return;
                               }
                               if (session.convocationsSentAt) {
@@ -865,9 +867,9 @@ export default function SessionsPage() {
             </p>
             <Input
               className="mt-4"
-              placeholder="Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris"
-              value={locationPromptInput}
-              onChange={(e) => setLocationPromptInput(e.target.value)}
+              placeholder={LOCATION_PLACEHOLDER}
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
               autoFocus
             />
             <div className="mt-4 flex justify-end gap-2">
@@ -878,30 +880,14 @@ export default function SessionsPage() {
                 Annuler
               </Button>
               <Button
-                disabled={!locationPromptInput.trim() || savingLocation}
-                onClick={async () => {
-                  const session = locationPromptSession;
-                  setSavingLocation(true);
-                  try {
-                    const response = await fetch(`/api/sessions/${session.id}`, {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ location: locationPromptInput.trim() }),
-                    });
-                    if (response.ok) {
-                      setLocationPromptSession(null);
-                      await fetchSessions();
-                      // Recharger la session avec le lieu mis à jour puis envoyer
-                      const updatedSession = { ...session, location: locationPromptInput.trim() };
-                      sendConvocations(updatedSession);
-                    } else {
-                      toast.error("Erreur", "Impossible de sauvegarder le lieu");
-                    }
-                  } catch {
-                    toast.error("Erreur", "Une erreur est survenue");
-                  } finally {
-                    setSavingLocation(false);
-                  }
+                disabled={!locationInput.trim() || savingLocation}
+                onClick={() => {
+                  const targetSession = locationPromptSession;
+                  const loc = locationInput.trim();
+                  setLocationPromptSession(null);
+                  saveLocation(targetSession.id, loc, () => {
+                    sendConvocations({ ...targetSession, location: loc });
+                  });
                 }}
               >
                 {savingLocation ? (

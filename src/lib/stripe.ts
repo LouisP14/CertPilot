@@ -13,11 +13,12 @@ export function isStripeEnabled() {
 }
 
 // Configuration des plans CertPilot
+// Les price IDs sont dans les variables d'environnement (STRIPE_PRICE_*)
 export const STRIPE_PLANS = {
   starter: {
     name: "Starter",
-    priceId: "price_1TGk4jQA2DyQeZPKlT87oHWD",
-    annualPriceId: "price_1TGk4kQA2DyQeZPKXhELahM9",
+    priceId: process.env.STRIPE_PRICE_STARTER_MONTHLY || "",
+    annualPriceId: process.env.STRIPE_PRICE_STARTER_ANNUAL || "",
     price: 49,
     annualPrice: 490,
     employees: "1-20",
@@ -25,8 +26,8 @@ export const STRIPE_PLANS = {
   },
   pro: {
     name: "Pro",
-    priceId: "price_1TGk5MQA2DyQeZPKlWbWvfex",
-    annualPriceId: "price_1TGk5MQA2DyQeZPKmdLzINUL",
+    priceId: process.env.STRIPE_PRICE_PRO_MONTHLY || "",
+    annualPriceId: process.env.STRIPE_PRICE_PRO_ANNUAL || "",
     price: 149,
     annualPrice: 1490,
     employees: "21-100",
@@ -34,14 +35,14 @@ export const STRIPE_PLANS = {
   },
   business: {
     name: "Business",
-    priceId: "price_1TGk5vQA2DyQeZPKBY6SwHko",
-    annualPriceId: "price_1TGk5vQA2DyQeZPKakVTOmoU",
+    priceId: process.env.STRIPE_PRICE_BUSINESS_MONTHLY || "",
+    annualPriceId: process.env.STRIPE_PRICE_BUSINESS_ANNUAL || "",
     price: 349,
     annualPrice: 3490,
     employees: "101-300",
     employeeLimit: 300,
   },
-} as const;
+};
 
 export type PlanKey = keyof typeof STRIPE_PLANS;
 

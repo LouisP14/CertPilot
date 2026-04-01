@@ -54,6 +54,14 @@ export async function POST(request: NextRequest) {
       ? planConfig.annualPriceId
       : planConfig.priceId;
 
+    if (!selectedPriceId) {
+      console.error("Price ID Stripe non configuré pour le plan:", plan);
+      return NextResponse.json(
+        { error: "Configuration Stripe incomplète pour ce plan" },
+        { status: 500 },
+      );
+    }
+
     console.log(
       "Plan config:",
       planConfig,
