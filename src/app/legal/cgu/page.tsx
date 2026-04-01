@@ -213,7 +213,7 @@ export default function CGU() {
             <p className="mt-4">
               CertPilot et l&apos;ensemble de ses composants (logiciel,
               interface, marque, documentation) sont la propriété exclusive de
-              CertPilot SAS.
+              CertPilot.
             </p>
             <p className="mt-2">
               L&apos;Utilisateur dispose d&apos;un droit d&apos;utilisation

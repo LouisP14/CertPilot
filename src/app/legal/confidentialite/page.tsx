@@ -61,7 +61,7 @@ export default function Confidentialite() {
               1. Introduction
             </h2>
             <p className="mt-4">
-              CertPilot SAS (&quot;nous&quot;, &quot;notre&quot;,
+              CertPilot (&quot;nous&quot;, &quot;notre&quot;,
               &quot;nos&quot;) s&apos;engage à protéger la vie privée des
               utilisateurs de son service de gestion des formations et
               habilitations professionnelles.

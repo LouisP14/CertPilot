@@ -61,7 +61,7 @@ export default function CGV() {
             <p className="mt-4">
               Les présentes Conditions Générales de Vente (CGV)
               s&apos;appliquent à toute souscription d&apos;un abonnement au
-              service CertPilot édité par CertPilot SAS.
+              service CertPilot édité par CertPilot.
             </p>
             <p className="mt-2">
               Toute commande implique l&apos;acceptation sans réserve des
@@ -219,7 +219,6 @@ export default function CGV() {
             </h3>
             <ul className="mt-2 ml-6 list-disc space-y-1">
               <li>Carte bancaire (Visa, Mastercard, American Express)</li>
-              <li>Prélèvement SEPA (abonnement annuel uniquement)</li>
               <li>Virement bancaire (sur demande, abonnement annuel)</li>
             </ul>
 
@@ -255,9 +254,6 @@ export default function CGV() {
               <strong>Renouvellement tacite :</strong> l&apos;abonnement est
               renouvelé automatiquement pour une période identique, sauf
               résiliation par le Client avant la date d&apos;échéance.
-            </p>
-            <p className="mt-2">
-              Un email de rappel est envoyé 7 jours avant chaque renouvellement.
             </p>
           </section>
 
