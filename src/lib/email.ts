@@ -1,4 +1,3 @@
-import QRCode from "qrcode";
 import { Resend } from "resend";
 
 // Client Resend - créé seulement si la clé API est présente
@@ -793,19 +792,15 @@ export async function sendPassportValidatedEmail(params: {
 
   if (qrToken) {
     const passportUrl = `${appUrl}/p/${qrToken}`;
-    try {
-      const qrDataUrl = await QRCode.toDataURL(passportUrl, { width: 200, margin: 2 });
-      qrCodeHtml = `
-        <div style="text-align: center; margin: 25px 0;">
-          <p style="color: #475569; margin-bottom: 12px;">Scannez ce QR code pour consulter votre passeport à tout moment :</p>
-          <img src="${qrDataUrl}" alt="QR Code passeport" width="180" height="180" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px;" />
-          <p style="margin-top: 10px; font-size: 12px; color: #94a3b8;">Ou accédez directement via ce lien :<br><a href="${passportUrl}" style="color: #173B56;">${passportUrl}</a></p>
-        </div>
-      `;
-      qrCodeText = `\nConsultez votre passeport : ${passportUrl}\n`;
-    } catch {
-      qrCodeText = `\nConsultez votre passeport : ${passportUrl}\n`;
-    }
+    const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(passportUrl)}`;
+    qrCodeHtml = `
+      <div style="text-align: center; margin: 25px 0;">
+        <p style="color: #475569; margin-bottom: 12px;">Scannez ce QR code pour consulter votre passeport à tout moment :</p>
+        <img src="${qrImageUrl}" alt="QR Code passeport" width="180" height="180" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px;" />
+        <p style="margin-top: 10px; font-size: 12px; color: #94a3b8;">Ou accédez directement via ce lien :<br><a href="${passportUrl}" style="color: #173B56;">${passportUrl}</a></p>
+      </div>
+    `;
+    qrCodeText = `\nConsultez votre passeport : ${passportUrl}\n`;
   }
 
   await sendEmail({
