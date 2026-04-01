@@ -239,7 +239,7 @@ export default function CGV() {
               En cas de retard de paiement, des pénalités de retard seront
               appliquées au taux légal majoré de 10 points. Une indemnité
               forfaitaire de 40 € pour frais de recouvrement sera due
-              conformément à l&apos;article L.441-6 du Code de commerce.
+              conformément à l&apos;article L.441-10 du Code de commerce.
             </p>
           </section>
 

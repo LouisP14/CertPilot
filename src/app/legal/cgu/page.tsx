@@ -63,10 +63,10 @@ export default function CGU() {
               définissent les modalités d&apos;accès et d&apos;utilisation de la
               plateforme CertPilot, accessible à l&apos;adresse{" "}
               <a
-                href="https://certpilot.fr"
+                href="https://www.certpilot.eu"
                 className="text-emerald-600 hover:underline"
               >
-                certpilot.fr
+                certpilot.eu
               </a>
               .
             </p>

@@ -125,31 +125,23 @@ export default function Cookies() {
                     <td className="px-4 py-2">Redirection après connexion</td>
                     <td className="px-4 py-2">Session</td>
                   </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-mono text-xs">
-                      cookie-consent
-                    </td>
-                    <td className="px-4 py-2">
-                      Mémorisation de vos choix de cookies
-                    </td>
-                    <td className="px-4 py-2">12 mois</td>
-                  </tr>
                 </tbody>
               </table>
             </div>
 
             <h3 className="mt-6 font-semibold text-[#173B56]">
-              2.2 Cookies de préférences
+              2.2 Stockage local (localStorage)
             </h3>
             <p className="mt-2">
-              Ces cookies permettent de mémoriser vos préférences et de
-              personnaliser votre expérience.
+              CertPilot utilise le stockage local du navigateur (localStorage)
+              pour mémoriser vos préférences d&apos;interface. Ces données ne
+              sont pas transmises à nos serveurs.
             </p>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="px-4 py-2 text-left font-semibold">Nom</th>
+                    <th className="px-4 py-2 text-left font-semibold">Clé</th>
                     <th className="px-4 py-2 text-left font-semibold">
                       Finalité
                     </th>
@@ -158,27 +150,11 @@ export default function Cookies() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   <tr>
-                    <td className="px-4 py-2 font-mono text-xs">theme</td>
+                    <td className="px-4 py-2 font-mono text-xs">cookie-consent</td>
                     <td className="px-4 py-2">
-                      Préférence de thème (clair/sombre)
+                      Mémorisation de vos choix de consentement
                     </td>
-                    <td className="px-4 py-2">12 mois</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-mono text-xs">
-                      sidebar-collapsed
-                    </td>
-                    <td className="px-4 py-2">État de la barre latérale</td>
-                    <td className="px-4 py-2">12 mois</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-mono text-xs">
-                      table-page-size
-                    </td>
-                    <td className="px-4 py-2">
-                      Nombre d&apos;éléments par page
-                    </td>
-                    <td className="px-4 py-2">12 mois</td>
+                    <td className="px-4 py-2">Persistent</td>
                   </tr>
                 </tbody>
               </table>
@@ -188,45 +164,9 @@ export default function Cookies() {
               2.3 Cookies analytiques
             </h3>
             <p className="mt-2">
-              Ces cookies nous permettent de comprendre comment les visiteurs
-              utilisent notre site afin de l&apos;améliorer. Les données sont
-              anonymisées.
-            </p>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="px-4 py-2 text-left font-semibold">Nom</th>
-                    <th className="px-4 py-2 text-left font-semibold">
-                      Finalité
-                    </th>
-                    <th className="px-4 py-2 text-left font-semibold">Durée</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr>
-                    <td className="px-4 py-2 font-mono text-xs">_ga</td>
-                    <td className="px-4 py-2">
-                      Google Analytics - Identification
-                    </td>
-                    <td className="px-4 py-2">24 mois</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-mono text-xs">_gid</td>
-                    <td className="px-4 py-2">Google Analytics - Session</td>
-                    <td className="px-4 py-2">24 heures</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-mono text-xs">_gat</td>
-                    <td className="px-4 py-2">Google Analytics - Limitation</td>
-                    <td className="px-4 py-2">1 minute</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-2 text-sm text-slate-500">
-              Nous utilisons Google Analytics avec l&apos;option
-              d&apos;anonymisation des adresses IP activée.
+              CertPilot n&apos;utilise actuellement <strong>aucun outil
+              d&apos;analyse tiers</strong> (Google Analytics ou équivalent).
+              Aucun cookie de mesure d&apos;audience n&apos;est déposé.
             </p>
           </section>
 
@@ -239,10 +179,11 @@ export default function Cookies() {
               <li>
                 <strong>Cookies strictement nécessaires :</strong> déposés sans
                 consentement car indispensables au fonctionnement du service
+                (authentification, sécurité CSRF)
               </li>
               <li>
-                <strong>Autres cookies :</strong> déposés uniquement après
-                obtention de votre consentement
+                <strong>Stockage local :</strong> utilisé sans transmission
+                à nos serveurs, uniquement pour vos préférences d&apos;interface
               </li>
             </ul>
           </section>
@@ -327,26 +268,10 @@ export default function Cookies() {
               5. Cookies tiers
             </h2>
             <p className="mt-4">
-              Certains services tiers peuvent déposer des cookies sur votre
-              terminal :
-            </p>
-            <ul className="mt-2 ml-6 list-disc space-y-1">
-              <li>
-                <strong>Google Analytics</strong> : mesure d&apos;audience -{" "}
-                <a
-                  href="https://policies.google.com/privacy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-emerald-600 hover:underline"
-                >
-                  Politique de confidentialité
-                </a>
-              </li>
-            </ul>
-            <p className="mt-2">
-              Nous ne sommes pas responsables des cookies déposés par ces
-              services tiers. Nous vous invitons à consulter leurs politiques de
-              confidentialité respectives.
+              CertPilot n&apos;intègre actuellement aucun service tiers déposant
+              des cookies (pas de Google Analytics, pas de réseaux sociaux,
+              pas de publicité). Les seuls cookies présents sont les cookies
+              techniques de session listés ci-dessus.
             </p>
           </section>
 
