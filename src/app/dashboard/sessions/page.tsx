@@ -18,7 +18,9 @@ import {
   Loader2,
   Mail,
   MapPin,
+  Pencil,
   Plus,
+  Save,
   Search,
   Trash2,
   Users,
@@ -58,6 +60,7 @@ interface TrainingSession {
   isIntraCompany: boolean;
   startDate: string;
   endDate: string;
+  location: string | null;
   status: string;
   convocationsSentAt: string | null;
   trainingCost: number | null;
@@ -108,6 +111,11 @@ export default function SessionsPage() {
     null,
   );
   const [companyName, setCompanyName] = useState("Entreprise");
+  const [editingLocation, setEditingLocation] = useState<string | null>(null);
+  const [locationInput, setLocationInput] = useState("");
+  const [savingLocation, setSavingLocation] = useState(false);
+  const [locationPromptSession, setLocationPromptSession] = useState<TrainingSession | null>(null);
+  const [locationPromptInput, setLocationPromptInput] = useState("");
   const { confirm, ConfirmDialog } = useConfirm();
 
   useEffect(() => {
@@ -176,6 +184,34 @@ export default function SessionsPage() {
     }
   };
 
+  const getSessionLocation = (session: TrainingSession): string | null => {
+    if (session.location) return session.location;
+    if (session.trainingCenter) return `${session.trainingCenter.name}, ${session.trainingCenter.city}`;
+    return null;
+  };
+
+  const saveLocation = async (sessionId: string, location: string) => {
+    setSavingLocation(true);
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ location }),
+      });
+      if (response.ok) {
+        toast.success("Lieu mis à jour", "Le lieu de la session a été enregistré");
+        setEditingLocation(null);
+        fetchSessions();
+      } else {
+        toast.error("Erreur", "Impossible de mettre à jour le lieu");
+      }
+    } catch {
+      toast.error("Erreur", "Une erreur est survenue");
+    } finally {
+      setSavingLocation(false);
+    }
+  };
+
   const sendConvocations = async (session: TrainingSession) => {
     setSendingConvocations(session.id);
 
@@ -187,10 +223,8 @@ export default function SessionsPage() {
         email: null as string | null,
       }));
 
-      // Déterminer le lieu
-      const location = session.trainingCenter
-        ? `${session.trainingCenter.name}, ${session.trainingCenter.city}`
-        : "À définir";
+      // Déterminer le lieu (priorité : location manuelle > centre de formation)
+      const location = getSessionLocation(session) || "À définir";
 
       // Déterminer les horaires (utiliser les heures par défaut si non renseignées)
       const startTime = "09:00";
@@ -509,7 +543,11 @@ export default function SessionsPage() {
                           {session.trainingCenter?.name || "Centre non défini"}
                           <span className="text-gray-300">•</span>
                           <MapPin className="h-4 w-4" />
-                          {session.trainingCenter?.city || "-"}
+                          {getSessionLocation(session) || (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                              Lieu à compléter
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -590,6 +628,70 @@ export default function SessionsPage() {
                       </div>
                     </div>
 
+                    {/* Lieu de formation */}
+                    <div className="mb-4 rounded-lg bg-white p-3 shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                          Lieu de formation
+                        </p>
+                        {editingLocation !== session.id && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingLocation(session.id);
+                              setLocationInput(session.location || "");
+                            }}
+                            className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
+                          >
+                            <Pencil className="h-3 w-3" />
+                            Modifier
+                          </button>
+                        )}
+                      </div>
+                      {editingLocation === session.id ? (
+                        <div className="mt-2 flex items-center gap-2">
+                          <Input
+                            placeholder="Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris"
+                            value={locationInput}
+                            onChange={(e) => setLocationInput(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex-1 text-sm"
+                          />
+                          <Button
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (locationInput.trim()) {
+                                saveLocation(session.id, locationInput.trim());
+                              }
+                            }}
+                            disabled={!locationInput.trim() || savingLocation}
+                          >
+                            {savingLocation ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Save className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingLocation(null);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className={`mt-1 text-sm ${getSessionLocation(session) ? "text-gray-900" : "text-amber-600 font-medium"}`}>
+                          {getSessionLocation(session) || "Aucun lieu renseigné — à compléter avant l'envoi des convocations"}
+                        </p>
+                      )}
+                    </div>
+
                     {/* Liste des participants */}
                     <div className="mb-4">
                       <p className="mb-2 text-sm font-medium text-gray-700">
@@ -644,6 +746,12 @@ export default function SessionsPage() {
                             size="sm"
                             onClick={async (e) => {
                               e.stopPropagation();
+                              const loc = getSessionLocation(session);
+                              if (!loc) {
+                                setLocationPromptSession(session);
+                                setLocationPromptInput("");
+                                return;
+                              }
                               if (session.convocationsSentAt) {
                                 const ok = await confirm({
                                   title: "Renvoyer les convocations",
@@ -739,6 +847,74 @@ export default function SessionsPage() {
           })
         )}
       </div>
+
+      {/* Modale : lieu requis avant envoi convocations */}
+      {locationPromptSession && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            onClick={() => setLocationPromptSession(null)}
+          />
+          <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-amber-500" />
+              Lieu requis
+            </h3>
+            <p className="mt-2 text-sm text-gray-600">
+              Veuillez renseigner le lieu de formation avant d&apos;envoyer les convocations.
+            </p>
+            <Input
+              className="mt-4"
+              placeholder="Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris"
+              value={locationPromptInput}
+              onChange={(e) => setLocationPromptInput(e.target.value)}
+              autoFocus
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setLocationPromptSession(null)}
+              >
+                Annuler
+              </Button>
+              <Button
+                disabled={!locationPromptInput.trim() || savingLocation}
+                onClick={async () => {
+                  const session = locationPromptSession;
+                  setSavingLocation(true);
+                  try {
+                    const response = await fetch(`/api/sessions/${session.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ location: locationPromptInput.trim() }),
+                    });
+                    if (response.ok) {
+                      setLocationPromptSession(null);
+                      await fetchSessions();
+                      // Recharger la session avec le lieu mis à jour puis envoyer
+                      const updatedSession = { ...session, location: locationPromptInput.trim() };
+                      sendConvocations(updatedSession);
+                    } else {
+                      toast.error("Erreur", "Impossible de sauvegarder le lieu");
+                    }
+                  } catch {
+                    toast.error("Erreur", "Une erreur est survenue");
+                  } finally {
+                    setSavingLocation(false);
+                  }
+                }}
+              >
+                {savingLocation ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Mail className="mr-2 h-4 w-4" />
+                )}
+                Enregistrer et envoyer
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
 
       <ConfirmDialog />
     </div>

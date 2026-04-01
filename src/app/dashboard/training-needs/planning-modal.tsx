@@ -136,6 +136,7 @@ export default function PlanningModal({
   );
   const [selectedMode, setSelectedMode] = useState<"INTER" | "INTRA">("INTER");
   const [sessionDate, setSessionDate] = useState("");
+  const [sessionLocation, setSessionLocation] = useState("");
   const [expandedCenter, setExpandedCenter] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [constraintWarnings, setConstraintWarnings] = useState<
@@ -189,6 +190,7 @@ export default function PlanningModal({
       setSelectedCenter(null);
       setError(null);
       setSessionDate("");
+      setSessionLocation("");
       setConstraintWarnings([]);
     }
   }, [isOpen, needs]);
@@ -293,6 +295,7 @@ export default function PlanningModal({
           isIntraCompany: selectedCenter ? selectedMode === "INTRA" : false,
           startDate: sessionDate,
           endDate: sessionDate, // Pour simplifier, même date
+          location: sessionLocation || null,
           trainingCost,
           costPerPerson,
           totalAbsenceCost: comparison?.employees.totalAbsenceCost,
@@ -1134,6 +1137,24 @@ export default function PlanningModal({
                     </p>
                   </div>
                 )}
+              </div>
+
+              {/* Lieu (optionnel) */}
+              <div>
+                <Label htmlFor="sessionLocation" className="text-gray-700">
+                  Lieu de formation <span className="text-gray-400 font-normal">(optionnel)</span>
+                </Label>
+                <Input
+                  id="sessionLocation"
+                  type="text"
+                  placeholder="Ex: Salle B - Bâtiment 3, 15 rue de la Paix, Paris"
+                  value={sessionLocation}
+                  onChange={(e) => setSessionLocation(e.target.value)}
+                  className="mt-1"
+                />
+                <p className="mt-1 text-xs text-gray-400">
+                  Vous pourrez aussi le renseigner plus tard depuis la page Sessions.
+                </p>
               </div>
 
               {/* Liste des employés */}

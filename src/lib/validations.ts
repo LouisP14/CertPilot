@@ -233,7 +233,7 @@ export const createSessionSchema = z.object({
   endDate: z.string().optional(),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  location: z.string().optional(),
+  location: z.string().nullable().optional(),
   isIntraCompany: z.boolean().optional(),
   trainingMode: z.string().optional(),
   minParticipants: z.union([z.string(), z.number()]).optional(),
