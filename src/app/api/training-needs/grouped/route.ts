@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, getEmployeeFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -14,13 +14,14 @@ export async function GET() {
     if (!session.user.companyId) {
       return NextResponse.json([]);
     }
-    const companyId = session.user.companyId;
 
-    // Récupérer tous les besoins en attente (employés actifs uniquement)
+    const employeeFilter = await getEmployeeFilter();
+
+    // Récupérer tous les besoins en attente (filtrés selon le rôle)
     const needs = await prisma.trainingNeed.findMany({
       where: {
         status: "PENDING",
-        employee: { companyId, isActive: true },
+        employee: employeeFilter,
       },
       include: {
         employee: {

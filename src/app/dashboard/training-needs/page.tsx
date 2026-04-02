@@ -621,10 +621,12 @@ export default function TrainingNeedsPage() {
                             : `${group.totalEmployees} employés concernés`}
                       </p>
                     </div>
-                    <Button onClick={() => openPlanningModal(group)}>
-                      <UserCheck className="mr-2 h-4 w-4" />
-                      Planifier une session
-                    </Button>
+                    {!isManager && (
+                      <Button onClick={() => openPlanningModal(group)}>
+                        <UserCheck className="mr-2 h-4 w-4" />
+                        Planifier une session
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               )}

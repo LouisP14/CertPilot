@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getCompanyFilter, getEmployeeFilter } from "@/lib/auth";
+import { auth, getCompanyFilter, getEmployeeFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import {
   AlertTriangle,
@@ -140,7 +140,7 @@ async function getStats() {
       category: true,
       service: true,
       certificates: {
-        where: { isArchived: false, employee: { isActive: true } },
+        where: { isArchived: false, employee: employeeFilter },
         select: { employeeId: true },
       },
     },
@@ -310,7 +310,27 @@ async function getStats() {
 }
 
 export default async function DashboardPage() {
-  const stats = await getStats();
+  const [stats, session] = await Promise.all([getStats(), auth()]);
+  const isManager = session?.user?.role === "MANAGER";
+  const managedServices = session?.user?.managedServices ?? [];
+
+  // Pour MANAGER : filtrer la couverture par service à ses services uniquement
+  const filteredServiceCoverage = isManager
+    ? stats.serviceCoverage.filter((s) => managedServices.includes(s.name))
+    : stats.serviceCoverage;
+
+  // Pour MANAGER : filtrer les formations à celles de son service (ou "Tous")
+  const filteredFormationCoverage = isManager
+    ? stats.formationCoverage.filter((f) => {
+        if (!f.service) return true; // formations sans service = applicables à tous
+        const ftServices = f.service.split(",").map((s: string) => s.trim().toLowerCase());
+        const isTous = ftServices.some((s: string) => s === "tous" || s === "all");
+        if (isTous) return true;
+        return managedServices.some((ms) =>
+          ftServices.includes(ms.toLowerCase()),
+        );
+      })
+    : stats.formationCoverage;
 
   return (
     <div className="space-y-6">
@@ -397,14 +417,14 @@ export default async function DashboardPage() {
       {/* Two columns layout */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Coverage by Formation Type */}
-        <FormationCoverage formations={stats.formationCoverage} />
+        <FormationCoverage formations={filteredFormationCoverage} />
 
         {/* Coverage by Service - Conformité */}
-        <ServiceCoverage services={stats.serviceCoverage} />
+        <ServiceCoverage services={filteredServiceCoverage} />
       </div>
 
-      {/* Budget Widget */}
-      <BudgetWidget />
+      {/* Budget Widget - masqué pour les managers */}
+      {!isManager && <BudgetWidget />}
 
       {/* Alerts Section */}
       <Card>
