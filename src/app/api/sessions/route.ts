@@ -28,6 +28,19 @@ export async function GET(request: NextRequest) {
       companyId: session.user.companyId,
     };
 
+    // MANAGER : uniquement les sessions où au moins un de ses employés participe
+    if (session.user.role === "MANAGER") {
+      const managedServices = session.user.managedServices ?? [];
+      where.attendees = {
+        some: {
+          employee: {
+            isActive: true,
+            department: { in: managedServices },
+          },
+        },
+      };
+    }
+
     const sessions = await prisma.trainingSession.findMany({
       where,
       include: {

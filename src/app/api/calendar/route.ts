@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, getEmployeeFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
       });
     }
     const companyId = session.user.companyId;
+    const employeeFilter = await getEmployeeFilter();
+    const managedServices = session.user.managedServices ?? [];
+    const isManager = session.user.role === "MANAGER";
 
     const { searchParams } = new URL(request.url);
     const year = parseInt(
@@ -43,17 +46,21 @@ export async function GET(request: NextRequest) {
     }
 
     // 1. Sessions de formation planifiées
+    const sessionsWhere: Record<string, unknown> = {
+      formationType: { companyId },
+      startDate: { gte: startDate, lte: endDate },
+      status: { in: ["PLANNED", "CONFIRMED", "IN_PROGRESS"] },
+    };
+    // MANAGER : uniquement les sessions où au moins un de ses employés participe
+    if (isManager) {
+      sessionsWhere.attendees = {
+        some: {
+          employee: { isActive: true, department: { in: managedServices } },
+        },
+      };
+    }
     const sessions = await prisma.trainingSession.findMany({
-      where: {
-        formationType: { companyId },
-        startDate: {
-          gte: startDate,
-          lte: endDate,
-        },
-        status: {
-          in: ["PLANNED", "CONFIRMED", "IN_PROGRESS"],
-        },
-      },
+      where: sessionsWhere,
       include: {
         formationType: {
           select: {
@@ -91,11 +98,11 @@ export async function GET(request: NextRequest) {
       orderBy: { startDate: "asc" },
     });
 
-    // 2. Expirations de certificats (uniquement employés actifs)
+    // 2. Expirations de certificats (filtrées selon le rôle)
     const expirations = await prisma.certificate.findMany({
       where: {
         isArchived: false,
-        employee: { companyId, isActive: true },
+        employee: employeeFilter,
         expiryDate: {
           gte: startDate,
           lte: endDate,
@@ -246,14 +253,14 @@ export async function GET(request: NextRequest) {
       prisma.certificate.count({
         where: {
           isArchived: false,
-          employee: { companyId, isActive: true },
+          employee: employeeFilter,
           expiryDate: { gte: today, lte: in30Days },
         },
       }),
       prisma.certificate.count({
         where: {
           isArchived: false,
-          employee: { companyId, isActive: true },
+          employee: employeeFilter,
           expiryDate: { lt: today },
         },
       }),

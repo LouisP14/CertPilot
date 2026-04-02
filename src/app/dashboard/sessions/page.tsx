@@ -27,6 +27,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -104,6 +105,8 @@ const STATUS_CONFIG: Record<
 };
 
 export default function SessionsPage() {
+  const { data: authSession } = useSession();
+  const isManager = authSession?.user?.role === "MANAGER";
   const [sessions, setSessions] = useState<TrainingSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -380,12 +383,14 @@ export default function SessionsPage() {
             Gestion des sessions planifiées et confirmées
           </p>
         </div>
-        <Link href="/dashboard/training-needs">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvelle session
-          </Button>
-        </Link>
+        {!isManager && (
+          <Link href="/dashboard/training-needs">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nouvelle session
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Stats */}
@@ -496,14 +501,18 @@ export default function SessionsPage() {
               <Calendar className="mx-auto h-12 w-12 text-gray-300" />
               <p className="mt-4 text-gray-500">Aucune session trouvée</p>
               <p className="text-sm text-gray-400">
-                Planifiez une session depuis les besoins de formation
+                {isManager
+                  ? "Aucune session planifiée pour votre service"
+                  : "Planifiez une session depuis les besoins de formation"}
               </p>
-              <Link href="/dashboard/training-needs">
-                <Button className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Voir les besoins
-                </Button>
-              </Link>
+              {!isManager && (
+                <Link href="/dashboard/training-needs">
+                  <Button className="mt-4">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Voir les besoins
+                  </Button>
+                </Link>
+              )}
             </CardContent>
           </Card>
         ) : (
@@ -637,7 +646,7 @@ export default function SessionsPage() {
                           <MapPin className="h-4 w-4 text-gray-400" />
                           Lieu de formation
                         </p>
-                        {editingLocation !== session.id && (
+                        {!isManager && editingLocation !== session.id && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -728,7 +737,8 @@ export default function SessionsPage() {
                       </div>
                     </div>
 
-                    {/* Actions */}
+                    {/* Actions - masquées pour MANAGER (lecture seule) */}
+                    {!isManager && (
                     <div className="flex items-center justify-between border-t pt-4">
                       <div className="flex gap-2">
                         {session.status === "PLANNED" && (
@@ -842,6 +852,7 @@ export default function SessionsPage() {
                         </Button>
                       </div>
                     </div>
+                    )}
                   </CardContent>
                 )}
               </Card>
