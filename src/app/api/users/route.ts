@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { auditCreate } from "@/lib/audit";
 import { sendManagerInvitationEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
@@ -96,6 +97,15 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.companyId },
       select: { name: true },
     });
+
+    // Audit Trail
+    await auditCreate(
+      "USER",
+      user.id,
+      user.name,
+      { email: user.email, role: "MANAGER", managedServices },
+      { id: session.user.id, name: session.user.name || undefined, email: session.user.email || undefined, companyId: session.user.companyId },
+    );
 
     // Envoyer l'email d'invitation
     await sendManagerInvitationEmail({

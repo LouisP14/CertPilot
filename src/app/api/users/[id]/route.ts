@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { auditDelete, auditUpdate } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -51,6 +52,25 @@ export async function PUT(
       },
     });
 
+    // Audit Trail
+    const auditor = { id: session.user.id, name: session.user.name || undefined, email: session.user.email || undefined, companyId: session.user.companyId };
+    await auditUpdate(
+      "USER",
+      updated.id,
+      updated.name,
+      {
+        managedServices: target.managedServices,
+        isActive: target.isActive,
+        name: target.name,
+      },
+      {
+        managedServices: updated.managedServices,
+        isActive: updated.isActive,
+        name: updated.name,
+      },
+      auditor,
+    );
+
     return NextResponse.json(updated);
   } catch (error) {
     console.error("PUT users/[id] error:", error);
@@ -85,6 +105,15 @@ export async function DELETE(
     }
 
     await prisma.user.delete({ where: { id } });
+
+    // Audit Trail
+    await auditDelete(
+      "USER",
+      id,
+      target.name,
+      { email: target.email, role: target.role, managedServices: target.managedServices },
+      { id: session.user.id, name: session.user.name || undefined, email: session.user.email || undefined, companyId: session.user.companyId },
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {
