@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getCompanyFilter } from "@/lib/auth";
+import { auth, getCompanyFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { GraduationCap } from "lucide-react";
 import type { Metadata } from "next";
@@ -29,6 +29,8 @@ async function getFormationTypes() {
 }
 
 export default async function FormationsPage() {
+  const session = await auth();
+  const isManager = session?.user?.role === "MANAGER";
   const formationTypes = await getFormationTypes();
 
   // Transformer les données pour le composant client
@@ -52,7 +54,7 @@ export default async function FormationsPage() {
             Gérer les types de formations et habilitations
           </p>
         </div>
-        <AddFormationTypeDialog />
+        {!isManager && <AddFormationTypeDialog />}
       </div>
 
       <Card>
@@ -68,7 +70,7 @@ export default async function FormationsPage() {
               <p>Aucun type de formation configuré.</p>
             </div>
           ) : (
-            <FormationsTable formations={formations} />
+            <FormationsTable formations={formations} isReadOnly={isManager} />
           )}
         </CardContent>
       </Card>

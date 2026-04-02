@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,6 +82,8 @@ interface GroupedNeeds {
 }
 
 export default function TrainingNeedsPage() {
+  const { data: session } = useSession();
+  const isManager = session?.user?.role === "MANAGER";
   const [groupedNeeds, setGroupedNeeds] = useState<GroupedNeeds[]>([]);
   const [loading, setLoading] = useState(true);
   const [detecting, setDetecting] = useState(false);
@@ -257,19 +260,21 @@ export default function TrainingNeedsPage() {
             Détection automatique des formations à renouveler
           </p>
         </div>
-        <Button onClick={detectNeeds} disabled={detecting}>
-          {detecting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Analyse en cours...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Détecter les besoins
-            </>
-          )}
-        </Button>
+        {!isManager && (
+          <Button onClick={detectNeeds} disabled={detecting}>
+            {detecting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Analyse en cours...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Détecter les besoins
+              </>
+            )}
+          </Button>
+        )}
         <p className="text-xs text-gray-400 mt-1">
           Détection automatique chaque matin à 7h
         </p>
@@ -406,18 +411,22 @@ export default function TrainingNeedsPage() {
               <p className="mt-4 text-gray-500">
                 Aucun besoin de formation détecté
               </p>
-              <p className="text-sm text-gray-400">
-                Cliquez sur "Détecter les besoins" pour analyser les certificats
-                expirant dans les 90 prochains jours
-              </p>
-              <Button
-                className="mt-4"
-                onClick={detectNeeds}
-                disabled={detecting}
-              >
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Lancer la détection
-              </Button>
+              {!isManager && (
+                <>
+                  <p className="text-sm text-gray-400">
+                    Cliquez sur &quot;Détecter les besoins&quot; pour analyser les certificats
+                    expirant dans les 90 prochains jours
+                  </p>
+                  <Button
+                    className="mt-4"
+                    onClick={detectNeeds}
+                    disabled={detecting}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Lancer la détection
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         ) : (

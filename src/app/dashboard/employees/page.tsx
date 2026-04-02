@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { getCompanyFilter } from "@/lib/auth";
+import { auth, getEmployeeFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { getCertificateStatus } from "@/lib/utils";
 import { AlertCircle, Archive, Plus, Users } from "lucide-react";
@@ -10,9 +10,9 @@ import { EmployeesList } from "./employees-list";
 export const metadata: Metadata = { title: "Employés" };
 
 async function getEmployees() {
-  const companyFilter = await getCompanyFilter();
+  const employeeFilter = await getEmployeeFilter();
   const employees = await prisma.employee.findMany({
-    where: { isActive: true, ...companyFilter },
+    where: employeeFilter,
     include: {
       manager: true,
       certificates: {
@@ -61,20 +61,21 @@ async function getEmployees() {
 }
 
 async function getArchivedCount() {
-  const companyFilter = await getCompanyFilter();
-  if (!companyFilter?.companyId) return 0;
+  const employeeFilter = await getEmployeeFilter();
+  if (!employeeFilter?.companyId) return 0;
 
   return prisma.employee.count({
-    where: { isActive: false, ...companyFilter },
+    where: { ...employeeFilter, isActive: false },
   });
 }
 
 async function getEmployeeLimit() {
-  const companyFilter = await getCompanyFilter();
-  if (!companyFilter?.companyId) return { limit: null, plan: null };
+  const employeeFilter = await getEmployeeFilter();
+  if (!employeeFilter?.companyId) return { limit: null, plan: null };
+  const companyFilter = { companyId: employeeFilter.companyId };
 
   const company = await prisma.company.findUnique({
-    where: { id: companyFilter.companyId },
+    where: { id: companyFilter!.companyId },
     select: { employeeLimit: true, subscriptionPlan: true },
   });
 
@@ -85,6 +86,9 @@ async function getEmployeeLimit() {
 }
 
 export default async function EmployeesPage() {
+  const session = await auth();
+  const isManager = session?.user?.role === "MANAGER";
+
   const [employees, { limit, plan }, archivedCount] = await Promise.all([
     getEmployees(),
     getEmployeeLimit(),
@@ -128,18 +132,20 @@ export default async function EmployeesPage() {
             </p>
           )}
         </div>
-        {atLimit ? (
-          <Button disabled title="Limite d'employés atteinte">
-            <Plus className="mr-2 h-4 w-4" />
-            Nouvel employé
-          </Button>
-        ) : (
-          <Link href="/dashboard/employees/new">
-            <Button>
+        {!isManager && (
+          atLimit ? (
+            <Button disabled title="Limite d'employés atteinte">
               <Plus className="mr-2 h-4 w-4" />
               Nouvel employé
             </Button>
-          </Link>
+          ) : (
+            <Link href="/dashboard/employees/new">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Nouvel employé
+              </Button>
+            </Link>
+          )
         )}
       </div>
 

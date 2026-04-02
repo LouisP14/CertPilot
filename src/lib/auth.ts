@@ -159,12 +159,10 @@ export async function getEmployeeFilter() {
     return { companyId: "no-company-access", isActive: true };
   }
   const base = { companyId: session.user.companyId, isActive: true };
-  if (
-    session.user.role === "MANAGER" &&
-    session.user.managedServices &&
-    session.user.managedServices.length > 0
-  ) {
-    return { ...base, department: { in: session.user.managedServices } };
+  if (session.user.role === "MANAGER") {
+    const services = session.user.managedServices ?? [];
+    // MANAGER with no assigned services sees no employees
+    return { ...base, department: { in: services } };
   }
   return base;
 }

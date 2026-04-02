@@ -25,6 +25,7 @@ interface FormationType {
 
 interface FormationsTableProps {
   formations: FormationType[];
+  isReadOnly?: boolean;
 }
 
 type SortField =
@@ -50,7 +51,7 @@ function getServiceColor(service: string | null): string {
   return serviceColors[service] || "border-gray-300 bg-gray-100 text-gray-800";
 }
 
-export function FormationsTable({ formations }: FormationsTableProps) {
+export function FormationsTable({ formations, isReadOnly = false }: FormationsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -268,13 +269,13 @@ export function FormationsTable({ formations }: FormationsTableProps) {
                   <SortIcon field="certificateCount" />
                 </button>
               </th>
-              <th className="pb-3 font-medium text-right">Actions</th>
+              {!isReadOnly && <th className="pb-3 font-medium text-right">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {filteredFormations.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-gray-500">
+                <td colSpan={isReadOnly ? 5 : 6} className="py-8 text-center text-gray-500">
                   Aucune formation ne correspond aux critères de recherche.
                 </td>
               </tr>
@@ -329,9 +330,11 @@ export function FormationsTable({ formations }: FormationsTableProps) {
                       {ft.certificateCount > 1 ? "s" : ""}
                     </Badge>
                   </td>
-                  <td className="py-3">
-                    <FormationActions formation={ft} />
-                  </td>
+                  {!isReadOnly && (
+                    <td className="py-3">
+                      <FormationActions formation={ft} />
+                    </td>
+                  )}
                 </tr>
               ))
             )}
