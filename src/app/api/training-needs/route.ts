@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, getEmployeeFilter } from "@/lib/auth";
 import { detectTrainingNeeds } from "@/lib/detect-training-needs";
 import prisma from "@/lib/prisma";
 import { parseBody, generateNeedsSchema } from "@/lib/validations";
@@ -16,14 +16,13 @@ export async function GET(request: NextRequest) {
     if (!session.user.companyId) {
       return NextResponse.json([]);
     }
-    const companyId = session.user.companyId;
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status"); // PENDING, PLANNED, COMPLETED, CANCELLED
     const formationTypeId = searchParams.get("formationTypeId");
 
+    const employeeFilter = await getEmployeeFilter();
     const where: Record<string, unknown> = {
-      employee: { companyId, isActive: true },
+      employee: employeeFilter,
     };
     if (status) where.status = status;
     if (formationTypeId) where.formationTypeId = formationTypeId;

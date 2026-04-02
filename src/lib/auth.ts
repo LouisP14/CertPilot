@@ -76,6 +76,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           description: `Connexion de ${user.name} (${user.email})`,
         }).catch(() => {}); // Fire and forget
 
+        // Bloquer si compte désactivé
+        if (!user.isActive) {
+          throw new Error("Ce compte a été désactivé. Contactez votre administrateur.");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -83,6 +88,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           role: user.role,
           companyId: user.companyId,
           mustChangePassword: user.mustChangePassword,
+          managedServices: user.managedServices,
         };
       },
     }),
@@ -94,6 +100,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.companyId = user.companyId;
         token.mustChangePassword = user.mustChangePassword;
+        token.managedServices = user.managedServices;
       }
       // Mettre à jour le token quand session.update() est appelé côté client
       if (trigger === "update" && updateData) {
@@ -107,6 +114,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.companyId = token.companyId as string | null;
         session.user.mustChangePassword = token.mustChangePassword as boolean;
+        session.user.managedServices = (token.managedServices as string[]) ?? [];
         // Propager name depuis le token (mis à jour via update())
         if (token.name) session.user.name = token.name as string;
       }
@@ -142,6 +150,23 @@ export async function getCompanyFilter() {
 
   // Utilisateur sans company - ne doit rien voir
   return { companyId: "no-company-access" };
+}
+
+// Helper pour obtenir le filtre employé selon le rôle (MANAGER = restreint à ses services)
+export async function getEmployeeFilter() {
+  const session = await auth();
+  if (!session?.user?.companyId) {
+    return { companyId: "no-company-access", isActive: true };
+  }
+  const base = { companyId: session.user.companyId, isActive: true };
+  if (
+    session.user.role === "MANAGER" &&
+    session.user.managedServices &&
+    session.user.managedServices.length > 0
+  ) {
+    return { ...base, department: { in: session.user.managedServices } };
+  }
+  return base;
 }
 
 // Helper pour vérifier si l'utilisateur a accès à une ressource

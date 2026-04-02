@@ -1017,3 +1017,86 @@ www.certpilot.eu
     `,
   });
 }
+
+// Email : Invitation d'un manager par l'admin
+export async function sendManagerInvitationEmail(params: {
+  to: string;
+  managerName: string;
+  companyName: string;
+  tempPassword: string;
+  managedServices: string[];
+}) {
+  const { to, managerName, companyName, tempPassword, managedServices } = params;
+  const loginUrl = `${getAppBaseUrl()}/login`;
+  const servicesLabel = managedServices.join(", ");
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: `Votre accès CertPilot — ${companyName}`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;">
+  <div style="max-width:600px;margin:32px auto;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="background:linear-gradient(135deg,#173B56 0%,#1e4d73 100%);padding:32px 40px;">
+      <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:700;">CertPilot</h1>
+      <p style="margin:4px 0 0;color:#93c5fd;font-size:14px;">Gestion des habilitations</p>
+    </div>
+    <div style="padding:40px;">
+      <h2 style="margin:0 0 8px;color:#173B56;font-size:20px;">Bonjour ${managerName},</h2>
+      <p style="color:#475569;font-size:15px;line-height:1.6;margin:0 0 24px;">
+        Votre accès manager CertPilot a été créé par l'administrateur de <strong>${companyName}</strong>.
+      </p>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:20px;margin-bottom:24px;">
+        <p style="margin:0 0 8px;font-size:14px;color:#166534;font-weight:600;">Services supervisés :</p>
+        <p style="margin:0;font-size:15px;color:#14532d;">${servicesLabel}</p>
+      </div>
+
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:20px;margin-bottom:24px;">
+        <p style="margin:0 0 12px;font-size:14px;color:#64748b;font-weight:600;">Vos identifiants de connexion :</p>
+        <p style="margin:0 0 6px;font-size:14px;color:#334155;"><strong>Email :</strong> ${to}</p>
+        <p style="margin:0;font-size:14px;color:#334155;"><strong>Mot de passe temporaire :</strong> <span style="font-family:monospace;background:#e2e8f0;padding:2px 8px;border-radius:4px;">${tempPassword}</span></p>
+      </div>
+
+      <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:14px 20px;margin-bottom:28px;">
+        <p style="margin:0;font-size:13px;color:#92400e;">
+          🔒 <strong>Changez votre mot de passe</strong> dès votre première connexion.
+        </p>
+      </div>
+
+      <a href="${loginUrl}" style="display:inline-block;background:#173B56;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600;">
+        Se connecter à CertPilot →
+      </a>
+
+      <p style="margin:32px 0 0;font-size:13px;color:#94a3b8;">
+        En tant que manager, vous pouvez consulter les formations et habilitations de vos équipes en lecture seule.
+      </p>
+    </div>
+    <div style="background:#f8fafc;padding:20px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#94a3b8;">© ${new Date().getFullYear()} CertPilot — <a href="https://www.certpilot.eu" style="color:#64748b;">certpilot.eu</a></p>
+    </div>
+  </div>
+</body>
+</html>`,
+    text: `Bonjour ${managerName},
+
+Votre accès manager CertPilot a été créé pour ${companyName}.
+
+Services supervisés : ${servicesLabel}
+
+Identifiants :
+Email : ${to}
+Mot de passe temporaire : ${tempPassword}
+
+Changez votre mot de passe dès la première connexion.
+
+Se connecter : ${loginUrl}
+
+L'équipe CertPilot
+www.certpilot.eu
+    `,
+  });
+}

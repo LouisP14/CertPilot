@@ -23,17 +23,17 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from "./sidebar-context";
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Employés", href: "/dashboard/employees", icon: Users },
-  { name: "Formations", href: "/dashboard/formations", icon: Award },
-  { name: "Besoins", href: "/dashboard/training-needs", icon: Target },
-  { name: "Sessions", href: "/dashboard/sessions", icon: CalendarCheck },
-  { name: "Centres", href: "/dashboard/training-centers", icon: Building2 },
-  { name: "Convocations", href: "/dashboard/convocations", icon: Mail },
-  { name: "Vue Calendaire", href: "/dashboard/calendar", icon: Calendar },
-  { name: "Import / Export", href: "/dashboard/export", icon: FileText },
-  { name: "Audit Trail", href: "/dashboard/audit", icon: History },
-  { name: "Paramètres", href: "/dashboard/settings", icon: Settings },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, managerAllowed: true },
+  { name: "Employés", href: "/dashboard/employees", icon: Users, managerAllowed: true },
+  { name: "Formations", href: "/dashboard/formations", icon: Award, managerAllowed: true },
+  { name: "Besoins", href: "/dashboard/training-needs", icon: Target, managerAllowed: true },
+  { name: "Sessions", href: "/dashboard/sessions", icon: CalendarCheck, managerAllowed: false },
+  { name: "Centres", href: "/dashboard/training-centers", icon: Building2, managerAllowed: false },
+  { name: "Convocations", href: "/dashboard/convocations", icon: Mail, managerAllowed: false },
+  { name: "Vue Calendaire", href: "/dashboard/calendar", icon: Calendar, managerAllowed: false },
+  { name: "Import / Export", href: "/dashboard/export", icon: FileText, managerAllowed: false },
+  { name: "Audit Trail", href: "/dashboard/audit", icon: History, managerAllowed: false },
+  { name: "Paramètres", href: "/dashboard/settings", icon: Settings, managerAllowed: false },
 ];
 
 interface SidebarProps {
@@ -44,8 +44,11 @@ export function Sidebar({ userRole }: SidebarProps) {
   const pathname = usePathname();
   const { isOpen, close } = useSidebar();
 
-  // Afficher "Administration" uniquement pour les SUPER_ADMIN
   const isSuperAdmin = userRole === "SUPER_ADMIN";
+  const isManager = userRole === "MANAGER";
+  const visibleNavigation = navigation.filter((item) =>
+    isManager ? item.managerAllowed : true
+  );
 
   return (
     <>
@@ -83,7 +86,7 @@ export function Sidebar({ userRole }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="relative z-10 flex-1 space-y-1 px-3 py-4 overflow-y-auto scrollbar-none">
-        {navigation.map((item) => {
+        {visibleNavigation.map((item) => {
           const isActive =
             item.href === "/dashboard"
               ? pathname === "/dashboard"

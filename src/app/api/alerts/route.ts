@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, getEmployeeFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -13,16 +13,15 @@ export async function GET() {
     if (!session.user.companyId) {
       return NextResponse.json([]);
     }
-    const companyId = session.user.companyId;
 
     const now = new Date();
     const in90Days = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+    const employeeFilter = await getEmployeeFilter();
 
-    // Get certificates expiring within 90 days or already expired (uniquement employés actifs)
     const certificates = await prisma.certificate.findMany({
       where: {
         isArchived: false,
-        employee: { companyId, isActive: true },
+        employee: employeeFilter,
         expiryDate: {
           not: null,
           lte: in90Days,

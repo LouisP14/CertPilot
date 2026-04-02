@@ -14,6 +14,7 @@ import {
   ChevronDown,
   TrendingUp,
   Users,
+  UserCog,
 } from "lucide-react";
 import { useState } from "react";
 import { ReferenceManager } from "./reference-manager";
@@ -23,6 +24,7 @@ import {
   PlanningConstraintsForm,
   PriorityForm,
 } from "./settings-forms";
+import { UsersManager } from "./users-manager";
 
 interface SettingsAccordionProps {
   company: {
@@ -32,15 +34,17 @@ interface SettingsAccordionProps {
     alertThresholds: string;
     priorityThresholds: string;
   } | null;
+  availableServices: string[];
 }
 
-export function SettingsAccordion({ company }: SettingsAccordionProps) {
+export function SettingsAccordion({ company, availableServices }: SettingsAccordionProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     company: true,
     alerts: false,
     priority: false,
     planning: false,
     references: false,
+    users: false,
   });
 
   const toggleSection = (section: string) => {
@@ -242,6 +246,36 @@ export function SettingsAccordion({ company }: SettingsAccordionProps) {
                   placeholder="Ex: Équipe A, Équipe Nuit..."
                 />
               </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Users / Managers Management */}
+        <Card>
+          <CardHeader
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => toggleSection("users")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserCog className="h-5 w-5 text-indigo-600" />
+                <div>
+                  <CardTitle>Utilisateurs</CardTitle>
+                  <CardDescription className="mt-1">
+                    Gérez les accès managers de votre entreprise
+                  </CardDescription>
+                </div>
+              </div>
+              <ChevronDown
+                className={`h-5 w-5 text-gray-500 transition-transform ${
+                  openSections.users ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </CardHeader>
+          {openSections.users && (
+            <CardContent className="pt-0">
+              <UsersManager availableServices={availableServices} />
             </CardContent>
           )}
         </Card>

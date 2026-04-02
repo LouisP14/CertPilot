@@ -2,18 +2,24 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { SettingsAccordion } from "./settings-accordion";
 
-async function getCompany() {
+async function getCompanyData() {
   const session = await auth();
   if (!session?.user?.companyId) {
-    return null;
+    return { company: null, services: [] };
   }
-  return prisma.company.findUnique({
-    where: { id: session.user.companyId },
-  });
+  const [company, serviceData] = await Promise.all([
+    prisma.company.findUnique({ where: { id: session.user.companyId } }),
+    prisma.referenceData.findMany({
+      where: { companyId: session.user.companyId, type: "SERVICE", isActive: true },
+      orderBy: { sortOrder: "asc" },
+      select: { value: true },
+    }),
+  ]);
+  return { company, services: serviceData.map((s) => s.value) };
 }
 
 export default async function SettingsPage() {
-  const company = await getCompany();
+  const { company, services } = await getCompanyData();
 
   return (
     <SettingsAccordion
@@ -28,6 +34,7 @@ export default async function SettingsPage() {
             }
           : null
       }
+      availableServices={services}
     />
   );
 }

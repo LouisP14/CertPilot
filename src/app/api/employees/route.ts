@@ -1,5 +1,5 @@
 import { auditCreate } from "@/lib/audit";
-import { auth } from "@/lib/auth";
+import { auth, getEmployeeFilter } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { createEmployeeSchema, parseBody } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -11,14 +11,11 @@ export async function GET() {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    // Filtrer par companyId - SÉCURITÉ: chaque utilisateur ne voit que ses données
     if (!session.user.companyId) {
       return NextResponse.json([]);
     }
-    const whereClause = {
-      isActive: true,
-      companyId: session.user.companyId,
-    };
+    // MANAGER : filtré sur ses services uniquement ; ADMIN : tous les employés
+    const whereClause = await getEmployeeFilter();
 
     const employees = await prisma.employee.findMany({
       where: whereClause,
@@ -50,6 +47,9 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     if (!session) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+    if (session.user.role === "MANAGER") {
+      return NextResponse.json({ error: "Accès en lecture seule" }, { status: 403 });
     }
 
     const body = await request.json();

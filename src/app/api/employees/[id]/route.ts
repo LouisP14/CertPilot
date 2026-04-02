@@ -188,6 +188,9 @@ export async function DELETE(
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    if (session.user.role === "MANAGER") {
+      return NextResponse.json({ error: "Accès en lecture seule" }, { status: 403 });
+    }
 
     const companyId = session.user.companyId;
     const { id } = await params;
