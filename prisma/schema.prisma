@@ -28,6 +28,8 @@ model User {
   isActive            Boolean   @default(true)  // Désactivation sans suppression
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+  totpSecret          String?
+  totpEnabled         Boolean   @default(false)
 }
 
 model EmailVerificationToken {
