@@ -97,7 +97,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!totpCode) {
             throw new TotpRequired();
           }
-          const result = verifySync({ secret: user.totpSecret!, token: totpCode });
+          const result = verifySync({ secret: user.totpSecret!, token: totpCode, options: { window: 1 } });
           if (!result.valid) {
             throw new TotpInvalid();
           }
