@@ -130,12 +130,23 @@ export default function SecurityPage() {
                 aucun compte actif sans confirmation.
               </Check>
               <Check>
+                <strong>Double authentification (TOTP)</strong> — activation optionnelle
+                d&apos;un second facteur via Google Authenticator ou Authy pour les comptes
+                administrateurs.
+              </Check>
+              <Check>
                 <strong>Protection anti-brute force</strong> — limitation automatique des tentatives
-                de connexion (5 essais / 15 minutes par adresse IP).
+                de connexion échouées (10 essais / 15 minutes par compte), avec rate limiting
+                dédié sur les codes TOTP.
               </Check>
               <Check>
                 <strong>Tokens de réinitialisation à usage unique</strong> avec expiration
                 de 24h — aucune réutilisation possible.
+              </Check>
+              <Check>
+                <strong>Mots de passe temporaires cryptographiquement sûrs</strong> — générés
+                via <code className="rounded bg-slate-100 px-1 text-sm">crypto.randomBytes</code>,
+                standard de sécurité pour la génération de secrets non prédictibles.
               </Check>
             </ul>
           </Section>
