@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth";
 import { readFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -8,11 +7,6 @@ export async function GET(
   { params }: { params: Promise<{ filename: string }> },
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.companyId) {
-      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
-    }
-
     const { filename } = await params;
 
     // Sécurité : empêcher la traversée de répertoire
