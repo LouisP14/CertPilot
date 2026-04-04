@@ -22,6 +22,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [initStatus, setInitStatus] = useState<string | null>(null);
+  const [step, setStep] = useState<"credentials" | "totp">("credentials");
+  const [totpCode, setTotpCode] = useState("");
 
   // Init status unused but kept for potential future use
   useEffect(() => {}, []);
@@ -35,8 +37,21 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email,
         password,
+        ...(step === "totp" ? { totpCode } : {}),
         redirect: false,
       });
+
+      if (result?.error === "TOTP_REQUIRED") {
+        setStep("totp");
+        setLoading(false);
+        return;
+      }
+
+      if (result?.error === "TOTP_INVALID") {
+        setError("Code incorrect, réessayez");
+        setLoading(false);
+        return;
+      }
 
       if (result?.error) {
         setError("Email ou mot de passe incorrect");
@@ -159,6 +174,7 @@ export default function LoginPage() {
           )}
 
           {/* Formulaire */}
+          {step === "credentials" ? (
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div>
@@ -245,6 +261,70 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+          ) : (
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="text-center mb-2">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-[#173B56]/10 mb-3">
+                <Shield className="h-7 w-7 text-[#173B56]" />
+              </div>
+              <p className="text-sm text-slate-600">
+                Saisissez le code à 6 chiffres de votre application d&apos;authentification
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="totpCode" className="block text-sm font-medium text-slate-700 mb-2">
+                Code de vérification
+              </label>
+              <input
+                id="totpCode"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="000000"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+                autoFocus
+                required
+                className="w-full px-4 py-3.5 rounded-xl border border-slate-200 bg-white text-slate-900 text-center text-2xl tracking-widest placeholder:text-slate-300 focus:border-[#173B56] focus:ring-2 focus:ring-[#173B56]/10 focus:outline-none transition-all"
+              />
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-3 rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-600">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100">
+                  <span className="text-red-500 text-lg">!</span>
+                </div>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || totpCode.length !== 6}
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#173B56] px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-[#173B56]/20 transition-all hover:bg-[#1e4a6b] hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[#173B56] focus:ring-offset-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Vérification...
+                </>
+              ) : (
+                "Vérifier"
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setStep("credentials"); setError(""); setTotpCode(""); }}
+              className="w-full flex items-center justify-center gap-2 text-sm text-slate-500 hover:text-[#173B56] transition-colors"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Retour à la connexion
+            </button>
+          </form>
+          )}
 
           {/* Lien inscription */}
           <p className="mt-6 text-center text-sm text-slate-600">
