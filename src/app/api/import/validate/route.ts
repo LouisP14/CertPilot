@@ -546,6 +546,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 Mo
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: "Fichier trop volumineux (maximum 10 Mo)" },
+        { status: 400 },
+      );
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(arrayBuffer);

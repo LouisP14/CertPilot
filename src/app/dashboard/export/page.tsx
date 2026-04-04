@@ -350,6 +350,9 @@ export default function ExportPage() {
               <p className="text-sm font-medium text-gray-700">
                 Étape 2 : Importez votre fichier rempli
               </p>
+              <p className="text-xs text-gray-500">
+                Format .xlsx uniquement — 10 Mo maximum
+              </p>
               <input
                 ref={fileInputRef}
                 type="file"
