@@ -12,6 +12,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Mot de passe", type: "password" },
+        totpCode: { label: "Code TOTP", type: "text" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -79,6 +80,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Bloquer si compte désactivé
         if (!user.isActive) {
           throw new Error("Ce compte a été désactivé. Contactez votre administrateur.");
+        }
+
+        // Vérification TOTP si activé
+        if (user.totpEnabled) {
+          const totpCode = credentials.totpCode ? String(credentials.totpCode) : null;
+          if (!totpCode) {
+            throw new Error("TOTP_REQUIRED");
+          }
+          const { verifySync } = await import("otplib");
+          const result = verifySync({ secret: user.totpSecret!, token: totpCode });
+          if (!result.valid) {
+            throw new Error("TOTP_INVALID");
+          }
         }
 
         return {
