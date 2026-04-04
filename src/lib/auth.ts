@@ -2,6 +2,7 @@ import { createAuditLog } from "./audit";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import { CredentialsSignin } from "next-auth";
+import { verifySync } from "otplib";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "./prisma";
 import { rateLimit } from "./rate-limit";
@@ -96,7 +97,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!totpCode) {
             throw new TotpRequired();
           }
-          const { verifySync } = await import("otplib");
           const result = verifySync({ secret: user.totpSecret!, token: totpCode });
           if (!result.valid) {
             throw new TotpInvalid();

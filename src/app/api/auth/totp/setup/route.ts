@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import { TOTP } from "otplib";
+import { generateSecret } from "otplib";
 import QRCode from "qrcode";
 
 export async function POST() {
@@ -13,8 +13,7 @@ export async function POST() {
       return NextResponse.json({ error: "Réservé aux administrateurs" }, { status: 403 });
     }
 
-    const totp = new TOTP();
-    const secret = totp.generateSecret();
+    const secret = generateSecret();
     const uri = `otpauth://totp/CertPilot:${encodeURIComponent(session.user.email)}?secret=${secret}&issuer=CertPilot`;
     const qrCode = await QRCode.toDataURL(uri);
 
