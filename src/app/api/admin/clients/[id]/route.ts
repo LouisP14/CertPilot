@@ -1,5 +1,14 @@
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+async function requireSuperAdmin() {
+  const session = await auth();
+  if (!session || session.user.role !== "SUPER_ADMIN") {
+    return null;
+  }
+  return session;
+}
 
 // DELETE - Supprimer un client (company) et toutes ses données
 export async function DELETE(
@@ -7,6 +16,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await requireSuperAdmin();
+    if (!session) return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+
     const { id } = await params;
 
     // Vérifier que l'entreprise existe
@@ -52,6 +64,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await requireSuperAdmin();
+    if (!session) return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+
     const { id } = await params;
 
     const company = await prisma.company.findUnique({

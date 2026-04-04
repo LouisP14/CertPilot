@@ -6,11 +6,12 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET() {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const company = await prisma.company.findFirst({
+    const company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
       select: {
         signatureEnabled: true,
         signatureImage: true,
@@ -39,7 +40,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session) {
+    if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
@@ -66,12 +67,14 @@ export async function PUT(request: NextRequest) {
       signatureTitre,
     } = parsed.data;
 
-    // Récupérer ou créer la company
-    let company = await prisma.company.findFirst();
+    // Récupérer la company de l'utilisateur
+    let company = await prisma.company.findUnique({
+      where: { id: session.user.companyId },
+    });
 
     if (company) {
       company = await prisma.company.update({
-        where: { id: company.id },
+        where: { id: session.user.companyId },
         data: {
           signatureEnabled: signatureEnabled ?? company.signatureEnabled,
           signatureImage:

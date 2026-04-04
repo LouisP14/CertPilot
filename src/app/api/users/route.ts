@@ -3,6 +3,7 @@ import { auditCreate } from "@/lib/audit";
 import { sendManagerInvitationEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET - Liste des utilisateurs de la company (ADMIN seulement)
@@ -65,8 +66,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Cet email est déjà utilisé" }, { status: 400 });
     }
 
-    // Générer un mot de passe temporaire
-    const tempPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-4).toUpperCase();
+    // Générer un mot de passe temporaire cryptographiquement sûr
+    const tempPassword = crypto.randomBytes(12).toString("base64url");
     const hashedPassword = await bcrypt.hash(tempPassword, 12);
 
     const user = await prisma.user.create({

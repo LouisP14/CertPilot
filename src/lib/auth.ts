@@ -36,10 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const rateLimitKey = `login:${email}`;
 
         if (process.env.NODE_ENV !== "production") {
-          console.log("[auth] Login attempt", {
-            email,
-            databaseUrl: process.env.DATABASE_URL,
-          });
+          console.log("[auth] Login attempt", { email });
         }
 
         const user = await prisma.user.findUnique({

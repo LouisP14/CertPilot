@@ -1,3 +1,4 @@
+import { auth } from "@/lib/auth";
 import { getPlanConfig } from "@/lib/stripe";
 import { parseBody, stripeCheckoutSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -6,6 +7,11 @@ import Stripe from "stripe";
 // POST - Créer une session de paiement Stripe
 export async function POST(request: NextRequest) {
   try {
+    const authSession = await auth();
+    if (!authSession || authSession.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+    }
+
     // Vérifier que STRIPE_SECRET_KEY est définie
     if (!process.env.STRIPE_SECRET_KEY) {
       console.error("STRIPE_SECRET_KEY non définie");

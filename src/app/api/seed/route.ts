@@ -36,7 +36,11 @@ async function createAccounts() {
     },
   });
 
-  const adminPassword = await bcrypt.hash(process.env.INIT_ADMIN_PASSWORD || "Admin2026!", 12);
+  const adminPass = process.env.INIT_ADMIN_PASSWORD;
+  if (!adminPass) {
+    return NextResponse.json({ error: "INIT_ADMIN_PASSWORD non défini" }, { status: 500 });
+  }
+  const adminPassword = await bcrypt.hash(adminPass, 12);
   await prisma.user.create({
     data: {
       email: "admin@certpilot.fr",
@@ -61,7 +65,11 @@ async function createAccounts() {
     },
   });
 
-  const demoPassword = await bcrypt.hash(process.env.INIT_DEMO_PASSWORD || "demo123!", 12);
+  const demoPass = process.env.INIT_DEMO_PASSWORD;
+  if (!demoPass) {
+    return NextResponse.json({ error: "INIT_DEMO_PASSWORD non défini" }, { status: 500 });
+  }
+  const demoPassword = await bcrypt.hash(demoPass, 12);
   await prisma.user.create({
     data: {
       email: "demo@certpilot.fr",

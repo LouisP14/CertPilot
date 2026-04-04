@@ -148,6 +148,7 @@ export async function POST(request: NextRequest) {
       WHERE tco."formationTypeId" = ${formationTypeId}
         AND tco."isActive" = true
         AND tc."isActive" = true
+        AND tc."companyId" = ${companyId}
     `;
 
     const nbEmployees = employees.length;

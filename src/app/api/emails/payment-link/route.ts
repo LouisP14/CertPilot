@@ -1,3 +1,4 @@
+import { auth } from "@/lib/auth";
 import { sendPaymentLink } from "@/lib/email";
 import { parseBody, paymentLinkSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -5,20 +6,17 @@ import { NextRequest, NextResponse } from "next/server";
 // POST - Envoyer l'email avec le lien de paiement
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session || session.user.role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+    }
+
     const body = await request.json();
     const parsed = parseBody(paymentLinkSchema, body);
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
     const { to, contactName, companyName, plan, billing, paymentUrl } = parsed.data;
-
-    console.log("Envoi email paiement à:", to);
-    console.log("SMTP config:", {
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      user: process.env.SMTP_USER,
-      from: process.env.SMTP_FROM,
-    });
 
     await sendPaymentLink({
       to,
@@ -29,7 +27,7 @@ export async function POST(request: NextRequest) {
       paymentUrl,
     });
 
-    console.log("Email envoyé avec succès à:", to);
+    console.log("[payment-link] Email envoyé à:", to);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Erreur envoi email paiement:", error);

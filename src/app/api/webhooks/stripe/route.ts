@@ -2,18 +2,14 @@ import { sendPaymentFailedEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-// Générer un mot de passe aléatoire
+// Générer un mot de passe aléatoire cryptographiquement sûr
 function generatePassword(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
-  let password = "";
-  for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
+  return crypto.randomBytes(16).toString("base64url").slice(0, 12);
 }
 
 // POST - Webhook Stripe

@@ -1,6 +1,13 @@
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { parseBody, adminUpdateDemandeSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
+
+async function requireSuperAdmin() {
+  const session = await auth();
+  if (!session || session.user.role !== "SUPER_ADMIN") return null;
+  return session;
+}
 
 // PATCH - Mettre à jour une demande de contact
 export async function PATCH(
@@ -8,6 +15,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await requireSuperAdmin();
+    if (!session) return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+
     const { id } = await params;
     const body = await request.json();
     const parsed = parseBody(adminUpdateDemandeSchema, body);
@@ -67,6 +77,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await requireSuperAdmin();
+    if (!session) return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+
     const { id } = await params;
 
     const contactRequest = await prisma.contactRequest.findUnique({
@@ -96,6 +109,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await requireSuperAdmin();
+    if (!session) return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
+
     const { id } = await params;
 
     await prisma.contactRequest.delete({

@@ -36,7 +36,10 @@ export async function GET(request: NextRequest) {
       console.log("✅ Entreprise CertPilot créée");
     }
 
-    const adminPass = process.env.INIT_ADMIN_PASSWORD || "Admin123!";
+    const adminPass = process.env.INIT_ADMIN_PASSWORD;
+    if (!adminPass) {
+      return NextResponse.json({ error: "INIT_ADMIN_PASSWORD non défini" }, { status: 500 });
+    }
     const hashedAdminPassword = await bcrypt.hash(adminPass, 12);
     const existingAdmin = await prisma.user.findUnique({
       where: { email: "admin@certpilot.fr" },
@@ -88,7 +91,10 @@ export async function GET(request: NextRequest) {
       console.log("✅ Entreprise Demo créée");
     }
 
-    const demoPass = process.env.INIT_DEMO_PASSWORD || "demo123!";
+    const demoPass = process.env.INIT_DEMO_PASSWORD;
+    if (!demoPass) {
+      return NextResponse.json({ error: "INIT_DEMO_PASSWORD non défini" }, { status: 500 });
+    }
     const hashedDemoPassword = await bcrypt.hash(demoPass, 12);
     const existingDemo = await prisma.user.findUnique({
       where: { email: "demo@certpilot.fr" },
