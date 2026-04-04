@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Vérifier le code TOTP avec la même API que enable/route.ts
-    const result = verifySync({ secret: user.totpSecret, token: code, options: { window: 1 } });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (verifySync as any)({ secret: user.totpSecret, token: code }, { window: 1 }) as { valid: boolean };
     if (!result.valid) {
       return NextResponse.json({ error: "Code invalide" }, { status: 400 });
     }

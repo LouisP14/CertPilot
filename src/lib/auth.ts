@@ -97,7 +97,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (!totpCode) {
             throw new TotpRequired();
           }
-          const result = verifySync({ secret: user.totpSecret!, token: totpCode, options: { window: 1 } });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const result = (verifySync as any)({ secret: user.totpSecret!, token: totpCode }, { window: 1 }) as { valid: boolean };
           if (!result.valid) {
             throw new TotpInvalid();
           }

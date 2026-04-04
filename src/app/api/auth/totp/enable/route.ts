@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Secret et code requis" }, { status: 400 });
     }
 
-    const result = verifySync({ secret, token: code, options: { window: 1 } });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const result = (verifySync as any)({ secret, token: code }, { window: 1 }) as { valid: boolean };
     if (!result.valid) {
       return NextResponse.json({ error: "Code invalide" }, { status: 400 });
     }
