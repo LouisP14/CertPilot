@@ -53,6 +53,10 @@ export function rateLimit(
   return { success: true, remaining: options.limit - entry.count, resetAt: entry.resetAt };
 }
 
+export function resetRateLimit(key: string): void {
+  rateLimitMap.delete(key);
+}
+
 /**
  * Get the client IP from request headers
  */

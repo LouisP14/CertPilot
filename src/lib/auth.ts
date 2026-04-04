@@ -5,7 +5,7 @@ import { CredentialsSignin } from "next-auth";
 import { verifySync } from "otplib";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "./prisma";
-import { rateLimit } from "./rate-limit";
+import { rateLimit, resetRateLimit } from "./rate-limit";
 
 class TotpRequired extends CredentialsSignin {
   code = "TOTP_REQUIRED" as const;
@@ -33,12 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const email = String(credentials.email).trim().toLowerCase();
         const password = String(credentials.password);
-
-        // Rate limit: 5 tentatives par email par 15 minutes
-        const rl = rateLimit(`login:${email}`, { limit: 5, windowSeconds: 900 });
-        if (!rl.success) {
-          throw new Error("Trop de tentatives. Réessayez dans quelques minutes.");
-        }
+        const rateLimitKey = `login:${email}`;
 
         if (process.env.NODE_ENV !== "production") {
           console.log("[auth] Login attempt", {
@@ -56,6 +51,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (process.env.NODE_ENV !== "production") {
             console.warn("[auth] User not found", { email });
           }
+          const rl = rateLimit(rateLimitKey, { limit: 10, windowSeconds: 900 });
+          if (!rl.success) throw new Error("Trop de tentatives. Réessayez dans quelques minutes.");
           return null;
         }
 
@@ -65,6 +62,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           if (process.env.NODE_ENV !== "production") {
             console.warn("[auth] Invalid password", { email });
           }
+          const rl = rateLimit(rateLimitKey, { limit: 10, windowSeconds: 900 });
+          if (!rl.success) throw new Error("Trop de tentatives. Réessayez dans quelques minutes.");
           return null;
         }
 
@@ -103,6 +102,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             throw new TotpInvalid();
           }
         }
+
+        // Succès : réinitialiser le compteur d'échecs
+        resetRateLimit(rateLimitKey);
 
         return {
           id: user.id,
