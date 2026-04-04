@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { auditUpdate } from "@/lib/audit";
 import prisma from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
 import { NextRequest, NextResponse } from "next/server";
 import { verifySync } from "otplib";
 
@@ -35,6 +36,10 @@ export async function POST(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = (verifySync as any)({ secret: user.totpSecret, token: code }, { window: 1 }) as { valid: boolean };
     if (!result.valid) {
+      const rl = rateLimit(`totp:${session.user.id}`, { limit: 5, windowSeconds: 300 });
+      if (!rl.success) {
+        return NextResponse.json({ error: "Trop de tentatives. Réessayez dans 5 minutes." }, { status: 429 });
+      }
       return NextResponse.json({ error: "Code invalide" }, { status: 400 });
     }
 

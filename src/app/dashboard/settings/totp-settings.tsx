@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ShieldCheck, ShieldOff } from "lucide-react";
+import { AlertTriangle, Loader2, ShieldCheck, ShieldOff } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -22,6 +22,7 @@ export function TotpSettings({ totpEnabled: initialEnabled }: TotpSettingsProps)
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rateLimited, setRateLimited] = useState(false);
 
   // ---- Activation ----
   const handleSetup = async () => {
@@ -43,6 +44,7 @@ export function TotpSettings({ totpEnabled: initialEnabled }: TotpSettingsProps)
 
   const handleEnable = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (rateLimited) return;
     setLoading(true);
     setError("");
     try {
@@ -52,6 +54,12 @@ export function TotpSettings({ totpEnabled: initialEnabled }: TotpSettingsProps)
         body: JSON.stringify({ secret, code }),
       });
       const data = await res.json();
+      if (res.status === 429) {
+        setRateLimited(true);
+        setError(data.error);
+        setTimeout(() => setRateLimited(false), 5 * 60 * 1000);
+        return;
+      }
       if (!res.ok) throw new Error(data.error || "Code invalide");
       setTotpEnabled(true);
       setPhase("idle");
@@ -69,6 +77,7 @@ export function TotpSettings({ totpEnabled: initialEnabled }: TotpSettingsProps)
   // ---- Désactivation ----
   const handleDisable = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (rateLimited) return;
     setLoading(true);
     setError("");
     try {
@@ -78,6 +87,12 @@ export function TotpSettings({ totpEnabled: initialEnabled }: TotpSettingsProps)
         body: JSON.stringify({ code }),
       });
       const data = await res.json();
+      if (res.status === 429) {
+        setRateLimited(true);
+        setError(data.error);
+        setTimeout(() => setRateLimited(false), 5 * 60 * 1000);
+        return;
+      }
       if (!res.ok) throw new Error(data.error || "Code invalide");
       setTotpEnabled(false);
       setPhase("idle");
@@ -169,13 +184,20 @@ export function TotpSettings({ totpEnabled: initialEnabled }: TotpSettingsProps)
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
+            rateLimited ? (
+              <div className="flex items-center gap-3 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <p className="text-sm text-amber-800 font-medium">{error}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
+            )
           )}
 
           <div className="flex gap-2">
             <Button
               type="submit"
-              disabled={loading || code.length !== 6}
+              disabled={loading || code.length !== 6 || rateLimited}
               className="bg-[#173B56] hover:bg-[#1e4a6b] text-white"
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
@@ -215,13 +237,20 @@ export function TotpSettings({ totpEnabled: initialEnabled }: TotpSettingsProps)
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
+            rateLimited ? (
+              <div className="flex items-center gap-3 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                <p className="text-sm text-amber-800 font-medium">{error}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-red-600 bg-red-50 rounded-md px-3 py-2">{error}</p>
+            )
           )}
 
           <div className="flex gap-2">
             <Button
               type="submit"
-              disabled={loading || code.length !== 6}
+              disabled={loading || code.length !== 6 || rateLimited}
               variant="destructive"
             >
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
