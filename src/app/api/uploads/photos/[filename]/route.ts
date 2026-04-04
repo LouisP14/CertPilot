@@ -1,24 +1,31 @@
+import { auth } from "@/lib/auth";
 import { readFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ filename: string }> },
 ) {
   try {
+    const session = await auth();
+    if (!session?.user?.companyId) {
+      return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+
     const { filename } = await params;
 
     // Sécurité : empêcher la traversée de répertoire
-    if (filename.includes("..") || filename.includes("/")) {
-      return NextResponse.json({ error: "Invalid filename" }, { status: 400 });
+    const sanitized = path.basename(filename);
+    if (sanitized !== filename) {
+      return NextResponse.json({ error: "Fichier invalide" }, { status: 400 });
     }
 
     const uploadDir =
       process.env.UPLOADS_DIR ||
       path.join(process.cwd(), "public", "uploads", "photos");
 
-    const filePath = path.join(uploadDir, filename);
+    const filePath = path.join(uploadDir, sanitized);
 
     const fileBuffer = await readFile(filePath);
 

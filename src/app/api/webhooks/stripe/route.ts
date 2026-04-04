@@ -126,7 +126,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
   // Créer le compte client
   const tempPassword = generatePassword();
-  const hashedPassword = await bcrypt.hash(tempPassword, 10);
+  const hashedPassword = await bcrypt.hash(tempPassword, 12);
 
   // Créer la company
   const company = await prisma.company.create({
@@ -182,12 +182,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     console.error("Erreur envoi email bienvenue:", emailError);
   }
 
-  // Log pour le debug
-  console.log("=== NOUVEAU CLIENT ===");
-  console.log("Email:", customerEmail);
-  console.log("Mot de passe temporaire:", tempPassword);
-  console.log("Plan:", plan);
-  console.log("======================");
+  console.log("[stripe] Nouveau client créé:", customerEmail, "plan:", plan);
 }
 
 // Traiter une facture payée (renouvellement)

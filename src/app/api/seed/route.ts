@@ -36,7 +36,7 @@ async function createAccounts() {
     },
   });
 
-  const adminPassword = await bcrypt.hash("Admin2026!", 10);
+  const adminPassword = await bcrypt.hash(process.env.INIT_ADMIN_PASSWORD || "Admin2026!", 12);
   await prisma.user.create({
     data: {
       email: "admin@certpilot.fr",
@@ -61,7 +61,7 @@ async function createAccounts() {
     },
   });
 
-  const demoPassword = await bcrypt.hash("demo123!", 10);
+  const demoPassword = await bcrypt.hash(process.env.INIT_DEMO_PASSWORD || "demo123!", 12);
   await prisma.user.create({
     data: {
       email: "demo@certpilot.fr",

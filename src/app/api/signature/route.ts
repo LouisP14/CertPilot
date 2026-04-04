@@ -2,7 +2,12 @@ import { auth } from "@/lib/auth";
 import { sendEmployeeSignatureLink } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { parseBody, initiateSignatureSchema } from "@/lib/validations";
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+
+function generateSecureToken(prefix: string): string {
+  return `${prefix}_${crypto.randomBytes(32).toString("hex")}`;
+}
 
 // GET - Récupérer le statut de signature d'un employé
 export async function GET(request: NextRequest) {
@@ -105,9 +110,9 @@ export async function POST(request: NextRequest) {
       where: { employeeId },
       update: {
         status: "PENDING_EMPLOYEE",
-        employeeToken: `emp_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+        employeeToken: generateSecureToken("emp"),
         employeeTokenExpiry: tokenExpiry,
-        managerToken: `mgr_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+        managerToken: generateSecureToken("mgr"),
         managerTokenExpiry: null, // Sera défini après signature employé
         siteManagerEmail,
         siteManagerName: siteManagerName || null,
@@ -130,9 +135,9 @@ export async function POST(request: NextRequest) {
       create: {
         employeeId,
         status: "PENDING_EMPLOYEE",
-        employeeToken: `emp_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+        employeeToken: generateSecureToken("emp"),
         employeeTokenExpiry: tokenExpiry,
-        managerToken: `mgr_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`,
+        managerToken: generateSecureToken("mgr"),
         siteManagerEmail,
         siteManagerName: siteManagerName || null,
         initiatedBy: session.user?.id || null,
