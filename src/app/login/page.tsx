@@ -41,13 +41,13 @@ export default function LoginPage() {
         redirect: false,
       });
 
-      if (result?.error === "TOTP_REQUIRED") {
+      if (result?.code === "TOTP_REQUIRED") {
         setStep("totp");
         setLoading(false);
         return;
       }
 
-      if (result?.error === "TOTP_INVALID") {
+      if (result?.code === "TOTP_INVALID") {
         setError("Code incorrect, réessayez");
         setLoading(false);
         return;
