@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Générer un nom de fichier unique
-    const extension = file.name.split(".").pop() || "jpg";
+    // Générer un nom de fichier unique (extension dérivée du type MIME validé)
+    const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
     const fileName = `${employeeId}-${Date.now()}.${extension}`;
 
     // Stockage local (prévu pour Railway avec volume)
