@@ -12,6 +12,7 @@ import {
   Building,
   CalendarCog,
   ChevronDown,
+  ShieldCheck,
   TrendingUp,
   Users,
   UserCog,
@@ -24,6 +25,7 @@ import {
   PlanningConstraintsForm,
   PriorityForm,
 } from "./settings-forms";
+import { TotpSettings } from "./totp-settings";
 import { UsersManager } from "./users-manager";
 
 interface SettingsAccordionProps {
@@ -35,9 +37,10 @@ interface SettingsAccordionProps {
     priorityThresholds: string;
   } | null;
   availableServices: string[];
+  totpEnabled: boolean;
 }
 
-export function SettingsAccordion({ company, availableServices }: SettingsAccordionProps) {
+export function SettingsAccordion({ company, availableServices, totpEnabled }: SettingsAccordionProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     company: true,
     alerts: false,
@@ -45,6 +48,7 @@ export function SettingsAccordion({ company, availableServices }: SettingsAccord
     planning: false,
     references: false,
     users: false,
+    totp: false,
   });
 
   const toggleSection = (section: string) => {
@@ -276,6 +280,36 @@ export function SettingsAccordion({ company, availableServices }: SettingsAccord
           {openSections.users && (
             <CardContent className="pt-0">
               <UsersManager availableServices={availableServices} />
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Sécurité - Double authentification */}
+        <Card>
+          <CardHeader
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => toggleSection("totp")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-violet-600" />
+                <div>
+                  <CardTitle>Double authentification (2FA)</CardTitle>
+                  <CardDescription className="mt-1">
+                    Renforcez la sécurité de votre compte avec un code TOTP
+                  </CardDescription>
+                </div>
+              </div>
+              <ChevronDown
+                className={`h-5 w-5 text-gray-500 transition-transform ${
+                  openSections.totp ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </CardHeader>
+          {openSections.totp && (
+            <CardContent className="pt-0">
+              <TotpSettings totpEnabled={totpEnabled} />
             </CardContent>
           )}
         </Card>

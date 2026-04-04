@@ -5,21 +5,29 @@ import { SettingsAccordion } from "./settings-accordion";
 async function getCompanyData() {
   const session = await auth();
   if (!session?.user?.companyId) {
-    return { company: null, services: [] };
+    return { company: null, services: [], totpEnabled: false };
   }
-  const [company, serviceData] = await Promise.all([
+  const [company, serviceData, userData] = await Promise.all([
     prisma.company.findUnique({ where: { id: session.user.companyId } }),
     prisma.referenceData.findMany({
       where: { companyId: session.user.companyId, type: "SERVICE", isActive: true },
       orderBy: { sortOrder: "asc" },
       select: { value: true },
     }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { totpEnabled: true },
+    }),
   ]);
-  return { company, services: serviceData.map((s) => s.value) };
+  return {
+    company,
+    services: serviceData.map((s) => s.value),
+    totpEnabled: userData?.totpEnabled ?? false,
+  };
 }
 
 export default async function SettingsPage() {
-  const { company, services } = await getCompanyData();
+  const { company, services, totpEnabled } = await getCompanyData();
 
   return (
     <SettingsAccordion
@@ -35,6 +43,7 @@ export default async function SettingsPage() {
           : null
       }
       availableServices={services}
+      totpEnabled={totpEnabled}
     />
   );
 }
