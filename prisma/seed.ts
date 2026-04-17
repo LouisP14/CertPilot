@@ -133,7 +133,7 @@ async function main() {
 
   // Create a sample employee
   const employee = await prisma.employee.upsert({
-    where: { employeeId_companyId: { employeeId: "910002689", companyId: null } },
+    where: { employeeId_companyId: { employeeId: "910002689", companyId: company.id } },
     update: {},
     create: {
       firstName: "Louis",
@@ -143,6 +143,7 @@ async function main() {
       department: "Entretien Brecey",
       managerEmail: "manager@entreprise.fr",
       medicalCheckupDate: new Date("2020-12-07"),
+      companyId: company.id,
     },
   });
   console.log(
