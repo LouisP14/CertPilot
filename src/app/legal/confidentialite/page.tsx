@@ -217,6 +217,23 @@ export default function Confidentialite() {
             <p className="mt-2">
               Nous ne vendons jamais vos données à des tiers.
             </p>
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm">
+              <p className="font-semibold text-amber-900">
+                Information sur le passeport formation accessible par QR code
+              </p>
+              <p className="mt-2 text-amber-800">
+                Le passeport formation de chaque salarié est consultable via un
+                QR code généré par votre employeur. Les données accessibles par
+                ce lien (nom, prénom, fonction, service, photo si renseignée,
+                liste des formations validées) sont consultables par toute
+                personne disposant du lien. Ce fonctionnement est{" "}
+                <strong>volontaire et nécessaire</strong> à la vérification
+                terrain des habilitations (audit sécurité, contrôle
+                d&apos;accès, inspection). Si vous ne souhaitez pas que votre
+                photo soit visible, vous pouvez demander à votre employeur de
+                la retirer.
+              </p>
+            </div>
           </section>
 
           <section>
