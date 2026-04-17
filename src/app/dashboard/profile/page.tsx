@@ -11,11 +11,13 @@ import {
 } from "@/components/ui/card";
 import {
   AlertCircle,
+  AlertTriangle,
   Building2,
   Calendar,
   Check,
   ChevronLeft,
   CreditCard,
+  Download,
   Eye,
   EyeOff,
   KeyRound,
@@ -23,10 +25,11 @@ import {
   Mail,
   PenLine,
   Shield,
+  Trash2,
   User,
   Users,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
@@ -158,6 +161,13 @@ export default function ProfilePage() {
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
+  // Droits RGPD
+  const [exporting, setExporting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
   const fetchProfile = useCallback(async () => {
     try {
       const res = await fetch("/api/profile");
@@ -247,6 +257,46 @@ export default function ProfilePage() {
       );
     } finally {
       setSavingPassword(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch("/api/me/export");
+      if (!res.ok) throw new Error("Erreur lors de l'export");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `certpilot-mes-donnees-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const res = await fetch("/api/me/delete-account", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Erreur lors de la suppression");
+      }
+      // Déconnexion et redirection vers l'accueil
+      await signOut({ callbackUrl: "/" });
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Erreur lors de la suppression",
+      );
+      setDeleting(false);
     }
   };
 
@@ -752,6 +802,139 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
           )}
+
+          {/* Droits RGPD */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Shield className="h-4 w-4 text-[#173B56]" />
+                Mes droits RGPD
+              </CardTitle>
+              <CardDescription>
+                Exercez vos droits sur les données personnelles conservées
+                sur votre compte administrateur (articles 17 et 20 du RGPD).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Export de données */}
+              <div className="flex items-start justify-between gap-4 p-4 border border-slate-200 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-[#173B56]">
+                    Télécharger mes données
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Obtenez un fichier JSON avec toutes les données
+                    personnelles que nous conservons sur votre compte
+                    (profil, entreprise, historique d&apos;actions).
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="gap-2 shrink-0"
+                >
+                  {exporting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Download className="h-3.5 w-3.5" />
+                  )}
+                  Télécharger
+                </Button>
+              </div>
+
+              {/* Suppression de compte */}
+              <div className="flex items-start justify-between gap-4 p-4 border border-red-200 bg-red-50 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-900">
+                    Supprimer mon compte
+                  </p>
+                  <p className="text-xs text-red-700 mt-1">
+                    Action irréversible. Vos données personnelles seront
+                    anonymisées. L&apos;historique d&apos;audit est conservé
+                    5 ans pour des raisons légales.
+                  </p>
+                </div>
+                {!showDeleteConfirm && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowDeleteConfirm(true);
+                      setDeleteError("");
+                      setDeleteConfirmText("");
+                    }}
+                    className="gap-2 shrink-0 border-red-300 text-red-700 hover:bg-red-100 hover:text-red-900"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Supprimer
+                  </Button>
+                )}
+              </div>
+
+              {showDeleteConfirm && (
+                <div className="p-4 border-2 border-red-300 bg-red-50 rounded-lg space-y-3">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-red-900">
+                        Confirmer la suppression de votre compte
+                      </p>
+                      <p className="text-xs text-red-700 mt-1">
+                        Pour confirmer, saisissez{" "}
+                        <span className="font-mono font-bold">SUPPRIMER</span>{" "}
+                        ci-dessous. Vous serez déconnecté immédiatement.
+                      </p>
+                    </div>
+                  </div>
+
+                  <input
+                    type="text"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="Tapez SUPPRIMER"
+                    className="w-full px-3 py-2 border border-red-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                  />
+
+                  {deleteError && (
+                    <div className="bg-red-100 border border-red-300 text-red-800 rounded p-2 text-xs flex items-center gap-2">
+                      <AlertCircle className="h-3.5 w-3.5" />
+                      {deleteError}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={handleDeleteAccount}
+                      disabled={deleting || deleteConfirmText !== "SUPPRIMER"}
+                      size="sm"
+                      className="bg-red-600 hover:bg-red-700 text-white gap-2"
+                    >
+                      {deleting ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                      Confirmer la suppression
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeleteConfirmText("");
+                        setDeleteError("");
+                      }}
+                      disabled={deleting}
+                    >
+                      Annuler
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
