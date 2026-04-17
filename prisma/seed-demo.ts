@@ -755,11 +755,12 @@ async function main() {
     const employeeId = `EMP${String(1000 + i).padStart(5, "0")}`;
 
     const created = await prisma.employee.upsert({
-      where: { employeeId },
+      where: { employeeId_companyId: { employeeId, companyId: company.id } },
       update: emp,
       create: {
         ...emp,
         employeeId,
+        companyId: company.id,
         email: `${emp.firstName.toLowerCase()}.${emp.lastName.toLowerCase()}@certpilot.fr`,
         team: `Équipe ${["A", "B", "C"][i % 3]}`,
         hourlyCost: 35 + Math.floor(Math.random() * 20),
