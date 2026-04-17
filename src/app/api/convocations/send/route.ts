@@ -92,6 +92,7 @@ export async function POST(request: Request) {
     console.log("Resend configuré:", resendConfigured ? "Oui" : "Non");
 
     let emailsSent = 0;
+    let emailsFailed = 0;
     const employeesWithEmail = employeesWithEmails.filter(
       (
         emp,
@@ -111,8 +112,11 @@ export async function POST(request: Request) {
       // Préparer le buffer du PDF si fourni
       const pdfBuffer = pdfBase64 ? Buffer.from(pdfBase64, "base64") : null;
 
-      // Envoyer un email à chaque employé
-      const emailPromises = employeesWithEmail.map(async (employee) => {
+      const buildEmailData = (employee: {
+        id: string;
+        name: string;
+        email: string;
+      }) => {
         const emailData: {
           from: string;
           to: string;
@@ -173,12 +177,29 @@ export async function POST(request: Request) {
           ];
         }
 
-        return resend.emails.send(emailData);
-      });
+        return emailData;
+      };
 
-      // Attendre que tous les emails soient envoyés
-      await Promise.all(emailPromises);
-      emailsSent = emailPromises.length;
+      // Envoyer par chunks de 10 pour respecter les limites de taux Resend
+      // (100 emails/min sur le tier gratuit) et tolérer les échecs individuels
+      const CHUNK_SIZE = 10;
+      for (let i = 0; i < employeesWithEmail.length; i += CHUNK_SIZE) {
+        const chunk = employeesWithEmail.slice(i, i + CHUNK_SIZE);
+        const chunkResults = await Promise.allSettled(
+          chunk.map((employee) => resend.emails.send(buildEmailData(employee))),
+        );
+        for (const result of chunkResults) {
+          if (result.status === "fulfilled") {
+            emailsSent++;
+          } else {
+            emailsFailed++;
+            console.error(
+              "[convocations] Echec envoi email:",
+              result.reason,
+            );
+          }
+        }
+      }
     }
 
     // Marquer la session comme "convocations envoyées"
@@ -229,6 +250,9 @@ export async function POST(request: Request) {
     let message = "";
     if (resendConfigured && emailsSent > 0) {
       message = `${emailsSent} email(s) envoyé(s) avec succès`;
+      if (emailsFailed > 0) {
+        message += ` — ${emailsFailed} échec(s) d'envoi (voir logs)`;
+      }
       if (withoutEmailCount > 0) {
         message += ` — ${withoutEmailCount} participant(s) sans email enregistré n'ont pas été notifié(s)`;
       }
@@ -324,6 +348,7 @@ export async function POST(request: Request) {
       success: true,
       message,
       emailsSent,
+      emailsFailed,
       resendConfigured,
     });
   } catch (error) {
