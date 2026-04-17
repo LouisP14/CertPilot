@@ -132,8 +132,8 @@ function CookiePreferences({
 }: {
   onSave: (preferences: boolean, analytics: boolean) => void;
 }) {
-  const [preferences, setPreferences] = useState(true);
-  const [analytics, setAnalytics] = useState(true);
+  const [preferences, setPreferences] = useState(false);
+  const [analytics, setAnalytics] = useState(false);
 
   return (
     <div className="space-y-4">

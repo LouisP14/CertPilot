@@ -1,5 +1,6 @@
 import { createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import { mkdir, writeFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
@@ -35,6 +36,24 @@ export async function POST(request: NextRequest) {
 
     if (!employeeId) {
       return NextResponse.json({ error: "ID employé requis" }, { status: 400 });
+    }
+
+    // Vérifier que l'employé appartient à la company de l'utilisateur
+    if (!session.user?.companyId) {
+      return NextResponse.json(
+        { error: "Company non configurée" },
+        { status: 401 },
+      );
+    }
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, companyId: session.user.companyId },
+      select: { id: true },
+    });
+    if (!employee) {
+      return NextResponse.json(
+        { error: "Employé introuvable" },
+        { status: 404 },
+      );
     }
 
     // Vérifier le type de fichier

@@ -224,9 +224,14 @@ export async function POST(request: Request) {
     }
 
     // Message de retour
+    const withoutEmailCount =
+      employeesWithEmails.length - employeesWithEmail.length;
     let message = "";
     if (resendConfigured && emailsSent > 0) {
       message = `${emailsSent} email(s) envoyé(s) avec succès`;
+      if (withoutEmailCount > 0) {
+        message += ` — ${withoutEmailCount} participant(s) sans email enregistré n'ont pas été notifié(s)`;
+      }
     } else if (!resendConfigured) {
       message = `Convocations enregistrées (${employeesWithEmails.length} participant(s)). Note: Resend non configuré, emails non envoyés.`;
     } else {
