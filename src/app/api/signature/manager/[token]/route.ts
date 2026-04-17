@@ -120,7 +120,7 @@ export async function POST(
     if (!parsed.success) {
       return NextResponse.json({ error: "Données invalides" }, { status: 400 });
     }
-    const { signatureImage, signatureName, signatureTitle, action } = parsed.data;
+    const { signatureImage, signatureName, signatureTitle, action, rejectionReason } = parsed.data;
 
     const signature = await prisma.passportSignature.findUnique({
       where: { managerToken: token },
@@ -170,8 +170,6 @@ export async function POST(
 
     // Action: REJECT ou APPROVE
     if (action === "REJECT") {
-      const { rejectionReason } = body;
-
       await prisma.passportSignature.update({
         where: { id: signature.id },
         data: {
