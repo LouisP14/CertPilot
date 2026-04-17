@@ -862,9 +862,9 @@ export async function POST(request: NextRequest) {
           });
           stats.employeesUpdated++;
         } else {
-          // Upsert par employeeId (unique global) pour éviter les conflits
+          // Upsert par (employeeId, companyId) — isolation par entreprise
           const upserted = await tx.employee.upsert({
-            where: { employeeId: emp.matricule },
+            where: { employeeId_companyId: { employeeId: emp.matricule, companyId } },
             update: { ...employeeData, companyId },
             create: { ...employeeData, employeeId: emp.matricule, companyId },
           });

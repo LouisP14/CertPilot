@@ -2,6 +2,15 @@ import { auditSign, createAuditLog } from "@/lib/audit";
 import { sendPassportRejectedEmail, sendPassportValidatedEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const managerSignatureSchema = z.object({
+  action: z.enum(["REJECT", "APPROVE"]).default("APPROVE"),
+  signatureImage: z.string().min(1).optional(),
+  signatureName: z.string().min(1).max(200).optional(),
+  signatureTitle: z.string().max(200).optional(),
+  rejectionReason: z.string().max(1000).optional(),
+});
 
 // GET - Vérifier le token et récupérer les infos pour la signature responsable
 export async function GET(
@@ -106,8 +115,12 @@ export async function POST(
 ) {
   try {
     const { token } = await params;
-    const body = await request.json();
-    const { signatureImage, signatureName, signatureTitle, action } = body;
+    const rawBody = await request.json();
+    const parsed = managerSignatureSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Données invalides" }, { status: 400 });
+    }
+    const { signatureImage, signatureName, signatureTitle, action } = parsed.data;
 
     const signature = await prisma.passportSignature.findUnique({
       where: { managerToken: token },
