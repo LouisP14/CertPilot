@@ -92,11 +92,10 @@ export default function MentionsLegales() {
                 <strong>SIRET :</strong> {missing(legalProfile.siret)}
               </p>
               <p>
-                <strong>RCS :</strong> {missing(legalProfile.rcs)}
+                <strong>Immatriculation :</strong> RNE (Registre National des Entreprises)
               </p>
               <p>
-                <strong>TVA intracommunautaire :</strong>{" "}
-                {missing(legalProfile.vatNumber)}
+                <strong>TVA :</strong> Non assujetti — franchise en base, art. 293B du CGI
               </p>
               <p>
                 <strong>Directeur de la publication :</strong>{" "}

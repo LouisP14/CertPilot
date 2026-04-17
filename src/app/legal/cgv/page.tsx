@@ -52,7 +52,7 @@ export default function CGV() {
           Conditions Générales de Vente
         </h1>
         <p className="mt-2 text-slate-600">
-          Dernière mise à jour : 26 janvier 2026
+          Dernière mise à jour : 18 avril 2026
         </p>
 
         <div className="mt-10 space-y-8 text-slate-700">
@@ -75,8 +75,12 @@ export default function CGV() {
             </h2>
             <div className="mt-4 space-y-2">
               <p>
-                <strong>CertPilot</strong>
+                <strong>Louis Poulain</strong> — Entrepreneur individuel
               </p>
+              <p>Exploitant la marque <strong>CertPilot</strong></p>
+              <p>16 Bis Rue d&apos;Auditoire, 50300 Avranches</p>
+              <p>SIRET : en cours d&apos;immatriculation</p>
+              <p>TVA non applicable, art. 293B du CGI</p>
               <p>
                 Email :{" "}
                 <a
@@ -206,8 +210,8 @@ export default function CGV() {
 
             <h3 className="mt-4 font-semibold text-[#173B56]">6.1 Prix</h3>
             <p className="mt-2">
-              Les prix sont exprimés en euros hors taxes (HT). La TVA applicable
-              (20%) est ajoutée au moment de la facturation.
+              Les prix sont exprimés en euros. TVA non applicable en vertu de
+              l&apos;article 293B du CGI (franchise en base de TVA).
             </p>
             <p className="mt-2">
               CertPilot se réserve le droit de modifier ses tarifs. Toute

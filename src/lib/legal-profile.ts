@@ -30,8 +30,10 @@ export const legalMissingFields = {
     !legalProfile.legalEntityName ||
     !legalProfile.legalForm ||
     !legalProfile.address,
-  registration: !legalProfile.siret || !legalProfile.rcs,
-  tax: !legalProfile.vatNumber,
+  // EI (Entrepreneur individuel) : pas de RCS, seulement SIRET (RNE)
+  registration: !legalProfile.siret,
+  // Franchise en base art. 293B CGI : pas de numéro TVA — non requis
+  tax: false,
   publication: !legalProfile.publicationDirector,
 };
 
