@@ -8,7 +8,7 @@ import Stripe from "stripe";
 export async function POST(request: NextRequest) {
   try {
     const authSession = await auth();
-    if (!authSession || authSession.user.role !== "SUPER_ADMIN") {
+    if (!authSession || !["SUPER_ADMIN", "ADMIN"].includes(authSession.user.role)) {
       return NextResponse.json({ error: "Accès non autorisé" }, { status: 403 });
     }
 
@@ -35,10 +35,15 @@ export async function POST(request: NextRequest) {
       plan,
       billing,
       contactRequestId,
-      customerEmail,
       companyName,
       contactName,
     } = parsed.data;
+
+    // Un ADMIN ne peut initier un checkout que pour son propre email
+    const customerEmail =
+      authSession.user.role === "SUPER_ADMIN"
+        ? parsed.data.customerEmail
+        : authSession.user.email!;
 
     const isAnnual = billing === "annual";
 

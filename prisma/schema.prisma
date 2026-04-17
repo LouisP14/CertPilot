@@ -168,7 +168,7 @@ model Employee {
   subordinates       Employee[]    @relation("ManagerRelation")
   managerEmail       String?
   medicalCheckupDate DateTime?     // Date visite médicale
-  qrToken            String        @unique @default(cuid())
+  qrToken            String        @unique @default(uuid())
   isActive           Boolean       @default(true)
   
   // Données pour calcul coût planification
@@ -294,7 +294,7 @@ model PassportSignature {
   status                String    @default("DRAFT") // DRAFT, PENDING_EMPLOYEE, PENDING_MANAGER, COMPLETED, REJECTED
   
   // Token sécurisé pour l'employé
-  employeeToken         String    @unique @default(cuid())
+  employeeToken         String    @unique @default(uuid())
   employeeTokenExpiry   DateTime?
   
   // Signature de l'employé
@@ -304,7 +304,7 @@ model PassportSignature {
   employeeSignatureName String?   // Nom saisi lors de la signature
   
   // Token sécurisé pour le responsable
-  managerToken          String    @unique @default(cuid())
+  managerToken          String    @unique @default(uuid())
   managerTokenExpiry    DateTime?
   
   // Signature du responsable

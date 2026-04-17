@@ -120,34 +120,49 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return;
   }
 
-  // Créer le compte client
+  // Créer le compte client (avec protection contre les doublons en cas de retry Stripe)
   const tempPassword = generatePassword();
   const hashedPassword = await bcrypt.hash(tempPassword, 12);
 
-  // Créer la company
-  const company = await prisma.company.create({
-    data: {
-      name: companyName || customerEmail.split("@")[0],
-      subscriptionStatus: "ACTIVE",
-      subscriptionPlan: plan,
-      stripeCustomerId,
-      stripeSubscriptionId,
-      employeeLimit: parseInt(employeeLimit || "50"),
-      trialEndsAt: null,
-    },
-  });
+  let company;
+  let user;
 
-  // Créer l'utilisateur
-  const user = await prisma.user.create({
-    data: {
-      email: customerEmail.toLowerCase(),
-      password: hashedPassword,
-      name: contactName || customerEmail.split("@")[0],
-      role: "ADMIN",
-      companyId: company.id,
-      mustChangePassword: true,
-    },
-  });
+  try {
+    company = await prisma.company.create({
+      data: {
+        name: companyName || customerEmail.split("@")[0],
+        subscriptionStatus: "ACTIVE",
+        subscriptionPlan: plan,
+        stripeCustomerId,
+        stripeSubscriptionId,
+        employeeLimit: parseInt(employeeLimit || "50"),
+        trialEndsAt: null,
+      },
+    });
+
+    user = await prisma.user.create({
+      data: {
+        email: customerEmail.toLowerCase(),
+        password: hashedPassword,
+        name: contactName || customerEmail.split("@")[0],
+        role: "ADMIN",
+        companyId: company.id,
+        mustChangePassword: true,
+      },
+    });
+  } catch (createError: unknown) {
+    // Stripe peut rejouer le webhook — si l'utilisateur existe déjà, on traite ça comme un succès
+    const isUniqueConstraint =
+      typeof createError === "object" &&
+      createError !== null &&
+      "code" in createError &&
+      (createError as { code: string }).code === "P2002";
+    if (isUniqueConstraint) {
+      console.log("Webhook rejoué — compte déjà créé pour:", customerEmail);
+      return;
+    }
+    throw createError;
+  }
 
   console.log("Compte créé:", user.email, "Company:", company.id);
 

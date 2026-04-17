@@ -3,10 +3,8 @@ import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 function checkAuth(request: NextRequest): boolean {
-  if (process.env.NODE_ENV !== "production") return true;
-  const secret = request.headers.get("authorization")?.replace("Bearer ", "")
-    ?? new URL(request.url).searchParams.get("secret");
-  return !!process.env.INIT_SECRET && secret === process.env.INIT_SECRET;
+  if (process.env.NODE_ENV === "production") return false;
+  return true;
 }
 
 /**
