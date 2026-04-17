@@ -346,18 +346,18 @@ export default function Home() {
 
               <div className="mt-10 flex items-center gap-6 border-t border-slate-200 pt-8">
                 <div>
-                  <p className="text-2xl font-black text-emerald-600">-95%</p>
-                  <p className="text-sm text-slate-500">de retards habilitations</p>
+                  <p className="text-2xl font-black text-emerald-600">0 retard</p>
+                  <p className="text-sm text-slate-500">grâce aux alertes automatiques</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200" />
                 <div>
-                  <p className="text-2xl font-black text-emerald-600">2h</p>
-                  <p className="text-sm text-slate-500">gagnées / semaine</p>
+                  <p className="text-2xl font-black text-emerald-600">Fin des Excel</p>
+                  <p className="text-sm text-slate-500">import en 1 clic, passeport QR code</p>
                 </div>
                 <div className="h-10 w-px bg-slate-200" />
                 <div>
                   <p className="text-2xl font-black text-emerald-600">
-                    1 jour
+                    &lt; 24h
                   </p>
                   <p className="text-sm text-slate-500">pour être opérationnel</p>
                 </div>
