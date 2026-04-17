@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const employeeId = searchParams.get("employeeId");
 
-    const where: any = {
+    const where: { isArchived: boolean; employeeId?: string; employee?: { companyId: string } } = {
       isArchived: false,
     };
 

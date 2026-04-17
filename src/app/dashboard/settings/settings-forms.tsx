@@ -387,6 +387,7 @@ export function SignatureForm({ initialData }: SignatureFormProps) {
               Aperçu sur le passeport :
             </p>
             <div className="flex flex-col items-center rounded-lg bg-white p-4 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={formData.signatureImage}
                 alt="Aperçu signature"

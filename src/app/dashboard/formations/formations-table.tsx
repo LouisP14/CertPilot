@@ -51,6 +51,11 @@ function getServiceColor(service: string | null): string {
   return serviceColors[service] || "border-gray-300 bg-gray-100 text-gray-800";
 }
 
+function SortIcon({ field, sortField, sortDirection }: { field: SortField; sortField: SortField; sortDirection: SortDirection }) {
+  if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />;
+  return sortDirection === "asc" ? <ChevronUp className="ml-1 h-3 w-3" /> : <ChevronDown className="ml-1 h-3 w-3" />;
+}
+
 export function FormationsTable({ formations, isReadOnly = false }: FormationsTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
@@ -128,17 +133,6 @@ export function FormationsTable({ formations, isReadOnly = false }: FormationsTa
       setSortField(field);
       setSortDirection("asc");
     }
-  };
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) {
-      return <ArrowUpDown className="ml-1 h-3 w-3 opacity-50" />;
-    }
-    return sortDirection === "asc" ? (
-      <ChevronUp className="ml-1 h-3 w-3" />
-    ) : (
-      <ChevronDown className="ml-1 h-3 w-3" />
-    );
   };
 
   const clearFilters = () => {
@@ -230,7 +224,7 @@ export function FormationsTable({ formations, isReadOnly = false }: FormationsTa
                   className="flex items-center font-medium hover:text-gray-900"
                 >
                   Nom de la formation
-                  <SortIcon field="name" />
+                  <SortIcon field="name" sortField={sortField} sortDirection={sortDirection} />
                 </button>
               </th>
               <th className="pb-3">
@@ -239,7 +233,7 @@ export function FormationsTable({ formations, isReadOnly = false }: FormationsTa
                   className="flex items-center font-medium hover:text-gray-900"
                 >
                   Catégorie
-                  <SortIcon field="category" />
+                  <SortIcon field="category" sortField={sortField} sortDirection={sortDirection} />
                 </button>
               </th>
               <th className="pb-3">
@@ -248,7 +242,7 @@ export function FormationsTable({ formations, isReadOnly = false }: FormationsTa
                   className="flex items-center font-medium hover:text-gray-900"
                 >
                   Service
-                  <SortIcon field="service" />
+                  <SortIcon field="service" sortField={sortField} sortDirection={sortDirection} />
                 </button>
               </th>
               <th className="pb-3">
@@ -257,7 +251,7 @@ export function FormationsTable({ formations, isReadOnly = false }: FormationsTa
                   className="flex items-center font-medium hover:text-gray-900"
                 >
                   Validité par défaut
-                  <SortIcon field="defaultValidityMonths" />
+                  <SortIcon field="defaultValidityMonths" sortField={sortField} sortDirection={sortDirection} />
                 </button>
               </th>
               <th className="pb-3">
@@ -266,7 +260,7 @@ export function FormationsTable({ formations, isReadOnly = false }: FormationsTa
                   className="flex items-center font-medium hover:text-gray-900"
                 >
                   Utilisations
-                  <SortIcon field="certificateCount" />
+                  <SortIcon field="certificateCount" sortField={sortField} sortDirection={sortDirection} />
                 </button>
               </th>
               {!isReadOnly && <th className="pb-3 font-medium text-right">Actions</th>}
