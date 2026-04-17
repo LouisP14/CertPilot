@@ -13,6 +13,12 @@ export async function PUT(
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    if (session.user.role === "MANAGER") {
+      return NextResponse.json(
+        { error: "Accès en lecture seule" },
+        { status: 403 },
+      );
+    }
 
     const { id } = await params;
     const body = await request.json();
@@ -85,6 +91,12 @@ export async function DELETE(
     const session = await auth();
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
+    }
+    if (session.user.role === "MANAGER") {
+      return NextResponse.json(
+        { error: "Accès en lecture seule" },
+        { status: 403 },
+      );
     }
 
     const { id } = await params;

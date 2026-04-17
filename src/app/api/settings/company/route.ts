@@ -10,6 +10,12 @@ export async function PUT(request: NextRequest) {
     if (!session?.user?.companyId) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    if (session.user.role === "MANAGER") {
+      return NextResponse.json(
+        { error: "Accès en lecture seule" },
+        { status: 403 },
+      );
+    }
     const companyId = session.user.companyId;
 
     const body = await request.json();

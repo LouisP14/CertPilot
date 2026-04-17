@@ -11,6 +11,12 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
+    if (session.user.role === "MANAGER") {
+      return NextResponse.json(
+        { error: "Accès en lecture seule" },
+        { status: 403 },
+      );
+    }
 
     const body = await request.json();
     const parsed = parseBody(createCertificateSchema, body);
