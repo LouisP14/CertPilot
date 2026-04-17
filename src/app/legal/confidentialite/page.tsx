@@ -52,7 +52,7 @@ export default function Confidentialite() {
           Politique de confidentialité
         </h1>
         <p className="mt-2 text-slate-600">
-          Dernière mise à jour : 26 janvier 2026
+          Dernière mise à jour : 17 avril 2026
         </p>
 
         <div className="mt-10 space-y-8 text-slate-700">
@@ -279,6 +279,14 @@ export default function Confidentialite() {
                     <td className="py-2">5 ans</td>
                   </tr>
                   <tr>
+                    <td className="py-2">Leads commerciaux (prospects)</td>
+                    <td className="py-2">13 mois — purge automatique</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2">Logs d&apos;alertes</td>
+                    <td className="py-2">2 ans — purge automatique</td>
+                  </tr>
+                  <tr>
                     <td className="py-2">Données de facturation</td>
                     <td className="py-2">10 ans (obligation comptable)</td>
                   </tr>
@@ -339,7 +347,13 @@ export default function Confidentialite() {
               </li>
             </ul>
             <p className="mt-4">
-              Pour exercer ces droits, contactez notre DPO à{" "}
+              Les utilisateurs disposant d&apos;un compte CertPilot (Administrateur / Manager)
+              peuvent exercer directement leurs droits d&apos;effacement et de portabilité
+              depuis leur profil (rubrique <strong>Mes droits RGPD</strong>) sans intervention
+              de notre part.
+            </p>
+            <p className="mt-2">
+              Pour tout autre demande, contactez notre DPO à{" "}
               <a
                 href="mailto:contact@certpilot.eu"
                 className="text-emerald-600 hover:underline"

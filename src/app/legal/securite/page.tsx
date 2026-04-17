@@ -165,7 +165,9 @@ export default function SecurityPage() {
               <Check>
                 <strong>Headers de sécurité HTTP</strong> — protection contre le
                 clickjacking (X-Frame-Options: DENY), le sniffing de contenu
-                (X-Content-Type-Options) et le XSS (X-XSS-Protection).
+                (X-Content-Type-Options), le XSS (X-XSS-Protection) et une politique
+                de sécurité du contenu stricte (Content-Security-Policy) limitant
+                les sources autorisées pour les scripts, styles et appels réseau.
               </Check>
               <Check>
                 <strong>Chiffrement de la base de données en transit</strong> — connexion
@@ -230,9 +232,10 @@ export default function SecurityPage() {
                 du RGPD.
               </Check>
               <Check>
-                <strong>Droit à l&apos;effacement opérationnel</strong> — suppression complète
-                des données d&apos;un employé ou d&apos;un compte depuis l&apos;interface, sans
-                intervention technique requise.
+                <strong>Droit à l&apos;effacement et à la portabilité en libre-service</strong> —
+                suppression anonymisée du compte et export JSON de toutes les données
+                personnelles accessibles directement depuis le profil utilisateur (Art. 17 et 20 RGPD),
+                sans intervention technique requise.
               </Check>
               <Check>
                 <strong>Données en Union Européenne</strong> — aucun sous-traitant
