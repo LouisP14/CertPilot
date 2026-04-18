@@ -12,39 +12,140 @@ export function isStripeEnabled() {
   return stripe !== null;
 }
 
-// Configuration des plans CertPilot
+// Configuration des plans CertPilot avec structure tranche-aware
 // Les price IDs sont dans les variables d'environnement (STRIPE_PRICE_*)
-export const STRIPE_PLANS = {
+export type PlanKey = "starter" | "pro" | "business";
+export type Tranche = "1-50" | "51-150" | "151-300";
+
+export const STRIPE_PLANS: Record<
+  PlanKey,
+  {
+    name: string;
+    tranches: Record<
+      Tranche,
+      {
+        employeeLimit: number;
+        monthly: { price: number; priceId: string };
+        annual: { price: number; priceId: string };
+      }
+    >;
+  }
+> = {
   starter: {
     name: "Starter",
-    priceId: process.env.STRIPE_PRICE_STARTER_MONTHLY || "",
-    annualPriceId: process.env.STRIPE_PRICE_STARTER_ANNUAL || "",
-    price: 49,
-    annualPrice: 490,
-    employees: "1-20",
-    employeeLimit: 20,
+    tranches: {
+      "1-50": {
+        employeeLimit: 50,
+        monthly: {
+          price: 69,
+          priceId: process.env.STRIPE_PRICE_STARTER_50_MONTHLY ?? "",
+        },
+        annual: {
+          price: 57,
+          priceId: process.env.STRIPE_PRICE_STARTER_50_ANNUAL ?? "",
+        },
+      },
+      "51-150": {
+        employeeLimit: 150,
+        monthly: {
+          price: 109,
+          priceId: process.env.STRIPE_PRICE_STARTER_150_MONTHLY ?? "",
+        },
+        annual: {
+          price: 91,
+          priceId: process.env.STRIPE_PRICE_STARTER_150_ANNUAL ?? "",
+        },
+      },
+      "151-300": {
+        employeeLimit: 300,
+        monthly: {
+          price: 149,
+          priceId: process.env.STRIPE_PRICE_STARTER_300_MONTHLY ?? "",
+        },
+        annual: {
+          price: 124,
+          priceId: process.env.STRIPE_PRICE_STARTER_300_ANNUAL ?? "",
+        },
+      },
+    },
   },
   pro: {
     name: "Pro",
-    priceId: process.env.STRIPE_PRICE_PRO_MONTHLY || "",
-    annualPriceId: process.env.STRIPE_PRICE_PRO_ANNUAL || "",
-    price: 149,
-    annualPrice: 1490,
-    employees: "21-100",
-    employeeLimit: 100,
+    tranches: {
+      "1-50": {
+        employeeLimit: 50,
+        monthly: {
+          price: 149,
+          priceId: process.env.STRIPE_PRICE_PRO_50_MONTHLY ?? "",
+        },
+        annual: {
+          price: 124,
+          priceId: process.env.STRIPE_PRICE_PRO_50_ANNUAL ?? "",
+        },
+      },
+      "51-150": {
+        employeeLimit: 150,
+        monthly: {
+          price: 229,
+          priceId: process.env.STRIPE_PRICE_PRO_150_MONTHLY ?? "",
+        },
+        annual: {
+          price: 190,
+          priceId: process.env.STRIPE_PRICE_PRO_150_ANNUAL ?? "",
+        },
+      },
+      "151-300": {
+        employeeLimit: 300,
+        monthly: {
+          price: 329,
+          priceId: process.env.STRIPE_PRICE_PRO_300_MONTHLY ?? "",
+        },
+        annual: {
+          price: 273,
+          priceId: process.env.STRIPE_PRICE_PRO_300_ANNUAL ?? "",
+        },
+      },
+    },
   },
   business: {
     name: "Business",
-    priceId: process.env.STRIPE_PRICE_BUSINESS_MONTHLY || "",
-    annualPriceId: process.env.STRIPE_PRICE_BUSINESS_ANNUAL || "",
-    price: 349,
-    annualPrice: 3490,
-    employees: "101-300",
-    employeeLimit: 300,
+    tranches: {
+      "1-50": {
+        employeeLimit: 50,
+        monthly: {
+          price: 349,
+          priceId: process.env.STRIPE_PRICE_BUSINESS_50_MONTHLY ?? "",
+        },
+        annual: {
+          price: 290,
+          priceId: process.env.STRIPE_PRICE_BUSINESS_50_ANNUAL ?? "",
+        },
+      },
+      "51-150": {
+        employeeLimit: 150,
+        monthly: {
+          price: 499,
+          priceId: process.env.STRIPE_PRICE_BUSINESS_150_MONTHLY ?? "",
+        },
+        annual: {
+          price: 414,
+          priceId: process.env.STRIPE_PRICE_BUSINESS_150_ANNUAL ?? "",
+        },
+      },
+      "151-300": {
+        employeeLimit: 300,
+        monthly: {
+          price: 699,
+          priceId: process.env.STRIPE_PRICE_BUSINESS_300_MONTHLY ?? "",
+        },
+        annual: {
+          price: 580,
+          priceId: process.env.STRIPE_PRICE_BUSINESS_300_ANNUAL ?? "",
+        },
+      },
+    },
   },
 };
-
-export type PlanKey = keyof typeof STRIPE_PLANS;
 
 // Vérifier si un plan est valide
 export function isValidPlan(plan: string): plan is PlanKey {
@@ -57,4 +158,13 @@ export function getPlanConfig(plan: string) {
     return STRIPE_PLANS[plan];
   }
   return null;
+}
+
+// Obtenir un price ID spécifique pour un plan, une tranche et un mode de facturation
+export function getPriceId(
+  plan: PlanKey,
+  tranche: Tranche,
+  billing: "monthly" | "annual"
+): string {
+  return STRIPE_PLANS[plan].tranches[tranche][billing].priceId;
 }
