@@ -311,12 +311,12 @@ export default function Home() {
             <div className="absolute left-0 top-1/2 h-125 w-125 -translate-y-1/2 rounded-full bg-emerald-500/8 blur-3xl" />
           </div>
 
-          {/* FeatureHub ghost background — desktop only */}
-          <div className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 opacity-70 lg:block" style={{ width: 560, height: 560 }}>
-            <FeatureHub ghost />
-          </div>
-
           <div className="relative mx-auto max-w-7xl px-6 py-20 lg:py-28">
+            {/* FeatureHub ghost background — desktop only */}
+            <div className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 opacity-70 lg:block" style={{ width: 560, height: 560 }}>
+              <FeatureHub ghost />
+            </div>
+
             <div className="max-w-xl">
               {/* Eyebrow */}
               <div className="mb-7 inline-flex items-center gap-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5">
