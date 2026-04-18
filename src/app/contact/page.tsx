@@ -70,6 +70,7 @@ function ContactForm() {
     phone: "",
     employeeCount: planParam !== "enterprise" ? tranche : "300+",
     plan: planParam || "",
+    billing: billing,
     message: "",
   });
 

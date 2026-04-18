@@ -33,6 +33,7 @@ interface ContactRequest {
   phone: string | null;
   employeeCount: string | null;
   plan: string | null;
+  billing: string | null;
   message: string | null;
   status: string;
   notes: string | null;
@@ -82,15 +83,28 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const PLAN_CONFIG: Record<
-  string,
-  { name: string; price: number; employees: string }
-> = {
-  starter: { name: "Starter", price: 69, employees: "1-50" },
-  pro: { name: "Pro", price: 149, employees: "51-150" },
-  business: { name: "Business", price: 349, employees: "151-300" },
-  enterprise: { name: "Enterprise", price: 0, employees: "300+" },
+const PLAN_NAMES: Record<string, string> = {
+  starter: "Starter",
+  pro: "Pro",
+  business: "Business",
+  enterprise: "Enterprise",
 };
+
+const PRICES: Record<string, Record<string, Record<string, number>>> = {
+  starter:  { "1-50": { monthly: 69,  annual: 57  }, "51-150": { monthly: 109, annual: 91  }, "151-300": { monthly: 149, annual: 124 } },
+  pro:      { "1-50": { monthly: 149, annual: 124 }, "51-150": { monthly: 229, annual: 190 }, "151-300": { monthly: 329, annual: 273 } },
+  business: { "1-50": { monthly: 349, annual: 290 }, "51-150": { monthly: 499, annual: 414 }, "151-300": { monthly: 699, annual: 580 } },
+};
+
+function getPlanLabel(plan: string | null, tranche: string | null, billing: string | null): string {
+  if (!plan) return "—";
+  const name = PLAN_NAMES[plan] ?? plan;
+  if (plan === "enterprise") return `${name} — Sur devis`;
+  const priceMap = PRICES[plan]?.[tranche ?? "1-50"];
+  const price = priceMap?.[billing ?? "monthly"] ?? null;
+  const billingLabel = billing === "annual" ? "/mois HT (annuel)" : "/mois HT";
+  return price ? `${name} — ${price}€${billingLabel}` : name;
+}
 
 export default function DemandesAdminPage() {
   const [requests, setRequests] = useState<ContactRequest[]>([]);
@@ -374,9 +388,7 @@ export default function DemandesAdminPage() {
               filteredRequests.map((request) => {
                 const statusConfig =
                   STATUS_CONFIG[request.status] || STATUS_CONFIG.NEW;
-                const planConfig = request.plan
-                  ? PLAN_CONFIG[request.plan]
-                  : null;
+                const planName = request.plan ? PLAN_NAMES[request.plan] ?? request.plan : null;
 
                 return (
                   <div
@@ -394,10 +406,10 @@ export default function DemandesAdminPage() {
                           <p className="font-semibold text-slate-900 truncate">
                             {request.companyName}
                           </p>
-                          {planConfig && (
+                          {planName && (
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
                               <Package className="h-3 w-3" />
-                              {planConfig.name}
+                              {planName}
                             </span>
                           )}
                         </div>
@@ -495,8 +507,7 @@ export default function DemandesAdminPage() {
                       </div>
                     </div>
                   )}
-                  {selectedRequest.plan &&
-                    PLAN_CONFIG[selectedRequest.plan] && (
+                  {selectedRequest.plan && (
                       <div className="flex items-center gap-3">
                         <Package className="h-5 w-5 text-slate-400" />
                         <div>
@@ -504,8 +515,7 @@ export default function DemandesAdminPage() {
                             Offre souhaitée
                           </p>
                           <p className="font-medium">
-                            {PLAN_CONFIG[selectedRequest.plan].name} -{" "}
-                            {PLAN_CONFIG[selectedRequest.plan].price}€/mois
+                            {getPlanLabel(selectedRequest.plan, selectedRequest.employeeCount, selectedRequest.billing)}
                           </p>
                         </div>
                       </div>

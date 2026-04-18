@@ -78,6 +78,7 @@ export const contactRequestSchema = z.object({
   phone: z.string().optional(),
   employeeCount: z.string().optional(),
   plan: z.string().optional(),
+  billing: z.enum(["monthly", "annual"]).optional(),
   message: z.string().optional(),
 });
 

@@ -63,8 +63,9 @@ model ContactRequest {
   contactName     String
   email           String
   phone           String?
-  employeeCount   String?   // "1-50", "51-100", "101-200", "201-500", "500+"
-  plan            String?   // "starter", "business", "enterprise", "corporate"
+  employeeCount   String?   // "1-50", "51-150", "151-300", "300+"
+  plan            String?   // "starter", "pro", "business", "enterprise"
+  billing         String?   // "monthly", "annual"
   message         String?
   status          String    @default("NEW") // NEW, CONTACTED, DEMO_DONE, PAYMENT_SENT, CONVERTED, REJECTED
   notes           String?   // Notes internes admin

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const { companyName, contactName, email, phone, employeeCount, plan, message } = parsed.data;
+    const { companyName, contactName, email, phone, employeeCount, plan, billing, message } = parsed.data;
 
     // Créer la demande
     const contactRequest = await prisma.contactRequest.create({
@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         employeeCount: employeeCount || null,
         plan: plan || null,
+        billing: billing || null,
         message: message || null,
         status: "NEW",
       },
