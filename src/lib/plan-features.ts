@@ -25,6 +25,8 @@ const ALL_DECLARED_PAGES = [
   ...PLAN_PAGES.Business,
 ]
 
+const SORTED_DECLARED_PAGES = [...ALL_DECLARED_PAGES].sort((a, b) => b.length - a.length)
+
 const FULL_ACCESS_PLANS = ['Business', 'Enterprise', 'Trial', 'Legacy']
 const PRO_ACCESS_PLANS = ['Pro', ...FULL_ACCESS_PLANS]
 
@@ -35,11 +37,12 @@ const PRO_ACCESS_PLANS = ['Pro', ...FULL_ACCESS_PLANS]
  *      /dashboard              → /dashboard
  */
 function owningPage(path: string): string | null {
-  // Sort by length descending so the longest (most specific) prefix wins
-  const sorted = [...ALL_DECLARED_PAGES].sort((a, b) => b.length - a.length)
+  const sorted = SORTED_DECLARED_PAGES.filter((p) => p !== '/dashboard')
   for (const p of sorted) {
     if (path === p || path.startsWith(p + '/')) return p
   }
+  // /dashboard only matches exactly, not as a catch-all prefix
+  if (path === '/dashboard') return '/dashboard'
   return null
 }
 
@@ -55,7 +58,7 @@ export function canAccessPage(plan: string | null | undefined, path: string): bo
   const accessiblePages = [
     ...PLAN_PAGES.Starter,
     ...(PRO_ACCESS_PLANS.includes(plan) ? PLAN_PAGES.Pro : []),
-    ...(FULL_ACCESS_PLANS.includes(plan) ? PLAN_PAGES.Business : []),
+    // FULL_ACCESS_PLANS members return true early above
   ]
   return accessiblePages.includes(owner)
 }

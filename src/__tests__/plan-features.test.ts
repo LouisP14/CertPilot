@@ -42,3 +42,22 @@ describe('requiredPlanForPage', () => {
     expect(requiredPlanForPage('/dashboard/audit')).toBe('Business')
   })
 })
+
+describe('sub-path routing', () => {
+  it('Starter cannot access a sub-path of a Pro page', () => {
+    expect(canAccessPage('Starter', '/dashboard/sessions/123')).toBe(false)
+  })
+  it('Pro can access a sub-path of a Pro page', () => {
+    expect(canAccessPage('Pro', '/dashboard/sessions/123')).toBe(true)
+  })
+  it('Pro cannot access a sub-path of a Business page', () => {
+    expect(canAccessPage('Pro', '/dashboard/audit/456')).toBe(false)
+  })
+  it('requiredPlanForPage works on sub-paths', () => {
+    expect(requiredPlanForPage('/dashboard/audit/456')).toBe('Business')
+  })
+  it('undeclared paths are denied for all plans', () => {
+    expect(canAccessPage('Starter', '/dashboard/upgrade')).toBe(false)
+    expect(canAccessPage('Pro', '/dashboard/upgrade')).toBe(false)
+  })
+})
