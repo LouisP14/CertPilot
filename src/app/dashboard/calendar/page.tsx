@@ -1,54 +1,23 @@
-import { getEmployeeFilter } from "@/lib/auth";
-import prisma from "@/lib/prisma";
-import type { Metadata } from "next";
-import CalendarPageClient from "./calendar-page-client";
+import { auth } from "@/lib/auth"
+import prisma from "@/lib/prisma"
+import { canAccessPage } from "@/lib/plan-features"
+import { redirect } from "next/navigation"
+import CalendarView from "./view"
 
-export const metadata: Metadata = { title: "Calendrier" };
-
-async function getCertificatesCalendar() {
-  const employeeFilter = await getEmployeeFilter();
-  const certificates = await prisma.certificate.findMany({
-    where: {
-      isArchived: false,
-      expiryDate: { not: null },
-      employee: employeeFilter,
-    },
-    include: {
-      employee: true,
-      formationType: true,
-    },
-    orderBy: { expiryDate: "asc" },
-  });
-
-  // Group by month
-  const grouped: Record<string, (typeof certificates)[0][]> = {};
-
-  certificates.forEach((cert) => {
-    if (!cert.expiryDate) return;
-    const date = new Date(cert.expiryDate);
-    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    if (!grouped[key]) {
-      grouped[key] = [];
-    }
-    grouped[key].push(cert);
-  });
-
-  // Get unique services
-  const services = [
-    ...new Set(
-      certificates
-        .map((c) => c.employee.department)
-        .filter((d): d is string => d !== null),
-    ),
-  ].sort();
-
-  return { grouped, services };
-}
+export { metadata } from "./view"
 
 export default async function CalendarPage() {
-  const { grouped, services } = await getCertificatesCalendar();
+  const session = await auth()
+  if (!session?.user?.companyId) redirect("/login")
 
-  return (
-    <CalendarPageClient groupedCertificates={grouped} services={services} />
-  );
+  const company = await prisma.company.findUnique({
+    where: { id: session.user.companyId },
+    select: { subscriptionPlan: true },
+  })
+
+  if (!canAccessPage(company?.subscriptionPlan, '/dashboard/calendar')) {
+    redirect('/dashboard/upgrade?feature=calendar&required=Pro')
+  }
+
+  return <CalendarView />
 }
