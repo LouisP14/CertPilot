@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getPlanConfig } from "@/lib/stripe";
+import { getPlanConfig, getPriceId, isValidPlan, type Tranche } from "@/lib/stripe";
 import { parseBody, stripeCheckoutSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     const {
       plan,
       billing,
+      tranche,
       contactRequestId,
       companyName,
       contactName,
@@ -55,18 +56,18 @@ export async function POST(request: NextRequest) {
     });
 
     // Vérifier le plan
-    const planConfig = getPlanConfig(plan);
-    if (!planConfig) {
+    if (!isValidPlan(plan)) {
       console.error("Plan invalide:", plan);
       return NextResponse.json({ error: "Plan invalide" }, { status: 400 });
     }
 
-    const selectedPriceId = isAnnual
-      ? planConfig.annualPriceId
-      : planConfig.priceId;
+    const selectedTranche = (tranche ?? '1-50') as Tranche;
+    const planConfig = getPlanConfig(plan)!;
+    const trancheConfig = planConfig.tranches[selectedTranche];
+    const selectedPriceId = getPriceId(plan, selectedTranche, isAnnual ? 'annual' : 'monthly');
 
     if (!selectedPriceId) {
-      console.error("Price ID Stripe non configuré pour le plan:", plan);
+      console.error("Price ID Stripe non configuré pour le plan:", plan, "tranche:", selectedTranche);
       return NextResponse.json(
         { error: "Configuration Stripe incomplète pour ce plan" },
         { status: 500 },
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
         billing: isAnnual ? "annual" : "monthly",
         companyName: companyName || "",
         contactName: contactName || "",
-        employeeLimit: planConfig.employeeLimit.toString(),
+        employeeLimit: trancheConfig.employeeLimit.toString(),
       },
       subscription_data: {
         metadata: {
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
           billing: isAnnual ? "annual" : "monthly",
           companyName: companyName || "",
           contactName: contactName || "",
-          employeeLimit: planConfig.employeeLimit.toString(),
+          employeeLimit: trancheConfig.employeeLimit.toString(),
         },
       },
       success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,

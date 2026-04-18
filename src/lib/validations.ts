@@ -318,6 +318,7 @@ export const updateNotificationSchema = z.object({
 export const stripeCheckoutSchema = z.object({
   plan: z.string().min(1, "Le plan est requis"),
   billing: z.string().optional(),
+  tranche: z.enum(['1-50', '51-150', '151-300']).optional().default('1-50'),
   contactRequestId: z.string().optional(),
   customerEmail: z.string().email("Email invalide").optional(),
   companyName: z.string().optional(),
