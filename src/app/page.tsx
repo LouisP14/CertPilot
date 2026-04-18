@@ -8,7 +8,6 @@ import {
   Calendar,
   Check,
   FileText,
-  GraduationCap,
   Mail,
   PenTool,
   Shield,
@@ -490,14 +489,13 @@ export default function Home() {
             <div className="mt-12 relative">
               <div className="absolute -inset-4 rounded-3xl bg-linear-to-br from-emerald-500/10 to-teal-500/10 blur-2xl" />
               <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-2xl shadow-slate-900/20">
-                <video
-                  className="h-full w-full object-contain"
-                  controls
-                  preload="metadata"
-                >
-                  <source src="/demo.mp4" type="video/mp4" />
-                  Votre navigateur ne supporte pas la lecture vidéo.
-                </video>
+                <iframe
+                  className="h-full w-full"
+                  src="https://www.youtube.com/embed/dKqNcVAEI-k"
+                  title="CertPilot — Démo produit"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             </div>
           </div>
