@@ -21,6 +21,10 @@ Pages accessibles :
 - `/dashboard/settings`
 - `/dashboard/profile`
 
+Limites de compte :
+- **1 administrateur** (le compte d'origine)
+- Pas de gestionnaires (rôle MANAGER non disponible)
+
 | Tranche | Mensuel | Annuel (−17%) |
 |---------|---------|---------------|
 | 1–50 employés | 69€/mois | 57€/mois |
@@ -34,6 +38,10 @@ Pages accessibles : tout Starter +
 - `/dashboard/convocations` (Gestion des convocations)
 - `/dashboard/calendar` (Vue calendaire)
 
+Limites de compte :
+- **3 administrateurs maximum**
+- **Gestionnaires limités à 3 services** par compte
+
 | Tranche | Mensuel | Annuel (−17%) |
 |---------|---------|---------------|
 | 1–50 employés | 149€/mois | 124€/mois |
@@ -46,6 +54,11 @@ Pages accessibles : tout Pro +
 - `/dashboard/export` (Import / Export Excel)
 - `/dashboard/audit` (Audit trail)
 
+Limites de compte :
+- **Administrateurs illimités**
+- **Gestionnaires illimités** (aucune limite de services)
+- **Support dédié 7j/7**
+
 | Tranche | Mensuel | Annuel (−17%) |
 |---------|---------|---------------|
 | 1–50 employés | 349€/mois | 290€/mois |
@@ -54,8 +67,8 @@ Pages accessibles : tout Pro +
 
 #### ENTERPRISE — Sur devis
 - 300+ employés
-- Accès complet + SLA garanti + onboarding dédié
-- Contact commercial uniquement
+- Tout Business, tarif adapté au volume
+- Contact commercial uniquement — pas de souscription en ligne
 
 ### Facturation annuelle
 Réduction de 17% sur le prix mensuel. Affichage par défaut en annuel sur la page pricing (ancrage psychologique du prix bas). Toggle mensuel/annuel avec badge "−17%".
@@ -187,12 +200,39 @@ Nouvelle page Next.js recevant `?feature=X&required=Y` en searchParams.
 - Mettre à jour `employeeLimit` selon la tranche souscrite
 - Webhook Stripe à mettre à jour pour stocker plan + tranche
 
-### 4.7 Audit trail — roadmap future
-L'audit trail actuel est un log générique. La politique de confidentialité engage une rétention 5 ans. Pour un vrai audit trail légal, un sprint dédié devra ajouter :
+### 4.7 Limites de compte par plan
+Nouveau champ à ajouter sur le modèle `Company` (ou via `plan-features.ts`) :
+
+| Plan | adminLimit | managerServiceLimit |
+|------|-----------|-------------------|
+| Starter | 1 | 0 (MANAGER non disponible) |
+| Pro | 3 | 3 services par gestionnaire max |
+| Business | illimité | illimité |
+| Enterprise | illimité | illimité |
+
+- `POST /api/users` : vérifier `adminLimit` avant création d'un MANAGER (et débloquer création d'ADMIN secondaire pour Pro/Business)
+- Dashboard settings : afficher le quota utilisé ("2/3 admins")
+
+### 4.8 Correction BudgetWidget — dashboard Starter
+Le `BudgetWidget` sur `/dashboard` contient un lien `href="/dashboard/sessions"` inaccessible en Starter.  
+→ Masquer le lien (ou le widget entier) si `plan === 'Starter'`.
+
+---
+
+## 5. Roadmap — features à construire plus tard
+
+### Vrai audit trail légal
+L'audit trail actuel est un log générique. La politique de confidentialité engage une rétention 5 ans. Sprint dédié :
 - Immuabilité des logs (lecture seule même pour SUPER_ADMIN)
 - Hash chaining (intégrité vérifiable)
 - Format d'export structuré pour inspecteurs
 - Couverture exhaustive de toutes les actions
+
+### Multi-admin complet
+Actuellement 1 seul ADMIN par company (hardcodé). Sprint dédié :
+- Débloquer création d'admins secondaires (rôle ADMIN)
+- Enforcer `adminLimit` par plan en base
+- Enforcer limite de services par gestionnaire selon plan
 
 ---
 
