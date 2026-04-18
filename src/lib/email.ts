@@ -204,13 +204,35 @@ export async function sendContactConfirmation(params: {
   contactName: string;
   companyName: string;
   plan: string;
+  tranche?: string | null;
+  billing?: string | null;
 }) {
-  const { to, contactName, companyName, plan } = params;
+  const { to, contactName, companyName, plan, tranche, billing } = params;
+
+  const PRICES: Record<string, Record<string, Record<string, number>>> = {
+    starter:  { "1-50": { monthly: 69,  annual: 57  }, "51-150": { monthly: 109, annual: 91  }, "151-300": { monthly: 149, annual: 124 } },
+    pro:      { "1-50": { monthly: 149, annual: 124 }, "51-150": { monthly: 229, annual: 190 }, "151-300": { monthly: 329, annual: 273 } },
+    business: { "1-50": { monthly: 349, annual: 290 }, "51-150": { monthly: 499, annual: 414 }, "151-300": { monthly: 699, annual: 580 } },
+  };
+  const PLAN_DISPLAY: Record<string, string> = {
+    starter: "Starter", pro: "Pro", business: "Business", enterprise: "Enterprise",
+  };
+
+  function buildPlanLabel(): string {
+    const name = PLAN_DISPLAY[plan] ?? plan;
+    if (plan === "enterprise") return `${name} — Sur devis`;
+    const t = tranche ?? "1-50";
+    const b = billing ?? "monthly";
+    const price = PRICES[plan]?.[t]?.[b];
+    if (!price) return name;
+    const billingLabel = b === "annual" ? "/mois HT (annuel)" : "/mois HT";
+    return `${name} — ${price}€${billingLabel}`;
+  }
 
   const planNames: Record<string, string> = {
-    starter: "Starter (à partir de 69€/mois)",
-    pro: "Pro (à partir de 149€/mois)",
-    business: "Business (à partir de 349€/mois)",
+    starter: buildPlanLabel(),
+    pro: buildPlanLabel(),
+    business: buildPlanLabel(),
     enterprise: "Enterprise (sur devis)",
   };
 

@@ -82,6 +82,8 @@ export async function POST(request: NextRequest) {
           contactName,
           companyName,
           plan,
+          tranche: employeeCount,
+          billing,
         });
       }
     } catch (emailError) {
