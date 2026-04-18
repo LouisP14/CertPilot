@@ -2,16 +2,15 @@ import type { Metadata } from "next";
 import type { ComponentType } from "react";
 
 import { CookieBanner } from "@/components/cookie-banner";
+import { PricingToggle } from "@/components/pricing-toggle";
 import {
   ArrowRight,
   Bell,
   Calendar,
-  Check,
   FileText,
   Mail,
   PenTool,
   Shield,
-  Sparkles,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -303,83 +302,115 @@ export default function Home() {
 
       <main className="relative flex-1">
         {/* Hero */}
-        <section className="mx-auto max-w-7xl px-6 pt-16 pb-20 lg:pt-24 lg:pb-28">
-          <div className="grid items-center gap-16 lg:grid-cols-2">
+        <section className="relative overflow-hidden bg-[#0d1f2d]">
+          {/* Green top accent line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-emerald-500 via-emerald-400 to-transparent" />
+
+          {/* Radial glow */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="absolute left-0 top-1/2 h-125 w-125 -translate-y-1/2 rounded-full bg-emerald-500/8 blur-3xl" />
+          </div>
+
+          {/* FeatureHub ghost background — desktop only */}
+          <div className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 opacity-[0.13] lg:block" style={{ width: 560, height: 560 }}>
+            <FeatureHub ghost />
+          </div>
+
+          <div className="relative mx-auto max-w-7xl px-6 py-20 lg:py-28">
             <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-sm font-semibold text-emerald-800">
-                <Sparkles className="h-4 w-4" />
-                Essai gratuit 14 jours — sans engagement
+              {/* Eyebrow */}
+              <div className="mb-7 inline-flex items-center gap-2 rounded border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+                  Gestion des habilitations professionnelles
+                </span>
               </div>
 
-              <h1 className="mt-6 text-4xl font-black leading-tight tracking-tight text-[#173B56] sm:text-5xl lg:text-6xl">
-                Zéro habilitation{" "}
-                <span className="bg-linear-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  expirée.
-                </span>{" "}
-                Zéro surprise en audit.
+              <h1 className="text-5xl font-black leading-[1.06] tracking-tight text-white lg:text-6xl">
+                Zéro habilitation<br />
+                <span className="text-emerald-400">expirée.</span>
+                <span className="mt-1 block text-4xl font-bold text-white/50 lg:text-5xl">
+                  Zéro surprise en audit.
+                </span>
               </h1>
 
-              <p className="mt-6 text-lg leading-relaxed text-slate-600">
-                Centralisez le suivi de vos CACES, SST et habilitations
-                électriques. Alertes automatiques, convocations en 1 clic,
-                passeport formation avec QR code. Remplacez vos fichiers Excel
-                en moins d&apos;une journée.
+              <p className="mt-6 max-w-md text-base leading-relaxed text-white/55">
+                Arrêtez de courir après les échéances.{" "}
+                <strong className="font-semibold text-white/80">CACES, SST, habilitations électriques</strong>{" "}
+                — chaque alerte au bon moment, chaque audit préparé automatiquement.
               </p>
 
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-10 flex flex-wrap items-center gap-4">
                 <Link
                   href="/register"
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all hover:bg-emerald-700 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                  className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-emerald-500"
                 >
                   Démarrer l&apos;essai gratuit
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
                   href="#demo"
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-sm font-semibold text-[#173B56] transition-all hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 border-b border-white/25 pb-0.5 text-sm font-semibold text-white/60 transition-colors hover:border-white/50 hover:text-white"
                 >
                   <PlayIcon />
                   Voir la démo en 2 min
                 </a>
               </div>
 
-              <div className="mt-10 flex items-center gap-6 border-t border-slate-200 pt-8">
-                <div>
-                  <p className="text-2xl font-black text-emerald-600">0 retard</p>
-                  <p className="text-sm text-slate-500">grâce aux alertes automatiques</p>
+              <div className="mt-12 flex items-center gap-0 border-t border-white/10 pt-8">
+                <div className="pr-8 mr-8 border-r border-white/10">
+                  <p className="text-xl font-black text-white">0 retard</p>
+                  <p className="text-xs text-white/40">grâce aux alertes automatiques</p>
                 </div>
-                <div className="h-10 w-px bg-slate-200" />
-                <div>
-                  <p className="text-2xl font-black text-emerald-600">Fin des Excel</p>
-                  <p className="text-sm text-slate-500">import en 1 clic, passeport QR code</p>
+                <div className="pr-8 mr-8 border-r border-white/10">
+                  <p className="text-xl font-black text-white">Fin des Excel</p>
+                  <p className="text-xs text-white/40">import en 1 clic, passeport QR code</p>
                 </div>
-                <div className="h-10 w-px bg-slate-200" />
                 <div>
-                  <p className="text-2xl font-black text-emerald-600">
-                    &lt; 24h
-                  </p>
-                  <p className="text-sm text-slate-500">pour être opérationnel</p>
+                  <p className="text-xl font-black text-white">&lt; 24h</p>
+                  <p className="text-xs text-white/40">pour être opérationnel</p>
                 </div>
-              </div>
-            </div>
-
-            {/* Hub orbital */}
-            <div className="relative hidden lg:block">
-              <FeatureHub />
-            </div>
-            {/* Mobile fallback */}
-            <div className="relative lg:hidden">
-              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10">
-                <img
-                  src="/screenshots/Mock.png"
-                  alt="CertPilot - Tableau de bord"
-                  className="w-full h-auto"
-                  loading="eager"
-                />
               </div>
             </div>
           </div>
         </section>
+
+        {/* Trust ticker */}
+        <div className="overflow-hidden border-b-4 border-emerald-500 bg-[#173B56]">
+          <div className="animate-ticker flex w-max items-center py-4">
+            {[
+              "RGPD — Hébergé en Europe",
+              "Passeport de Prévention intégré",
+              "Signatures électroniques certifiées",
+              "Support humain 7j/7",
+              "Alertes automatiques J-90 / J-30 / J-7",
+              "Import Excel en 1 clic",
+              "Passeport QR code par salarié",
+              "Audit Trail DREAL complet",
+              "CACES · SST · Habilitations électriques",
+              "Essai gratuit 14 jours — sans CB",
+              "Convocations en 1 clic",
+              "Sans engagement · Résiliation libre",
+              /* duplicate for seamless loop */
+              "RGPD — Hébergé en Europe",
+              "Passeport de Prévention intégré",
+              "Signatures électroniques certifiées",
+              "Support humain 7j/7",
+              "Alertes automatiques J-90 / J-30 / J-7",
+              "Import Excel en 1 clic",
+              "Passeport QR code par salarié",
+              "Audit Trail DREAL complet",
+              "CACES · SST · Habilitations électriques",
+              "Essai gratuit 14 jours — sans CB",
+              "Convocations en 1 clic",
+              "Sans engagement · Résiliation libre",
+            ].map((item, i) => (
+              <span key={i} className="flex shrink-0 items-center gap-2 border-r border-white/15 px-10 text-sm font-semibold whitespace-nowrap text-white">
+                <span className="text-emerald-400">✓</span> {item}
+              </span>
+            ))}
+          </div>
+        </div>
 
         {/* Features */}
         <section
@@ -517,34 +548,9 @@ export default function Home() {
                 qu&apos;en fonction du nombre d&apos;employés à gérer.
               </p>
             </div>
-
-            <div className="mx-auto mt-16 grid max-w-5xl gap-6 lg:grid-cols-4">
-              <PricingCard
-                name="Starter"
-                price={49}
-                employees="1-20"
-                featured={false}
-              />
-              <PricingCard
-                name="Pro"
-                price={149}
-                employees="21-100"
-                featured={true}
-              />
-              <PricingCard
-                name="Business"
-                price={349}
-                employees="101-300"
-                featured={false}
-              />
-              <PricingCard
-                name="Enterprise"
-                price={null}
-                employees="300+"
-                featured={false}
-              />
+            <div className="mt-10">
+              <PricingToggle />
             </div>
-
             <div className="mt-12 text-center">
               <p className="text-sm text-slate-500">
                 Besoin d&apos;un devis sur mesure ?{" "}
@@ -799,114 +805,6 @@ function FeatureCard({
   );
 }
 
-function PricingCard({
-  name,
-  price,
-  employees,
-  featured,
-}: {
-  name: string;
-  price: number | null;
-  employees: string;
-  featured: boolean;
-}) {
-  const yearlyPrice = price ? Math.round(price * 10) : null;
-
-  return (
-    <div
-      className={`relative flex flex-col rounded-2xl p-6 ${
-        featured
-          ? "border-2 border-emerald-500 bg-white shadow-xl shadow-emerald-500/10"
-          : "border border-slate-200 bg-white"
-      }`}
-    >
-      {featured && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white">
-          Populaire
-        </div>
-      )}
-
-      <h3 className="text-lg font-semibold text-[#173B56]">{name}</h3>
-      <p className="mt-1 text-sm text-slate-500">{employees} employés</p>
-
-      <div className="mt-4">
-        {price ? (
-          <>
-            <span className="text-4xl font-black text-[#173B56]">{price}€</span>
-            <span className="text-slate-500">/mois HT</span>
-          </>
-        ) : (
-          <span className="text-3xl font-black text-[#173B56]">Sur devis</span>
-        )}
-      </div>
-
-      {yearlyPrice ? (
-        <>
-          <p className="mt-2 text-sm font-semibold text-emerald-700">
-            {yearlyPrice}€/an HT
-          </p>
-          <p className="text-xs text-slate-500">Économisez 17% en annuel</p>
-        </>
-      ) : (
-        <p className="mt-2 text-sm text-slate-500">
-          Tarif adapté à vos besoins
-        </p>
-      )}
-
-      <div className="mt-6 space-y-3">
-        <IncludedFeature>Toutes les fonctionnalités</IncludedFeature>
-        <IncludedFeature>Import / Export Excel</IncludedFeature>
-        <IncludedFeature>Support prioritaire</IncludedFeature>
-        <IncludedFeature>Mises à jour incluses</IncludedFeature>
-        <IncludedFeature>Export PDF illimité</IncludedFeature>
-      </div>
-
-      <div className="mt-6 flex-1" />
-
-      {price ? (
-        <div className="mt-4 flex flex-col gap-2">
-          <Link
-            href="/register"
-            className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
-              featured
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/25 hover:bg-emerald-700"
-                : "border border-slate-300 bg-white text-[#173B56] hover:border-slate-400 hover:bg-slate-50"
-            }`}
-          >
-            Démarrer l&apos;essai gratuit
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href={`/contact?plan=${name.toLowerCase()}`}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-500 transition-all hover:border-slate-300 hover:text-[#173B56] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-          >
-            Demander une démo
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
-      ) : (
-        <Link
-          href="/contact?plan=enterprise"
-          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-[#173B56] transition-all hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
-        >
-          Nous contacter
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-      )}
-    </div>
-  );
-}
-
-function IncludedFeature({ children }: { children: string }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100">
-        <Check className="h-3 w-3 text-emerald-600" />
-      </div>
-      <span className="text-sm text-slate-700">{children}</span>
-    </div>
-  );
-}
 
 function FaqItem({
   question,
@@ -991,7 +889,8 @@ const HUB_NODES = [
   { label: "Détection\ndes besoins", angle: 225, color: "#a21caf", bg: "#fdf4ff", icon: "M13 5a8 8 0 1 0 0 16 8 8 0 0 0 0-16z|M19 19l8 8" },
 ];
 
-function FeatureHub() {
+function FeatureHub({ ghost }: { ghost?: boolean }) {
+  void ghost; // used by parent for opacity via wrapper
   const r = 210;
   const cx = 250;
   const cy = 250;
