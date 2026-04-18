@@ -36,7 +36,7 @@ export function PricingToggle() {
         </button>
         <button
           onClick={() => setBilling(billing === "monthly" ? "annual" : "monthly")}
-          className="relative h-7 w-12 rounded-full bg-emerald-500 transition-colors"
+          className={`relative h-7 w-12 rounded-full transition-colors ${billing === "annual" ? "bg-emerald-500" : "bg-slate-300"}`}
           aria-label="Basculer facturation"
         >
           <span

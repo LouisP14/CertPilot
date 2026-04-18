@@ -312,7 +312,7 @@ export default function Home() {
           </div>
 
           {/* FeatureHub ghost background — desktop only */}
-          <div className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 opacity-[0.13] lg:block" style={{ width: 560, height: 560 }}>
+          <div className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 opacity-70 lg:block" style={{ width: 560, height: 560 }}>
             <FeatureHub ghost />
           </div>
 
@@ -363,7 +363,7 @@ export default function Home() {
                   <p className="text-xs text-white/40">grâce aux alertes automatiques</p>
                 </div>
                 <div className="pr-8 mr-8 border-r border-white/10">
-                  <p className="text-xl font-black text-white">Fin des Excel</p>
+                  <p className="text-xl font-black text-white">Fin des <span className="text-emerald-400">Excel</span></p>
                   <p className="text-xs text-white/40">import en 1 clic, passeport QR code</p>
                 </div>
                 <div>
@@ -418,17 +418,15 @@ export default function Home() {
           className="border-t border-slate-200 bg-white py-20 lg:py-28"
         >
           <div className="mx-auto max-w-7xl px-6">
-            <div className="text-center">
-              <p className="text-sm font-semibold text-emerald-600">
-                Fonctionnalités
+            <div>
+              <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">
+                La plateforme
               </p>
-              <h2 className="mt-2 text-3xl font-black text-[#173B56] sm:text-4xl">
-                Tout ce dont vous avez besoin
+              <h2 className="mt-3 text-3xl font-black text-[#173B56] sm:text-4xl">
+                La conformité habilitations<br />
+                qui s&apos;occupe{" "}
+                <span className="text-emerald-500">d&apos;elle-même.</span>
               </h2>
-              <p className="mx-auto mt-4 max-w-2xl text-slate-600">
-                Une plateforme complète pour gérer vos formations et
-                habilitations, de A à Z.
-              </p>
             </div>
 
             <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
@@ -467,33 +465,27 @@ export default function Home() {
         </section>
 
         {/* Testimonials */}
-        <section className="border-t border-slate-200 bg-linear-to-b from-slate-50 to-white py-20 lg:py-28">
+        <section className="border-t border-slate-200 bg-slate-50 py-20 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <div className="text-center">
-              <p className="text-sm font-semibold text-emerald-600">
-                Ils nous font confiance
-              </p>
-              <h2 className="mt-2 text-3xl font-black text-[#173B56] sm:text-4xl">
-                Ce que nos clients en disent
-              </h2>
+              <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">Ils nous font confiance</p>
+              <h2 className="mt-3 text-3xl font-black text-[#173B56] sm:text-4xl">Ce que nos clients en disent</h2>
             </div>
-
-            <div className="mt-16 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              <TestimonialCard
-                quote="Avant CertPilot, on gérait 200 habilitations sur Excel. On a découvert 12 CACES expirés dès le premier import. Aujourd'hui, plus aucun oubli."
-                name="Responsable Maintenance"
-                company="Industrie agroalimentaire, 180 employés"
-              />
-              <TestimonialCard
-                quote="Lors du dernier audit DREAL, j'ai sorti tous les justificatifs en 5 minutes. L'inspecteur n'en revenait pas. Avant, ça me prenait une demi-journée."
-                name="Responsable QHSE"
-                company="BTP, 95 employés"
-              />
-              <TestimonialCard
-                quote="Les alertes automatiques nous ont évité 3 arrêts de chantier cette année. Le ROI est immédiat. Je le recommande à tous les responsables sécurité."
-                name="Directeur des opérations"
-                company="Logistique & transport, 320 employés"
-              />
+            <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                { quote: "Avant CertPilot, on gérait 200 habilitations sur Excel. On a découvert 12 CACES expirés dès le premier import. Aujourd'hui, plus aucun oubli.", name: "Responsable Maintenance", company: "Industrie agroalimentaire · 180 employés" },
+                { quote: "Lors du dernier audit DREAL, j'ai sorti tous les justificatifs en 5 minutes. L'inspecteur n'en revenait pas. Avant, ça me prenait une demi-journée.", name: "Responsable QHSE", company: "BTP · 95 employés" },
+                { quote: "Les alertes automatiques nous ont évité 3 arrêts de chantier cette année. Le ROI est immédiat. Je le recommande à tous les responsables sécurité.", name: "Directeur des opérations", company: "Logistique & transport · 320 employés" },
+              ].map((t, i) => (
+                <div key={i} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-7">
+                  <div className="font-serif text-5xl leading-none text-emerald-500 opacity-40">&ldquo;</div>
+                  <p className="mt-1 flex-1 text-sm italic leading-relaxed text-slate-600">{t.quote}</p>
+                  <div className="mt-5 border-t border-slate-100 pt-4">
+                    <p className="text-sm font-bold text-[#173B56]">{t.name}</p>
+                    <p className="text-xs text-slate-400">{t.company}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -509,7 +501,8 @@ export default function Home() {
                 Démo en vidéo
               </p>
               <h2 className="mt-2 text-3xl font-black text-[#173B56] sm:text-4xl">
-                Découvrez CertPilot en 2 minutes
+                Découvrez CertPilot<br />
+                <span className="text-emerald-500">en 2 minutes</span>
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-slate-600">
                 Voyez comment centraliser vos habilitations, automatiser vos
@@ -834,39 +827,6 @@ function FaqItem({
   );
 }
 
-function TestimonialCard({
-  quote,
-  name,
-  company,
-}: {
-  quote: string;
-  name: string;
-  company: string;
-}) {
-  return (
-    <div className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex gap-1">
-        {[...Array(5)].map((_, i) => (
-          <svg
-            key={i}
-            className="h-5 w-5 text-amber-400"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-          </svg>
-        ))}
-      </div>
-      <p className="flex-1 text-sm leading-relaxed text-slate-600 italic">
-        &ldquo;{quote}&rdquo;
-      </p>
-      <div className="mt-4 border-t border-slate-100 pt-4">
-        <p className="text-sm font-semibold text-[#173B56]">{name}</p>
-        <p className="text-xs text-slate-500">{company}</p>
-      </div>
-    </div>
-  );
-}
 
 function PlayIcon() {
   return (
@@ -912,8 +872,8 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
         <circle cx={cx} cy={cy} r="245" fill="url(#dots)" />
 
         {/* Orbital rings */}
-        <circle cx={cx} cy={cy} r={r} stroke="rgba(16,185,129,0.12)" strokeWidth="1.5" strokeDasharray="6 8" />
-        <circle cx={cx} cy={cy} r={r * 0.55} stroke="rgba(16,185,129,0.08)" strokeWidth="1" strokeDasharray="4 10" />
+        <circle cx={cx} cy={cy} r={r} stroke="rgba(16,185,129,0.35)" strokeWidth="1.5" strokeDasharray="6 8" />
+        <circle cx={cx} cy={cy} r={r * 0.55} stroke="rgba(16,185,129,0.20)" strokeWidth="1" strokeDasharray="4 10" />
 
         {/* Connector lines + traveling dots */}
         {HUB_NODES.map((node, i) => {
@@ -926,7 +886,7 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
             <g key={i}>
               <line
                 x1={sx} y1={sy} x2={nx} y2={ny}
-                stroke="rgba(16,185,129,0.18)" strokeWidth="1.2" strokeDasharray="4 6"
+                stroke="rgba(16,185,129,0.45)" strokeWidth="1.2" strokeDasharray="4 6"
               />
               <circle r="3" fill="#16a34a" opacity="0.6">
                 <animateMotion
@@ -979,10 +939,10 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
             }}
           >
             <div
-              className="flex h-14 w-14 items-center justify-center rounded-2xl border bg-white shadow-md transition-transform hover:scale-110"
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border shadow-md transition-transform hover:scale-110"
               style={{
-                borderColor: `${node.color}20`,
-                background: `linear-gradient(135deg, #fff 60%, ${node.bg})`,
+                borderColor: `${node.color}40`,
+                background: `linear-gradient(135deg, rgba(13,31,45,0.85) 60%, rgba(13,31,45,0.95))`,
               }}
             >
               <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
@@ -994,12 +954,12 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
                     strokeWidth="1.8"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    fill={j === 0 ? `${node.color}10` : "none"}
+                    fill={j === 0 ? `${node.color}20` : "none"}
                   />
                 ))}
               </svg>
             </div>
-            <span className="text-center text-[10px] font-semibold leading-tight text-slate-700 whitespace-pre-line">
+            <span className="text-center text-[10px] font-semibold leading-tight text-emerald-300/80 whitespace-pre-line">
               {node.label}
             </span>
           </div>
