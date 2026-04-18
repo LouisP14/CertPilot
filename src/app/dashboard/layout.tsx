@@ -56,7 +56,7 @@ export default async function DashboardLayout({
     <Providers>
       <SidebarProvider>
       <div className="flex h-screen bg-slate-50">
-        <Sidebar userRole={session.user?.role} />
+        <Sidebar userRole={session.user?.role} plan={subscription.plan} />
         <div className="flex flex-1 flex-col overflow-hidden">
           {showTrialBanner && (
             <TrialBanner

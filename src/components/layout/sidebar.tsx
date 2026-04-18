@@ -1,5 +1,6 @@
 "use client";
 
+import { PlanBadge } from "@/components/plan-badge";
 import { cn } from "@/lib/utils";
 import {
   Award,
@@ -22,25 +23,37 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "./sidebar-context";
 
+const FULL_ACCESS_PLANS = ['Business', 'Enterprise', 'Trial', 'Legacy']
+
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, managerAllowed: true },
-  { name: "Employés", href: "/dashboard/employees", icon: Users, managerAllowed: true },
-  { name: "Formations", href: "/dashboard/formations", icon: Award, managerAllowed: true },
-  { name: "Besoins", href: "/dashboard/training-needs", icon: Target, managerAllowed: true },
-  { name: "Sessions", href: "/dashboard/sessions", icon: CalendarCheck, managerAllowed: true },
-  { name: "Centres", href: "/dashboard/training-centers", icon: Building2, managerAllowed: false },
-  { name: "Convocations", href: "/dashboard/convocations", icon: Mail, managerAllowed: false },
-  { name: "Vue Calendaire", href: "/dashboard/calendar", icon: Calendar, managerAllowed: true },
-  { name: "Import / Export", href: "/dashboard/export", icon: FileText, managerAllowed: false },
-  { name: "Audit Trail", href: "/dashboard/audit", icon: History, managerAllowed: false },
-  { name: "Paramètres", href: "/dashboard/settings", icon: Settings, managerAllowed: false },
+  { name: "Dashboard",      href: "/dashboard",                 icon: LayoutDashboard, managerAllowed: true,  requiredPlan: null as null | 'Pro' | 'Business' },
+  { name: "Employés",       href: "/dashboard/employees",       icon: Users,           managerAllowed: true,  requiredPlan: null as null | 'Pro' | 'Business' },
+  { name: "Formations",     href: "/dashboard/formations",      icon: Award,           managerAllowed: true,  requiredPlan: null as null | 'Pro' | 'Business' },
+  { name: "Besoins",        href: "/dashboard/training-needs",  icon: Target,          managerAllowed: true,  requiredPlan: 'Pro' as null | 'Pro' | 'Business' },
+  { name: "Sessions",       href: "/dashboard/sessions",        icon: CalendarCheck,   managerAllowed: true,  requiredPlan: 'Pro' as null | 'Pro' | 'Business' },
+  { name: "Convocations",   href: "/dashboard/convocations",    icon: Mail,            managerAllowed: false, requiredPlan: 'Pro' as null | 'Pro' | 'Business' },
+  { name: "Vue Calendaire", href: "/dashboard/calendar",        icon: Calendar,        managerAllowed: true,  requiredPlan: 'Pro' as null | 'Pro' | 'Business' },
+  { name: "Centres",        href: "/dashboard/training-centers", icon: Building2,      managerAllowed: false, requiredPlan: 'Business' as null | 'Pro' | 'Business' },
+  { name: "Import / Export", href: "/dashboard/export",         icon: FileText,        managerAllowed: false, requiredPlan: 'Business' as null | 'Pro' | 'Business' },
+  { name: "Audit Trail",    href: "/dashboard/audit",           icon: History,         managerAllowed: false, requiredPlan: 'Business' as null | 'Pro' | 'Business' },
+  { name: "Paramètres",     href: "/dashboard/settings",        icon: Settings,        managerAllowed: false, requiredPlan: null as null | 'Pro' | 'Business' },
 ];
+
+function isLocked(requiredPlan: null | 'Pro' | 'Business', plan: string | null | undefined): boolean {
+  if (!requiredPlan) return false
+  if (!plan) return true
+  if (FULL_ACCESS_PLANS.includes(plan)) return false
+  if (requiredPlan === 'Pro') return !['Pro', ...FULL_ACCESS_PLANS].includes(plan)
+  // requiredPlan === 'Business'
+  return !FULL_ACCESS_PLANS.includes(plan)
+}
 
 interface SidebarProps {
   userRole?: string;
+  plan?: string | null;
 }
 
-export function Sidebar({ userRole }: SidebarProps) {
+export function Sidebar({ userRole, plan }: SidebarProps) {
   const pathname = usePathname();
   const { isOpen, close } = useSidebar();
 
@@ -91,6 +104,8 @@ export function Sidebar({ userRole }: SidebarProps) {
             item.href === "/dashboard"
               ? pathname === "/dashboard"
               : pathname === item.href || pathname.startsWith(item.href + "/");
+          const locked = isLocked(item.requiredPlan, plan);
+
           return (
             <Link
               key={item.name}
@@ -100,13 +115,18 @@ export function Sidebar({ userRole }: SidebarProps) {
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive
                   ? "bg-emerald-500/20 text-emerald-400 shadow-lg shadow-emerald-500/10"
+                  : locked
+                  ? "text-white/40 hover:bg-white/5 hover:text-white/60"
                   : "text-white/70 hover:bg-white/5 hover:text-white",
               )}
             >
               <item.icon
-                className={cn("h-5 w-5", isActive && "text-emerald-400")}
+                className={cn("h-5 w-5 shrink-0", isActive && "text-emerald-400")}
               />
-              {item.name}
+              <span className="flex-1 truncate">{item.name}</span>
+              {item.requiredPlan && (
+                <PlanBadge required={item.requiredPlan} current={plan} />
+              )}
             </Link>
           );
         })}
