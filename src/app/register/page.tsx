@@ -282,7 +282,7 @@ export default function RegisterPage() {
           </h2>
           <div className="mt-8 space-y-5">
             <BenefitItem text="Toutes les fonctionnalités pendant 14 jours" />
-            <BenefitItem text="Jusqu'à 20 employés" />
+            <BenefitItem text="Jusqu'à 50 employés" />
             <BenefitItem text="Alertes automatiques d'expiration" />
             <BenefitItem text="Signature électronique" />
             <BenefitItem text="Passeport formation PDF avec QR code" />
