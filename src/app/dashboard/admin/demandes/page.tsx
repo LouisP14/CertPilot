@@ -178,10 +178,10 @@ export default function DemandesAdminPage() {
           contactRequestId: request.id,
           plan: request.plan,
           billing: billingCycle,
+          tranche: request.employeeCount ?? "1-50",
           customerEmail: request.email,
           companyName: request.companyName,
           contactName: request.contactName,
-          employeeCount: request.employeeCount,
         }),
       });
 
@@ -393,7 +393,10 @@ export default function DemandesAdminPage() {
                 return (
                   <div
                     key={request.id}
-                    onClick={() => setSelectedRequest(request)}
+                    onClick={() => {
+                      setSelectedRequest(request);
+                      setBillingCycle((request.billing as "monthly" | "annual") ?? "monthly");
+                    }}
                     className={`cursor-pointer rounded-lg border p-4 transition-colors hover:bg-slate-50 ${
                       selectedRequest?.id === request.id
                         ? "border-emerald-500 bg-emerald-50"
