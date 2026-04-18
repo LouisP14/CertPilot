@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth, getCompanyFilter, getEmployeeFilter } from "@/lib/auth";
+import { checkSubscription } from "@/lib/subscription";
 import prisma from "@/lib/prisma";
 import {
   AlertTriangle,
@@ -311,6 +312,8 @@ async function getStats() {
 
 export default async function DashboardPage() {
   const [stats, session] = await Promise.all([getStats(), auth()]);
+  const subscription = await checkSubscription(session?.user?.companyId ?? null);
+  const plan = subscription.plan;
   const isManager = session?.user?.role === "MANAGER";
   const managedServices = session?.user?.managedServices ?? [];
 
@@ -424,7 +427,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Budget Widget - masqué pour les managers */}
-      {!isManager && <BudgetWidget />}
+      {!isManager && <BudgetWidget plan={plan} />}
 
       {/* Alerts Section */}
       <Card>

@@ -54,7 +54,7 @@ interface BudgetData {
   sessions?: SessionData[];
 }
 
-export function BudgetWidget() {
+export function BudgetWidget({ plan }: { plan?: string | null }) {
   const [data, setData] = useState<BudgetData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAllMonths, setShowAllMonths] = useState(false);
@@ -400,16 +400,17 @@ export function BudgetWidget() {
           </div>
         )}
 
-        {/* Lien vers les sessions */}
-        <div className="pt-2 border-t">
-          <a
-            href="/dashboard/sessions"
-            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
-          >
-            <TrendingUp className="h-4 w-4" />
-            Voir toutes les sessions
-          </a>
-        </div>
+        {plan !== 'Starter' && (
+          <div className="pt-2 border-t">
+            <a
+              href="/dashboard/sessions"
+              className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
+            >
+              <TrendingUp className="h-4 w-4" />
+              Voir toutes les sessions
+            </a>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
