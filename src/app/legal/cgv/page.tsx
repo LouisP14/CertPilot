@@ -120,21 +120,57 @@ export default function CGV() {
                 <tbody className="divide-y divide-slate-100">
                   <tr>
                     <td className="px-4 py-3">Starter</td>
-                    <td className="px-4 py-3">1 à 20</td>
-                    <td className="px-4 py-3">49 € HT</td>
-                    <td className="px-4 py-3">490 € HT (-17%)</td>
+                    <td className="px-4 py-3">1 à 50</td>
+                    <td className="px-4 py-3">69 € HT</td>
+                    <td className="px-4 py-3">684 € HT (-17%)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Starter</td>
+                    <td className="px-4 py-3">51 à 150</td>
+                    <td className="px-4 py-3">109 € HT</td>
+                    <td className="px-4 py-3">1 092 € HT (-17%)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Starter</td>
+                    <td className="px-4 py-3">151 à 300</td>
+                    <td className="px-4 py-3">149 € HT</td>
+                    <td className="px-4 py-3">1 488 € HT (-17%)</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3">Pro</td>
-                    <td className="px-4 py-3">21 à 100</td>
+                    <td className="px-4 py-3">1 à 50</td>
                     <td className="px-4 py-3">149 € HT</td>
-                    <td className="px-4 py-3">1 490 € HT (-17%)</td>
+                    <td className="px-4 py-3">1 488 € HT (-17%)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Pro</td>
+                    <td className="px-4 py-3">51 à 150</td>
+                    <td className="px-4 py-3">229 € HT</td>
+                    <td className="px-4 py-3">2 280 € HT (-17%)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Pro</td>
+                    <td className="px-4 py-3">151 à 300</td>
+                    <td className="px-4 py-3">329 € HT</td>
+                    <td className="px-4 py-3">3 276 € HT (-17%)</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3">Business</td>
-                    <td className="px-4 py-3">101 à 300</td>
+                    <td className="px-4 py-3">1 à 50</td>
                     <td className="px-4 py-3">349 € HT</td>
-                    <td className="px-4 py-3">3 490 € HT (-17%)</td>
+                    <td className="px-4 py-3">3 480 € HT (-17%)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Business</td>
+                    <td className="px-4 py-3">51 à 150</td>
+                    <td className="px-4 py-3">499 € HT</td>
+                    <td className="px-4 py-3">4 968 € HT (-17%)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Business</td>
+                    <td className="px-4 py-3">151 à 300</td>
+                    <td className="px-4 py-3">699 € HT</td>
+                    <td className="px-4 py-3">6 960 € HT (-17%)</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3">Enterprise</td>

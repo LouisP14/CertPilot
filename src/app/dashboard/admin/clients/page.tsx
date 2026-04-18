@@ -370,13 +370,13 @@ function ClientsContent() {
                         className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <option value="starter">
-                          Starter - 49€/mois (1-20 employés)
+                          Starter - à partir de 69€/mois (1-50 employés)
                         </option>
                         <option value="pro">
-                          Pro - 149€/mois (21-100 employés)
+                          Pro - à partir de 149€/mois (51-150 employés)
                         </option>
                         <option value="business">
-                          Business - 349€/mois (101-300 employés)
+                          Business - à partir de 349€/mois (151-300 employés)
                         </option>
                         <option value="enterprise">
                           Enterprise - sur devis (300+ employés)

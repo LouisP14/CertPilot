@@ -111,15 +111,15 @@ export function PricingToggle() {
 
       {/* Tranche selector */}
       <div className="mb-10 flex items-center justify-center">
-        <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1 gap-1">
+        <div className="inline-flex gap-2">
           {TRANCHES.map((t) => (
             <button
               key={t.value}
               onClick={() => setTranche(t.value)}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+              className={`rounded-xl border-2 px-5 py-2 text-sm font-medium transition-all ${
                 tranche === t.value
-                  ? "bg-white text-[#173B56] shadow-sm"
-                  : "text-slate-500 hover:text-slate-700"
+                  ? "border-emerald-500 bg-white text-[#173B56] shadow-md shadow-emerald-500/10"
+                  : "border-slate-200 bg-slate-50 text-slate-500 hover:border-slate-300 hover:text-slate-700"
               }`}
             >
               {t.label}
@@ -188,7 +188,7 @@ export function PricingToggle() {
                   Essai gratuit 14j <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href={`/contact?plan=${plan.key.toLowerCase()}`}
+                  href={`/contact?plan=${plan.key.toLowerCase()}&tranche=${tranche}&billing=${billing}`}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-500 transition-all hover:text-[#173B56]"
                 >
                   Demander une démo

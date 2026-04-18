@@ -8,22 +8,22 @@ const plans = [
   {
     key: "starter",
     name: "Starter",
-    price: "49",
-    employees: "1-20 employés",
+    price: "69",
+    employees: "1-50 employés",
     popular: false,
   },
   {
     key: "pro",
     name: "Pro",
     price: "149",
-    employees: "21-100 employés",
+    employees: "1-50 employés",
     popular: true,
   },
   {
     key: "business",
     name: "Business",
     price: "349",
-    employees: "101-300 employés",
+    employees: "1-50 employés",
     popular: false,
   },
 ];
@@ -50,7 +50,7 @@ export default function TrialExpiredPage() {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: planKey, billing: "monthly" }),
+        body: JSON.stringify({ plan: planKey, billing: "monthly", tranche: "1-50" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur lors du paiement");

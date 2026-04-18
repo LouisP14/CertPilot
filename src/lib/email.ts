@@ -169,7 +169,7 @@ const ONBOARDING_EMAILS: Record<
             <li>Convocations automatiques</li>
             <li>Signature électronique</li>
           </ul>
-          <p><strong>Choisissez votre plan dès maintenant</strong> — à partir de 49€/mois :</p>
+          <p><strong>Choisissez votre plan dès maintenant</strong> — à partir de 69€/mois :</p>
           <div style="text-align:center;margin:25px 0;">
             <a href="${appUrl}/trial-expired" style="background:#059669;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Choisir mon plan</a>
           </div>
@@ -208,9 +208,9 @@ export async function sendContactConfirmation(params: {
   const { to, contactName, companyName, plan } = params;
 
   const planNames: Record<string, string> = {
-    starter: "Starter (49€/mois)",
-    pro: "Pro (149€/mois)",
-    business: "Business (349€/mois)",
+    starter: "Starter (à partir de 69€/mois)",
+    pro: "Pro (à partir de 149€/mois)",
+    business: "Business (à partir de 349€/mois)",
     enterprise: "Enterprise (sur devis)",
   };
 
@@ -307,9 +307,9 @@ export async function sendNewContactNotification(params: {
     process.env.ADMIN_NOTIFICATION_EMAIL || "contact@certpilot.eu";
 
   const planNames: Record<string, string> = {
-    starter: "Starter (1-20 employés) - 49€/mois",
-    pro: "Pro (21-100 employés) - 149€/mois",
-    business: "Business (101-300 employés) - 349€/mois",
+    starter: "Starter (1-50 employés) - à partir de 69€/mois",
+    pro: "Pro (51-150 employés) - à partir de 149€/mois",
+    business: "Business (151-300 employés) - à partir de 349€/mois",
     enterprise: "Enterprise (300+ employés) - sur devis",
   };
 

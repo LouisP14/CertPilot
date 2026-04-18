@@ -86,9 +86,9 @@ const PLAN_CONFIG: Record<
   string,
   { name: string; price: number; employees: string }
 > = {
-  starter: { name: "Starter", price: 49, employees: "1-20" },
-  pro: { name: "Pro", price: 149, employees: "21-100" },
-  business: { name: "Business", price: 349, employees: "101-300" },
+  starter: { name: "Starter", price: 69, employees: "1-50" },
+  pro: { name: "Pro", price: 149, employees: "51-150" },
+  business: { name: "Business", price: 349, employees: "151-300" },
   enterprise: { name: "Enterprise", price: 0, employees: "300+" },
 };
 

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title:
     "CertPilot - Gestion des Formations et Habilitations | Logiciel SaaS B2B",
   description:
-    "CertPilot centralise la gestion de vos habilitations et formations professionnelles. Alertes automatiques, convocations, signatures électroniques, passeport formation PDF. Solution B2B à partir de 49€ HT/mois.",
+    "CertPilot centralise la gestion de vos habilitations et formations professionnelles. Alertes automatiques, convocations, signatures électroniques, passeport formation PDF. Solution B2B à partir de 69€ HT/mois.",
   alternates: {
     canonical: "/",
   },
@@ -75,15 +75,15 @@ function JsonLd() {
           {
             "@type": "Offer",
             name: "Starter",
-            price: "49",
+            price: "69",
             priceCurrency: "EUR",
             priceSpecification: {
               "@type": "UnitPriceSpecification",
-              price: "49",
+              price: "69",
               priceCurrency: "EUR",
               unitText: "MONTH",
             },
-            description: "Pour 1 à 20 employés",
+            description: "Pour 1 à 50 employés",
           },
           {
             "@type": "Offer",
@@ -96,7 +96,7 @@ function JsonLd() {
               priceCurrency: "EUR",
               unitText: "MONTH",
             },
-            description: "Pour 21 à 100 employés",
+            description: "Pour 1 à 50 employés",
           },
           {
             "@type": "Offer",
@@ -109,7 +109,7 @@ function JsonLd() {
               priceCurrency: "EUR",
               unitText: "MONTH",
             },
-            description: "Pour 101 à 300 employés",
+            description: "Pour 1 à 50 employés",
           },
           {
             "@type": "Offer",
@@ -147,7 +147,7 @@ function JsonLd() {
             name: "Combien coûte CertPilot ?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "CertPilot propose des plans à partir de 49€ HT/mois pour 1 à 20 employés. Le plan Pro (21-100 employés) est à 149€ HT/mois, Business (101-300) à 349€ HT/mois. Au-delà de 300 employés, contactez-nous pour un devis. Toutes les fonctionnalités sont incluses dans chaque plan. Essai gratuit 14 jours.",
+              text: "CertPilot propose des plans à partir de 69€ HT/mois pour 1 à 50 employés. Le plan Pro (1-50 employés) est à 149€ HT/mois, Business (1-50) à 349€ HT/mois. Les tarifs varient selon la tranche d'employés (1-50, 51-150, 151-300). Au-delà de 300 employés, contactez-nous pour un devis. Essai gratuit 14 jours.",
             },
           },
           {
