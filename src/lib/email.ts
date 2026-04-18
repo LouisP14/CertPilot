@@ -229,12 +229,7 @@ export async function sendContactConfirmation(params: {
     return `${name} — ${price}€${billingLabel}`;
   }
 
-  const planNames: Record<string, string> = {
-    starter: buildPlanLabel(),
-    pro: buildPlanLabel(),
-    business: buildPlanLabel(),
-    enterprise: "Enterprise (sur devis)",
-  };
+  const planLabel = buildPlanLabel();
 
   await sendEmail({
     from: FROM_EMAIL,
@@ -266,7 +261,7 @@ export async function sendContactConfirmation(params: {
             <p>Nous avons bien reçu votre demande de démonstration pour <strong>${companyName}</strong>.</p>
             
             <div class="info-box">
-              <strong>📦 Offre sélectionnée :</strong> ${planNames[plan] || plan}
+              <strong>📦 Offre sélectionnée :</strong> ${planLabel}
             </div>
             
             <p>Notre équipe commerciale va étudier votre demande et vous recontactera dans les <strong>24 heures</strong> pour :</p>
@@ -296,7 +291,7 @@ Bonjour ${contactName},
 
 Nous avons bien reçu votre demande de démonstration pour ${companyName}.
 
-Offre sélectionnée : ${planNames[plan] || plan}
+Offre sélectionnée : ${planLabel}
 
 Notre équipe commerciale va étudier votre demande et vous recontactera dans les 24 heures.
 
@@ -314,6 +309,7 @@ export async function sendNewContactNotification(params: {
   phone?: string | null;
   employeeCount?: string | null;
   plan?: string | null;
+  billing?: string | null;
   message?: string | null;
 }) {
   const {
@@ -323,17 +319,35 @@ export async function sendNewContactNotification(params: {
     phone,
     employeeCount,
     plan,
+    billing,
     message,
   } = params;
   const adminEmail =
     process.env.ADMIN_NOTIFICATION_EMAIL || "contact@certpilot.eu";
 
-  const planNames: Record<string, string> = {
-    starter: "Starter (1-50 employés) - à partir de 69€/mois",
-    pro: "Pro (51-150 employés) - à partir de 149€/mois",
-    business: "Business (151-300 employés) - à partir de 349€/mois",
-    enterprise: "Enterprise (300+ employés) - sur devis",
+  const PRICES: Record<string, Record<string, Record<string, number>>> = {
+    starter:  { "1-50": { monthly: 69,  annual: 57  }, "51-150": { monthly: 109, annual: 91  }, "151-300": { monthly: 149, annual: 124 } },
+    pro:      { "1-50": { monthly: 149, annual: 124 }, "51-150": { monthly: 229, annual: 190 }, "151-300": { monthly: 329, annual: 273 } },
+    business: { "1-50": { monthly: 349, annual: 290 }, "51-150": { monthly: 499, annual: 414 }, "151-300": { monthly: 699, annual: 580 } },
   };
+  const PLAN_DISPLAY: Record<string, string> = {
+    starter: "Starter", pro: "Pro", business: "Business", enterprise: "Enterprise",
+  };
+
+  function formatPlan(): string {
+    if (!plan) return "—";
+    const name = PLAN_DISPLAY[plan] ?? plan;
+    if (plan === "enterprise") return `${name} — Sur devis`;
+    const t = employeeCount ?? "1-50";
+    const b = billing ?? "monthly";
+    const price = PRICES[plan]?.[t]?.[b];
+    if (!price) return name;
+    const billingLabel = b === "annual" ? "/mois HT (annuel)" : "/mois HT";
+    const trancheLabel = t ? ` • ${t} employés` : "";
+    return `${name}${trancheLabel} — ${price}€${billingLabel}`;
+  }
+
+  const planLabel = formatPlan();
 
   const baseUrl = getAppBaseUrl();
 
@@ -375,7 +389,7 @@ export async function sendNewContactNotification(params: {
               <tr><td>📧 Email</td><td><a href="mailto:${email}">${email}</a></td></tr>
               ${phone ? `<tr><td>📞 Téléphone</td><td><a href="tel:${phone}">${phone}</a></td></tr>` : ""}
               ${employeeCount ? `<tr><td>👥 Effectif</td><td>${employeeCount} employés</td></tr>` : ""}
-              ${plan ? `<tr><td>📦 Offre</td><td><strong>${planNames[plan] || plan}</strong></td></tr>` : ""}
+              ${plan ? `<tr><td>📦 Offre</td><td><strong>${planLabel}</strong></td></tr>` : ""}
             </table>
             
             ${message ? `<p><strong>💬 Message :</strong></p><p style="background: #f9fafb; padding: 15px; border-radius: 6px; font-style: italic;">${message}</p>` : ""}
@@ -399,7 +413,7 @@ Entreprise : ${companyName}
 Email : ${email}
 ${phone ? `Téléphone : ${phone}` : ""}
 ${employeeCount ? `Effectif : ${employeeCount} employés` : ""}
-${plan ? `Offre : ${planNames[plan] || plan}` : ""}
+${plan ? `Offre : ${planLabel}` : ""}
 ${message ? `Message : ${message}` : ""}
 
 Voir dans le tableau de bord : ${baseUrl}/dashboard/admin
@@ -414,6 +428,7 @@ export async function sendPaymentLink(params: {
   companyName: string;
   plan: string;
   billing?: "monthly" | "annual";
+  tranche?: string;
   paymentUrl: string;
 }) {
   const {
@@ -422,34 +437,33 @@ export async function sendPaymentLink(params: {
     companyName,
     plan,
     billing = "monthly",
+    tranche = "1-50",
     paymentUrl,
   } = params;
   const isAnnual = billing === "annual";
 
-  const monthlyPrices: Record<string, number> = {
-    starter: 49,
-    pro: 149,
-    business: 349,
-  };
-  const annualPrices: Record<string, number> = {
-    starter: 490,
-    pro: 1490,
-    business: 3490,
+  const PRICES: Record<string, Record<string, Record<string, number>>> = {
+    starter:  { "1-50": { monthly: 69,  annual: 57  }, "51-150": { monthly: 109, annual: 91  }, "151-300": { monthly: 149, annual: 124 } },
+    pro:      { "1-50": { monthly: 149, annual: 124 }, "51-150": { monthly: 229, annual: 190 }, "151-300": { monthly: 329, annual: 273 } },
+    business: { "1-50": { monthly: 349, annual: 290 }, "51-150": { monthly: 499, annual: 414 }, "151-300": { monthly: 699, annual: 580 } },
   };
   const planLabels: Record<string, string> = {
-    starter: "Starter",
-    pro: "Pro",
-    business: "Business",
+    starter: "Starter", pro: "Pro", business: "Business",
+  };
+  const TRANCHE_LABELS: Record<string, string> = {
+    "1-50": "1–50 employés", "51-150": "51–150 employés", "151-300": "151–300 employés",
   };
 
-  const price = isAnnual ? annualPrices[plan] : monthlyPrices[plan];
+  const monthlyEquiv = PRICES[plan]?.[tranche]?.[billing] ?? PRICES[plan]?.[tranche]?.monthly ?? 0;
+  const annualTotal = isAnnual ? monthlyEquiv * 12 : null;
+
   const priceLabel = isAnnual
-    ? `${price}€/an <span style="font-size:13px;color:#6b7280;">(${Math.round(price / 12)}€/mois facturés annuellement)</span>`
-    : `${price}€<span style="font-size:16px;">/mois</span>`;
+    ? `${annualTotal}€/an <span style="font-size:13px;color:#6b7280;">(${monthlyEquiv}€/mois facturés annuellement)</span>`
+    : `${monthlyEquiv}€<span style="font-size:16px;">/mois HT</span>`;
   const billingLabel = isAnnual
     ? "Facturation annuelle (économisez 17%)"
     : "Facturation mensuelle";
-  const planDisplayName = `${planLabels[plan] ?? plan} - ${isAnnual ? `${price}€/an` : `${price}€/mois`}`;
+  const planDisplayName = `${planLabels[plan] ?? plan} — ${TRANCHE_LABELS[tranche] ?? tranche} — ${isAnnual ? `${monthlyEquiv}€/mois HT (annuel)` : `${monthlyEquiv}€/mois HT`}`;
 
   await sendEmail({
     from: FROM_EMAIL,

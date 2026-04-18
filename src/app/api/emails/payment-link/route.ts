@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { to, contactName, companyName, plan, billing, paymentUrl } = parsed.data;
+    const { to, contactName, companyName, plan, billing, tranche, paymentUrl } = parsed.data;
 
     await sendPaymentLink({
       to,
@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
       companyName,
       plan,
       billing: (billing as "monthly" | "annual") ?? "monthly",
+      tranche: tranche ?? "1-50",
       paymentUrl,
     });
 

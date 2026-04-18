@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
         phone,
         employeeCount,
         plan,
+        billing,
         message,
       });
     } catch (emailError) {

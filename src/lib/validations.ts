@@ -336,6 +336,7 @@ export const paymentLinkSchema = z.object({
   companyName: z.string().min(1),
   plan: z.string().min(1),
   billing: z.string().optional(),
+  tranche: z.string().optional(),
   paymentUrl: z.string().url("URL invalide"),
 });
 

@@ -202,6 +202,7 @@ export default function DemandesAdminPage() {
           companyName: request.companyName,
           plan: request.plan,
           billing: billingCycle,
+          tranche: request.employeeCount ?? "1-50",
           paymentUrl: url,
         }),
       });
