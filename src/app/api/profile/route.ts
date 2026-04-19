@@ -30,6 +30,7 @@ export async function GET() {
             subscriptionPlan: true,
             trialEndsAt: true,
             employeeLimit: true,
+            adminLimit: true,
             adminEmail: true,
           },
         },
@@ -43,17 +44,28 @@ export async function GET() {
       );
     }
 
-    // Compter les employés actifs de l'entreprise
     let employeeCount = 0;
+    let adminCount = 0;
+    let managerCount = 0;
     if (user.company?.id) {
-      employeeCount = await prisma.employee.count({
-        where: { companyId: user.company.id, isActive: true },
-      });
+      [employeeCount, adminCount, managerCount] = await Promise.all([
+        prisma.employee.count({
+          where: { companyId: user.company.id, isActive: true },
+        }),
+        prisma.user.count({
+          where: { companyId: user.company.id, role: "ADMIN", isActive: true },
+        }),
+        prisma.user.count({
+          where: { companyId: user.company.id, role: "MANAGER", isActive: true },
+        }),
+      ]);
     }
 
     return NextResponse.json({
       ...user,
       employeeCount,
+      adminCount,
+      managerCount,
     });
   } catch (error) {
     console.error("GET profile error:", error);
