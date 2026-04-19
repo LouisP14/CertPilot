@@ -41,6 +41,8 @@ interface ProfileData {
   createdAt: string;
   updatedAt: string;
   employeeCount: number;
+  adminCount: number;
+  managerCount: number;
   company: {
     id: string;
     name: string;
@@ -49,6 +51,7 @@ interface ProfileData {
     subscriptionPlan: string | null;
     trialEndsAt: string | null;
     employeeLimit: number;
+    adminLimit: number | null;
     adminEmail: string | null;
   } | null;
 }
@@ -430,6 +433,44 @@ export default function ProfilePage() {
                       width: `${Math.min(100, (profile.employeeCount / profile.company.employeeLimit) * 100)}%`,
                     }}
                   />
+                </div>
+
+                {/* Administrateurs */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">Administrateurs</span>
+                  <span className="text-sm font-medium">
+                    <span className="text-[#173B56] font-semibold">{profile.adminCount}</span>
+                    {profile.company.adminLimit !== null ? (
+                      <span className="text-slate-400"> / {profile.company.adminLimit}</span>
+                    ) : (
+                      <span className="text-slate-400"> / ∞</span>
+                    )}
+                  </span>
+                </div>
+                {profile.company.adminLimit !== null && (
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all ${
+                        profile.adminCount / profile.company.adminLimit > 0.9
+                          ? "bg-red-500"
+                          : profile.adminCount / profile.company.adminLimit > 0.7
+                            ? "bg-amber-500"
+                            : "bg-emerald-500"
+                      }`}
+                      style={{
+                        width: `${Math.min(100, (profile.adminCount / profile.company.adminLimit) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                )}
+
+                {/* Managers */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-500">Managers</span>
+                  <span className="text-sm font-medium">
+                    <span className="text-[#173B56] font-semibold">{profile.managerCount}</span>
+                    <span className="text-slate-400"> / ∞</span>
+                  </span>
                 </div>
 
                 {profile.company.subscriptionStatus === "TRIAL" &&
