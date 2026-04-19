@@ -95,6 +95,7 @@ model Company {
   subscriptionStatus    String     @default("TRIAL") // TRIAL, ACTIVE, EXPIRED, CANCELLED
   subscriptionPlan      String?    // Starter, Growth, Scale, Business
   employeeLimit         Int        @default(50)  // Limite d'employés selon le plan
+  adminLimit            Int?                      // null = illimité (Business/Enterprise). 1 = Starter, 3 = Pro
   stripeCustomerId      String?    // ID client Stripe (pour plus tard)
   stripeSubscriptionId  String?    // ID abonnement Stripe (pour plus tard)
   onboardingStep        Int        @default(0)  // Dernier email onboarding envoyé (0=aucun, 1=J+1, 2=J+3, 3=J+7, 4=J+12)
