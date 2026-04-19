@@ -291,7 +291,7 @@ export const updateNeedSchema = z.object({
 export const initiateSignatureSchema = z.object({
   employeeId: z.string().min(1, "L'employé est requis"),
   siteManagerEmail: z.string().email("Email du manager invalide"),
-  siteManagerName: z.string().min(1, "Le nom du manager est requis"),
+  siteManagerName: z.string().optional(),
 });
 
 // ============================================
