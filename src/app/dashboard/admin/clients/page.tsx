@@ -664,7 +664,7 @@ function ClientsContent() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => { setAddingAdminFor(null); setAddAdminMessage(null); }}
+                              onClick={() => { setAddingAdminFor(null); setAddAdminMessage(null); setAddAdminForm({ name: "", email: "", password: "" }); }}
                             >
                               Annuler
                             </Button>
