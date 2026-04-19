@@ -132,7 +132,6 @@ export async function POST(request: NextRequest) {
 // GET - Liste des entreprises/clients (SUPER_ADMIN only)
 export async function GET() {
   try {
-    // Vérifier que l'utilisateur est SUPER_ADMIN
     const session = await auth();
     if (!session || session.user.role !== "SUPER_ADMIN") {
       return NextResponse.json(
@@ -144,16 +143,11 @@ export async function GET() {
     const companies = await prisma.company.findMany({
       include: {
         users: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-          },
+          where: { isActive: true },
+          select: { id: true, email: true, name: true, role: true },
         },
         _count: {
           select: {
-            users: true,
             employees: { where: { isActive: true } },
           },
         },
@@ -161,7 +155,13 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(companies);
+    const result = companies.map((company) => ({
+      ...company,
+      adminCount: company.users.filter((u) => u.role === "ADMIN").length,
+      managerCount: company.users.filter((u) => u.role === "MANAGER").length,
+    }));
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Erreur récupération clients:", error);
     return NextResponse.json(
