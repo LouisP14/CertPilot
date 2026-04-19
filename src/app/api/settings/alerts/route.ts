@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { parseBody, alertSettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -45,6 +46,19 @@ export async function PUT(request: NextRequest) {
         },
       });
     }
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId,
+      action: "UPDATE",
+      entityType: "SETTINGS",
+      entityId: companyId,
+      entityName: "Seuils d'alerte",
+      description: `Modification des seuils d'alerte : ${String(alertThresholds)}`,
+      newValues: { alertThresholds: String(alertThresholds) },
+    });
 
     return NextResponse.json(company);
   } catch (error) {

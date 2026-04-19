@@ -1,4 +1,5 @@
 import { auth, getEmployeeFilter } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import { detectTrainingNeeds } from "@/lib/detect-training-needs";
 import prisma from "@/lib/prisma";
 import { parseBody, generateNeedsSchema } from "@/lib/validations";
@@ -104,6 +105,18 @@ export async function POST(request: NextRequest) {
     const { horizonDays = 90 } = parsed.data;
 
     const result = await detectTrainingNeeds(companyId, horizonDays);
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId,
+      action: "CREATE",
+      entityType: "TRAINING_NEED",
+      entityName: "Détection automatique",
+      description: `Détection des besoins de formation : ${result.created} nouveau(x) besoin(s) créé(s) (horizon ${horizonDays}j)`,
+      metadata: { created: result.created, horizonDays },
+    });
 
     return NextResponse.json({
       success: true,

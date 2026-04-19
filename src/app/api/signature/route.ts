@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import { sendEmployeeSignatureLink } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { parseBody, initiateSignatureSchema } from "@/lib/validations";
@@ -152,6 +153,19 @@ export async function POST(request: NextRequest) {
       expiresAt: tokenExpiry,
     });
 
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId: session.user.companyId,
+      action: "SIGN",
+      entityType: "SIGNATURE",
+      entityId: signature.id,
+      entityName: `${employee.firstName} ${employee.lastName}`,
+      description: `Initiation du processus de signature pour ${employee.firstName} ${employee.lastName} — responsable : ${siteManagerEmail}`,
+      metadata: { employeeId, siteManagerEmail, siteManagerName },
+    });
+
     return NextResponse.json({
       success: true,
       message: "Demande de signature envoyée",
@@ -203,6 +217,18 @@ export async function DELETE(request: NextRequest) {
     // Supprimer le processus de signature
     await prisma.passportSignature.deleteMany({
       where: { employeeId },
+    });
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId: session.user.companyId,
+      action: "DELETE",
+      entityType: "SIGNATURE",
+      entityId: employeeId,
+      description: `Annulation du processus de signature pour l'employé ${employeeId} par ${session.user.name || session.user.email}`,
+      metadata: { employeeId },
     });
 
     return NextResponse.json({

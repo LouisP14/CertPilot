@@ -93,6 +93,7 @@ const ENTITY_LABELS: Record<string, string> = {
   TRAINING_CENTER: "Centre formation",
   OFFERING: "Offre",
   REFERENCE: "Référence",
+  TRAINING_NEED: "Besoin formation",
 };
 
 const ENTITY_ICONS: Record<string, React.ReactNode> = {
@@ -107,6 +108,7 @@ const ENTITY_ICONS: Record<string, React.ReactNode> = {
   SETTINGS: <Settings className="h-4 w-4" />,
   PLANNING_CONSTRAINTS: <Shield className="h-4 w-4" />,
   TRAINING_CENTER: <Building className="h-4 w-4" />,
+  TRAINING_NEED: <GraduationCap className="h-4 w-4" />,
   OFFERING: <FileText className="h-4 w-4" />,
   REFERENCE: <Settings className="h-4 w-4" />,
 };

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
@@ -37,6 +38,17 @@ export async function POST(request: NextRequest) {
         password: hashedPassword,
         mustChangePassword: false,
       },
+    });
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      action: "UPDATE",
+      entityType: "USER",
+      entityId: session.user.id,
+      entityName: session.user.name ?? session.user.email,
+      description: `Changement de mot de passe par ${session.user.name || session.user.email}`,
     });
 
     return NextResponse.json({ success: true });

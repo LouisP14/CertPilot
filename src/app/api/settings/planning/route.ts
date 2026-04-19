@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { parseBody, planningSettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -162,6 +163,18 @@ export async function PUT(request: NextRequest) {
             ? parseInt(String(minDaysBeforeExpiry))
             : undefined,
       },
+    });
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId,
+      action: "UPDATE",
+      entityType: "PLANNING_CONSTRAINTS",
+      entityId: companyId,
+      entityName: "Contraintes de planification",
+      description: `Modification des contraintes de planification par ${session.user.name || session.user.email}`,
     });
 
     return NextResponse.json(constraints);

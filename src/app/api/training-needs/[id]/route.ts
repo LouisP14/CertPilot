@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { parseBody, updateNeedSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -48,6 +49,20 @@ export async function PUT(
       },
     });
 
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId: session.user.companyId,
+      action: "UPDATE",
+      entityType: "TRAINING_NEED",
+      entityId: id,
+      entityName: `${need.employee.firstName} ${need.employee.lastName} — ${need.formationType.name}`,
+      description: `Modification du besoin de formation : statut "${need.status}"${plannedSessionId ? ", session planifiée" : ""}`,
+      oldValues: { status: existingNeed.status },
+      newValues: { status: need.status, plannedSessionId: plannedSessionId || null },
+    });
+
     return NextResponse.json(need);
   } catch (error) {
     console.error("PUT training need error:", error);
@@ -92,6 +107,19 @@ export async function DELETE(
     await prisma.trainingNeed.update({
       where: { id },
       data: { status: "CANCELLED" },
+    });
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId: session.user.companyId,
+      action: "DELETE",
+      entityType: "TRAINING_NEED",
+      entityId: id,
+      description: `Annulation du besoin de formation par ${session.user.name || session.user.email}`,
+      oldValues: { status: existingNeed.status },
+      newValues: { status: "CANCELLED" },
     });
 
     return NextResponse.json({ success: true });

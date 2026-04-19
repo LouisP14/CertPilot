@@ -35,7 +35,8 @@ export type AuditEntityType =
   | "SETTINGS"
   | "PLANNING_CONSTRAINTS"
   | "TRAINING_CENTER"
-  | "OFFERING";
+  | "OFFERING"
+  | "TRAINING_NEED";
 
 export interface AuditLogInput {
   // Qui
@@ -435,6 +436,7 @@ function getEntityLabel(entityType: AuditEntityType): string {
     PLANNING_CONSTRAINTS: "les contraintes de planification",
     TRAINING_CENTER: "le centre de formation",
     OFFERING: "l'offre",
+    TRAINING_NEED: "le besoin de formation",
   };
   return labels[entityType] || entityType;
 }
@@ -501,6 +503,7 @@ export function getEntityIcon(entityType: AuditEntityType): string {
     PLANNING_CONSTRAINTS: "Shield",
     TRAINING_CENTER: "Building",
     OFFERING: "FileText",
+    TRAINING_NEED: "GraduationCap",
   };
   return icons[entityType] || "FileText";
 }

@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { parseBody, prioritySettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -66,6 +67,19 @@ export async function PUT(request: NextRequest) {
     const company = await prisma.company.update({
       where: { id: companyId },
       data: { priorityThresholds: parts.join(",") },
+    });
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId,
+      action: "UPDATE",
+      entityType: "SETTINGS",
+      entityId: companyId,
+      entityName: "Seuils de priorité",
+      description: `Modification des seuils de priorité : ${parts.join(",")}`,
+      newValues: { priorityThresholds: parts.join(",") },
     });
 
     return NextResponse.json({

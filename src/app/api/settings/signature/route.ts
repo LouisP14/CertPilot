@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { parseBody, signatureSettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
@@ -102,6 +103,19 @@ export async function PUT(request: NextRequest) {
         },
       });
     }
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      companyId: session.user.companyId,
+      action: "UPDATE",
+      entityType: "SETTINGS",
+      entityId: session.user.companyId,
+      entityName: "Paramètres signature",
+      description: `Modification des paramètres de signature électronique par ${session.user.name || session.user.email}`,
+      newValues: { signatureEnabled, signatureResponsable, signatureTitre },
+    });
 
     return NextResponse.json({
       signatureEnabled: company.signatureEnabled,

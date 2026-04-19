@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { createAuditLog } from "@/lib/audit";
 import prisma from "@/lib/prisma";
 import { parseBody, updateProfileSchema } from "@/lib/validations";
 import bcrypt from "bcryptjs";
@@ -159,6 +160,23 @@ export async function PUT(request: NextRequest) {
         role: true,
         updatedAt: true,
       },
+    });
+
+    const changedFields = [];
+    if (name && name.trim() !== currentUser.name) changedFields.push("nom");
+    if (newPassword) changedFields.push("mot de passe");
+
+    createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name,
+      userEmail: session.user.email,
+      action: "UPDATE",
+      entityType: "USER",
+      entityId: session.user.id,
+      entityName: updatedUser.name ?? updatedUser.email,
+      description: `Modification du profil par ${session.user.name || session.user.email} (${changedFields.join(", ")})`,
+      oldValues: { name: currentUser.name },
+      newValues: { name: updatedUser.name },
     });
 
     return NextResponse.json(updatedUser);
