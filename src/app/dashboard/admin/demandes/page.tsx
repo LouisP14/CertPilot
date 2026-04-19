@@ -635,7 +635,7 @@ export default function DemandesAdminPage() {
 
                   {selectedRequest.status === "CONVERTED" ? (
                     <Link
-                      href={`/dashboard/admin/clients?email=${selectedRequest.email}&company=${encodeURIComponent(selectedRequest.companyName)}&name=${encodeURIComponent(selectedRequest.contactName)}`}
+                      href={`/dashboard/admin/clients?email=${selectedRequest.email}&company=${encodeURIComponent(selectedRequest.companyName)}&name=${encodeURIComponent(selectedRequest.contactName)}${selectedRequest.plan ? `&plan=${selectedRequest.plan}` : ""}${selectedRequest.employeeCount ? `&tranche=${encodeURIComponent(selectedRequest.employeeCount)}` : ""}`}
                       className="w-full"
                     >
                       <Button variant="success" className="w-full">

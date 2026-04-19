@@ -61,6 +61,7 @@ function ClientsContent() {
     email: "",
     password: "",
     plan: "pro" as "starter" | "pro" | "business" | "enterprise",
+    tranche: "1-50" as "1-50" | "51-150" | "151-300",
     subscriptionMonths: 12,
   });
 
@@ -89,15 +90,18 @@ function ClientsContent() {
     const email = searchParams.get("email");
     const company = searchParams.get("company");
     const name = searchParams.get("name");
+    const plan = searchParams.get("plan") as "starter" | "pro" | "business" | "enterprise" | null;
+    const tranche = searchParams.get("tranche") as "1-50" | "51-150" | "151-300" | null;
 
-    if (email || company || name) {
+    if (email || company || name || plan || tranche) {
       setFormData((prev) => ({
         ...prev,
         email: email || prev.email,
         companyName: company || prev.companyName,
         contactName: name || prev.contactName,
+        ...(plan ? { plan } : {}),
+        ...(tranche ? { tranche } : {}),
       }));
-      // Ouvrir la section création si on vient avec des paramètres
       setOpenSections({ create: true, manage: false });
     }
   }, [searchParams]);
@@ -154,6 +158,7 @@ function ClientsContent() {
           email: "",
           password: "",
           plan: "business",
+          tranche: "1-50",
           subscriptionMonths: 12,
         });
         // Rafraîchir la liste des clients
@@ -425,6 +430,24 @@ function ClientsContent() {
                         <option value="pro">Pro</option>
                         <option value="business">Business</option>
                         <option value="enterprise">Enterprise</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="tranche">Tranche employés</Label>
+                      <select
+                        id="tranche"
+                        value={formData.tranche}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            tranche: e.target.value as "1-50" | "51-150" | "151-300",
+                          })
+                        }
+                        className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="1-50">1–50 employés (limite : 50)</option>
+                        <option value="51-150">51–150 employés (limite : 150)</option>
+                        <option value="151-300">151–300 employés (limite : 300)</option>
                       </select>
                     </div>
                     <div>

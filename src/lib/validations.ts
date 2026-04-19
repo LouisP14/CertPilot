@@ -351,6 +351,7 @@ export const adminCreateClientSchema = z.object({
   email: z.string().email("Email invalide"),
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
   plan: z.string().optional(),
+  tranche: z.enum(["1-50", "51-150", "151-300"]).optional(),
   subscriptionMonths: z.number().int().min(1).optional(),
 });
 

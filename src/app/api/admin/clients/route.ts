@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
       email,
       password,
       plan,
+      tranche,
       subscriptionMonths,
     } = parsed.data;
 
@@ -64,6 +65,14 @@ export async function POST(request: NextRequest) {
     const selectedPlan = plan?.toLowerCase() || "business";
     const planConfig = PLAN_CONFIGS[selectedPlan] || PLAN_CONFIGS.business;
 
+    // La tranche détermine la limite d'employés (indépendamment du plan)
+    const TRANCHE_LIMITS: Record<string, number> = {
+      "1-50": 50,
+      "51-150": 150,
+      "151-300": 300,
+    };
+    const employeeLimit = tranche ? (TRANCHE_LIMITS[tranche] ?? planConfig.employeeLimit) : planConfig.employeeLimit;
+
     // Créer l'entreprise
     const company = await prisma.company.create({
       data: {
@@ -71,7 +80,7 @@ export async function POST(request: NextRequest) {
         adminEmail: email.toLowerCase(),
         subscriptionStatus: "ACTIVE",
         subscriptionPlan: planConfig.name,
-        employeeLimit: planConfig.employeeLimit,
+        employeeLimit,
         adminLimit: planConfig.adminLimit,
         trialEndsAt: null, // Pas de trial, abonnement direct
       },
