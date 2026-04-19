@@ -604,6 +604,14 @@ export default function SessionsPage() {
                         {statusConfig.icon}
                         {statusConfig.label}
                       </Badge>
+
+                      {/* Convocations envoyées */}
+                      {session.convocationsSentAt && (
+                        <Badge className="flex items-center gap-1 bg-green-100 text-green-700 border-green-200">
+                          <Mail className="h-3 w-3" />
+                          Convocations
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </CardHeader>
