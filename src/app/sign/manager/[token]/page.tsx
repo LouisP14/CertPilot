@@ -388,7 +388,7 @@ export default function ManagerSignPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nom complet
+                  Nom complet *
                 </label>
                 <input
                   type="text"
