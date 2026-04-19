@@ -23,9 +23,11 @@ interface Client {
   subscriptionPlan: string | null;
   subscriptionStatus: string;
   employeeLimit: number;
+  adminLimit: number | null;
+  adminCount: number;
+  managerCount: number;
   createdAt: string;
   _count?: {
-    users: number;
     employees: number;
   };
 }
@@ -47,6 +49,11 @@ function ClientsContent() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loadingClients, setLoadingClients] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [addingAdminFor, setAddingAdminFor] = useState<string | null>(null);
+  const [addAdminForm, setAddAdminForm] = useState({ name: "", email: "", password: "" });
+  const [addAdminLoading, setAddAdminLoading] = useState(false);
+  const [addAdminMessage, setAddAdminMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [formData, setFormData] = useState({
     companyName: "",
@@ -110,6 +117,15 @@ function ClientsContent() {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     setFormData({ ...formData, password });
+  };
+
+  const generateAdminPassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
+    let password = "";
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setAddAdminForm((prev) => ({ ...prev, password }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,6 +193,42 @@ function ClientsContent() {
       alert("Erreur serveur");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleAddAdmin = async (clientId: string) => {
+    if (!addAdminForm.name || !addAdminForm.email || !addAdminForm.password) {
+      setAddAdminMessage({ type: "error", text: "Tous les champs sont requis" });
+      return;
+    }
+    setAddAdminLoading(true);
+    setAddAdminMessage(null);
+    try {
+      const res = await fetch("/api/admin/clients/add-admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId: clientId,
+          name: addAdminForm.name,
+          email: addAdminForm.email,
+          password: addAdminForm.password,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setAddAdminMessage({
+          type: "success",
+          text: `✅ Admin créé !\n📧 ${addAdminForm.email}\n🔑 ${addAdminForm.password}\n📤 Email envoyé !`,
+        });
+        setAddAdminForm({ name: "", email: "", password: "" });
+        fetchClients();
+      } else {
+        setAddAdminMessage({ type: "error", text: data.error || "Erreur" });
+      }
+    } catch {
+      setAddAdminMessage({ type: "error", text: "Erreur serveur" });
+    } finally {
+      setAddAdminLoading(false);
     }
   };
 
@@ -467,67 +519,158 @@ function ClientsContent() {
               ) : (
                 <div className="space-y-3">
                   {clients.map((client) => (
-                    <div
-                      key={client.id}
-                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:bg-gray-50"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white">
-                          {client.name.charAt(0).toUpperCase()}
+                    <div key={client.id} className="rounded-lg border border-gray-200 bg-white transition-colors hover:bg-gray-50">
+                      {/* Row principale */}
+                      <div className="flex items-center justify-between p-4">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-sm font-bold text-white">
+                            {client.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-900">{client.name}</h4>
+                            <p className="text-sm text-gray-500">{client.adminEmail}</p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">
-                            {client.name}
-                          </h4>
-                          <p className="text-sm text-gray-500">
-                            {client.adminEmail}
-                          </p>
+
+                        <div className="flex items-center gap-4">
+                          <div className="text-right text-sm">
+                            <p className="text-gray-600">
+                              <span className="font-medium">{client._count?.employees || 0}</span>
+                              {" / "}{client.employeeLimit} employés
+                            </p>
+                            <p className="text-gray-500">
+                              <span className="font-medium">{client.adminCount}</span>
+                              {client.adminLimit !== null ? `/${client.adminLimit}` : ""}{" "}admin
+                              {" · "}
+                              <span className="font-medium">{client.managerCount}</span> manager
+                              {client.managerCount > 1 ? "s" : ""}
+                            </p>
+                            <p className="text-gray-400">{client.subscriptionPlan || "Starter"}</p>
+                          </div>
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                              client.subscriptionStatus === "ACTIVE"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : client.subscriptionStatus === "TRIAL"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-red-100 text-red-700"
+                            }`}
+                          >
+                            {client.subscriptionStatus === "ACTIVE" ? "Actif" : client.subscriptionStatus === "TRIAL" ? "Essai" : "Expiré"}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={client.adminLimit !== null && client.adminCount >= client.adminLimit}
+                            title={
+                              client.adminLimit !== null && client.adminCount >= client.adminLimit
+                                ? `Limite atteinte (${client.adminLimit} admin max)`
+                                : "Ajouter un administrateur"
+                            }
+                            onClick={() => {
+                              setAddingAdminFor(addingAdminFor === client.id ? null : client.id);
+                              setAddAdminMessage(null);
+                              setAddAdminForm({ name: "", email: "", password: "" });
+                            }}
+                          >
+                            <Plus className="h-4 w-4 mr-1" />
+                            Admin
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                            onClick={() => handleDeleteClient(client.id, client.name)}
+                            disabled={deletingId === client.id}
+                          >
+                            {deletingId === client.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
-                        <div className="text-right text-sm">
-                          <p className="text-gray-600">
-                            <span className="font-medium">
-                              {client._count?.employees || 0}
-                            </span>{" "}
-                            / {client.employeeLimit} employés
-                          </p>
-                          <p className="text-gray-400">
-                            {client.subscriptionPlan || "Starter"}
-                          </p>
-                        </div>
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                            client.subscriptionStatus === "ACTIVE"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : client.subscriptionStatus === "TRIAL"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {client.subscriptionStatus === "ACTIVE"
-                            ? "Actif"
-                            : client.subscriptionStatus === "TRIAL"
-                              ? "Essai"
-                              : "Expiré"}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                          onClick={() =>
-                            handleDeleteClient(client.id, client.name)
-                          }
-                          disabled={deletingId === client.id}
-                        >
-                          {deletingId === client.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
+                      {/* Formulaire add-admin inline */}
+                      {addingAdminFor === client.id && (
+                        <div className="border-t border-gray-200 bg-gray-50 p-4">
+                          <h5 className="mb-3 text-sm font-semibold text-[#173B56]">
+                            Ajouter un administrateur à {client.name}
+                          </h5>
+                          {addAdminMessage && (
+                            <div
+                              className={`mb-3 rounded-lg border p-3 text-sm font-medium whitespace-pre-line ${
+                                addAdminMessage.type === "success"
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                                  : "border-red-200 bg-red-50 text-red-800"
+                              }`}
+                            >
+                              {addAdminMessage.text}
+                            </div>
                           )}
-                        </Button>
-                      </div>
+                          <div className="grid gap-3 sm:grid-cols-3">
+                            <div>
+                              <Label htmlFor={`admin-name-${client.id}`} className="text-xs">Nom *</Label>
+                              <Input
+                                id={`admin-name-${client.id}`}
+                                value={addAdminForm.name}
+                                onChange={(e) => setAddAdminForm((p) => ({ ...p, name: e.target.value }))}
+                                placeholder="Prénom Nom"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`admin-email-${client.id}`} className="text-xs">Email *</Label>
+                              <Input
+                                id={`admin-email-${client.id}`}
+                                type="email"
+                                value={addAdminForm.email}
+                                onChange={(e) => setAddAdminForm((p) => ({ ...p, email: e.target.value }))}
+                                placeholder="admin@entreprise.fr"
+                                className="mt-1"
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`admin-pwd-${client.id}`} className="text-xs">Mot de passe temp. *</Label>
+                              <div className="mt-1 flex gap-2">
+                                <Input
+                                  id={`admin-pwd-${client.id}`}
+                                  value={addAdminForm.password}
+                                  onChange={(e) => setAddAdminForm((p) => ({ ...p, password: e.target.value }))}
+                                  placeholder="Générer →"
+                                  className="font-mono"
+                                />
+                                <Button type="button" variant="outline" size="sm" onClick={generateAdminPassword}>
+                                  <Key className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            <Button
+                              variant="success"
+                              size="sm"
+                              disabled={addAdminLoading}
+                              onClick={() => handleAddAdmin(client.id)}
+                            >
+                              {addAdminLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                              ) : (
+                                <Plus className="h-4 w-4 mr-1" />
+                              )}
+                              Créer l&apos;administrateur
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => { setAddingAdminFor(null); setAddAdminMessage(null); }}
+                            >
+                              Annuler
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
