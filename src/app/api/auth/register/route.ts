@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
         adminEmail: emailLower,
         trialEndsAt,
         subscriptionStatus: "TRIAL",
-        subscriptionPlan: "Starter",
-        employeeLimit: 20,
+        subscriptionPlan: "Business",
+        employeeLimit: 50,
       },
     });
 
