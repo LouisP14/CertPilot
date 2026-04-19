@@ -6,11 +6,11 @@ import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
 // Configuration des plans
-const PLAN_CONFIGS: Record<string, { name: string; employeeLimit: number }> = {
-  starter: { name: "Starter", employeeLimit: 20 },
-  pro: { name: "Pro", employeeLimit: 100 },
-  business: { name: "Business", employeeLimit: 300 },
-  enterprise: { name: "Enterprise", employeeLimit: 1000 },
+const PLAN_CONFIGS: Record<string, { name: string; employeeLimit: number; adminLimit: number | null }> = {
+  starter:    { name: "Starter",    employeeLimit: 50,   adminLimit: 1    },
+  pro:        { name: "Pro",        employeeLimit: 150,  adminLimit: 3    },
+  business:   { name: "Business",   employeeLimit: 300,  adminLimit: null },
+  enterprise: { name: "Enterprise", employeeLimit: 1000, adminLimit: null },
 };
 
 // POST - Créer un compte client (SUPER_ADMIN only)
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
         subscriptionStatus: "ACTIVE",
         subscriptionPlan: planConfig.name,
         employeeLimit: planConfig.employeeLimit,
+        adminLimit: planConfig.adminLimit,
         trialEndsAt: null, // Pas de trial, abonnement direct
       },
     });
