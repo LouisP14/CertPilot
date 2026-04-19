@@ -447,7 +447,7 @@ export default function ProfilePage() {
                     )}
                   </span>
                 </div>
-                {profile.company.adminLimit !== null && (
+                {profile.company.adminLimit !== null && profile.company.adminLimit > 0 && (
                   <div className="w-full bg-slate-100 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all ${
