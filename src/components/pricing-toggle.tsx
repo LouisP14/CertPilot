@@ -178,7 +178,7 @@ export function PricingToggle() {
 
               <div className="mt-6 flex flex-col gap-2">
                 <Link
-                  href="/register"
+                  href={`/register?plan=${plan.key.toLowerCase()}`}
                   className={`inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
                     isPopular
                       ? "bg-emerald-600 text-white hover:bg-emerald-700"

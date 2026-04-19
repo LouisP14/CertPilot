@@ -9,6 +9,7 @@ export const registerSchema = z.object({
   password: z.string().min(8, "Le mot de passe doit contenir au moins 8 caractères"),
   name: z.string().min(1, "Le nom est requis"),
   companyName: z.string().min(1, "Le nom de l'entreprise est requis"),
+  plan: z.enum(["starter", "pro", "business"]).optional(),
 });
 
 export const changePasswordSchema = z.object({

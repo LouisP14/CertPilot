@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const { email, password, name, companyName } = parsed.data;
+    const { email, password, name, companyName, plan } = parsed.data;
     const emailLower = email.toLowerCase();
 
     // Vérifier si l'email existe déjà
@@ -49,6 +49,14 @@ export async function POST(request: NextRequest) {
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
+    // Configurer le plan du trial (employeeLimit toujours bridé à 50)
+    const TRIAL_PLANS = {
+      starter:  { subscriptionPlan: "Starter",  adminLimit: 1    },
+      pro:      { subscriptionPlan: "Pro",       adminLimit: 3    },
+      business: { subscriptionPlan: "Business",  adminLimit: null },
+    };
+    const trialConfig = TRIAL_PLANS[plan ?? "business"];
+
     // Créer l'entreprise avec trial de 14 jours
     const company = await prisma.company.create({
       data: {
@@ -56,8 +64,9 @@ export async function POST(request: NextRequest) {
         adminEmail: emailLower,
         trialEndsAt,
         subscriptionStatus: "TRIAL",
-        subscriptionPlan: "Business",
+        subscriptionPlan: trialConfig.subscriptionPlan,
         employeeLimit: 50,
+        adminLimit: trialConfig.adminLimit,
       },
     });
 

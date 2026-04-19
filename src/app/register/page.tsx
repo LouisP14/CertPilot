@@ -2,9 +2,19 @@
 
 import { ArrowRight, Building2, CheckCircle2, Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
-export default function RegisterPage() {
+const PLAN_LABELS: Record<string, string> = {
+  starter: "Starter",
+  pro: "Pro",
+  business: "Business",
+};
+
+function RegisterForm() {
+  const searchParams = useSearchParams();
+  const plan = (searchParams.get("plan") ?? "business") as "starter" | "pro" | "business";
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -53,6 +63,7 @@ export default function RegisterPage() {
           email: formData.email,
           companyName: formData.companyName,
           password: formData.password,
+          plan,
         }),
       });
 
@@ -116,7 +127,7 @@ export default function RegisterPage() {
             Créer votre compte
           </h1>
           <p className="mt-2 text-slate-600">
-            Essai gratuit 14 jours — toutes les fonctionnalités incluses
+            Essai gratuit 14 jours — Plan {PLAN_LABELS[plan]} inclus
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
@@ -301,5 +312,19 @@ function BenefitItem({ text }: { text: string }) {
       <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-400" />
       <span className="text-white/90">{text}</span>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
+        </div>
+      }
+    >
+      <RegisterForm />
+    </Suspense>
   );
 }
