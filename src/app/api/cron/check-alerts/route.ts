@@ -282,6 +282,7 @@ export async function GET(request: NextRequest) {
               const { error } = await sendExpiryNotificationEmployee({
                 to: cert.employee.email,
                 employeeFirstName: cert.employee.firstName,
+                employeeLastName: cert.employee.lastName,
                 formationName: cert.formationType.name,
                 daysLeft,
                 companyName: company.name,

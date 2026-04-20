@@ -1141,11 +1141,12 @@ www.certpilot.eu
 export async function sendExpiryNotificationEmployee(params: {
   to: string;
   employeeFirstName: string;
+  employeeLastName: string;
   formationName: string;
   daysLeft: number;
   companyName: string;
 }) {
-  const { to, employeeFirstName, formationName, daysLeft, companyName } = params;
+  const { to, employeeFirstName, employeeLastName, formationName, daysLeft, companyName } = params;
   const isExpired = daysLeft <= 0;
 
   const subjectLine = isExpired
@@ -1172,7 +1173,7 @@ export async function sendExpiryNotificationEmployee(params: {
           <p style="color: #e2e8f0; margin: 8px 0 0 0;">Notification habilitation</p>
         </div>
         <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
-          <p>Bonjour ${employeeFirstName},</p>
+          <p>Bonjour ${employeeFirstName} ${employeeLastName},</p>
           <div style="background: ${urgencyBg}; border-left: 4px solid ${urgencyColor}; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
             <p style="margin: 0; color: ${urgencyColor};">${statusText}</p>
           </div>
