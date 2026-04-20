@@ -196,6 +196,8 @@ export const companySettingsSchema = z.object({
 
 export const alertSettingsSchema = z.object({
   alertThresholds: z.union([z.string(), z.array(z.number().int().min(0))]),
+  notifyEmployee: z.boolean().optional(),
+  notifyManager: z.boolean().optional(),
 });
 
 export const signatureSettingsSchema = z.object({

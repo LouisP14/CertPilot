@@ -23,7 +23,7 @@ export async function PUT(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { alertThresholds } = parsed.data;
+    const { alertThresholds, notifyEmployee, notifyManager } = parsed.data;
 
     // Get or create company liée à la session
     let company = await prisma.company.findUnique({
@@ -35,6 +35,8 @@ export async function PUT(request: NextRequest) {
         where: { id: company.id },
         data: {
           alertThresholds: String(alertThresholds) || "90,60,30,7",
+          ...(notifyEmployee !== undefined && { notifyEmployee }),
+          ...(notifyManager !== undefined && { notifyManager }),
         },
       });
     } else {
@@ -43,6 +45,8 @@ export async function PUT(request: NextRequest) {
           id: companyId,
           name: "Mon Entreprise",
           alertThresholds: String(alertThresholds) || "90,60,30,7",
+          ...(notifyEmployee !== undefined && { notifyEmployee }),
+          ...(notifyManager !== undefined && { notifyManager }),
         },
       });
     }
@@ -56,8 +60,12 @@ export async function PUT(request: NextRequest) {
       entityType: "SETTINGS",
       entityId: companyId,
       entityName: "Seuils d'alerte",
-      description: `Modification des seuils d'alerte : ${String(alertThresholds)}`,
-      newValues: { alertThresholds: String(alertThresholds) },
+      description: `Modification des alertes : seuils ${String(alertThresholds)}${notifyEmployee !== undefined ? `, notifyEmployee=${notifyEmployee}` : ""}${notifyManager !== undefined ? `, notifyManager=${notifyManager}` : ""}`,
+      newValues: {
+        alertThresholds: String(alertThresholds),
+        ...(notifyEmployee !== undefined && { notifyEmployee }),
+        ...(notifyManager !== undefined && { notifyManager }),
+      },
     });
 
     return NextResponse.json(company);
