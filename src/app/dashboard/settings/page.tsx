@@ -39,6 +39,8 @@ export default async function SettingsPage() {
               adminEmail: company.adminEmail,
               alertThresholds: company.alertThresholds,
               priorityThresholds: company.priorityThresholds,
+              notifyEmployee: company.notifyEmployee,
+              notifyManager: company.notifyManager,
             }
           : null
       }

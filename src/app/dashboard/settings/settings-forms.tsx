@@ -112,6 +112,8 @@ export function CompanyForm({ company }: CompanyFormProps) {
 
 interface AlertFormProps {
   alertThresholds: string;
+  notifyEmployee: boolean;
+  notifyManager: boolean;
 }
 
 const DEFAULT_THRESHOLDS = [
@@ -122,7 +124,7 @@ const DEFAULT_THRESHOLDS = [
   { days: 7, label: "7 jours" },
 ];
 
-export function AlertForm({ alertThresholds }: AlertFormProps) {
+export function AlertForm({ alertThresholds, notifyEmployee, notifyManager }: AlertFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -132,6 +134,8 @@ export function AlertForm({ alertThresholds }: AlertFormProps) {
   const currentThresholds = alertThresholds.split(",").map(Number);
   const [selectedThresholds, setSelectedThresholds] =
     useState<number[]>(currentThresholds);
+  const [notifyEmp, setNotifyEmp] = useState(notifyEmployee);
+  const [notifyMgr, setNotifyMgr] = useState(notifyManager);
 
   const toggleThreshold = (days: number) => {
     setSelectedThresholds((prev) =>
@@ -153,6 +157,8 @@ export function AlertForm({ alertThresholds }: AlertFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           alertThresholds: selectedThresholds.join(","),
+          notifyEmployee: notifyEmp,
+          notifyManager: notifyMgr,
         }),
       });
 
@@ -193,6 +199,33 @@ export function AlertForm({ alertThresholds }: AlertFormProps) {
         </div>
         <p className="text-xs text-gray-600 mt-2">
           Un email sera envoyé à chaque seuil franchi
+        </p>
+      </div>
+      <div className="mt-4 space-y-3 border-t pt-4">
+        <p className="text-sm font-medium text-gray-700">Notifications directes</p>
+        <p className="text-xs text-gray-500">
+          Déclenchement : J-7 et à l&apos;expiration
+        </p>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={notifyEmp}
+            onChange={(e) => setNotifyEmp(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-700">Notifier l&apos;employé par email</span>
+        </label>
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={notifyMgr}
+            onChange={(e) => setNotifyMgr(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <span className="text-sm text-gray-700">Notifier le responsable par email</span>
+        </label>
+        <p className="text-xs text-gray-400">
+          Si l&apos;employé ou le responsable n&apos;a pas d&apos;email renseigné, la notification est ignorée silencieusement.
         </p>
       </div>
 

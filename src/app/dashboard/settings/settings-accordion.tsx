@@ -35,6 +35,8 @@ interface SettingsAccordionProps {
     adminEmail: string | null;
     alertThresholds: string;
     priorityThresholds: string;
+    notifyEmployee: boolean;
+    notifyManager: boolean;
   } | null;
   availableServices: string[];
   totpEnabled: boolean;
@@ -133,6 +135,8 @@ export function SettingsAccordion({ company, availableServices, totpEnabled }: S
             <CardContent className="pt-0">
               <AlertForm
                 alertThresholds={company?.alertThresholds || "90,60,30,7"}
+                notifyEmployee={company?.notifyEmployee ?? false}
+                notifyManager={company?.notifyManager ?? false}
               />
             </CardContent>
           )}
