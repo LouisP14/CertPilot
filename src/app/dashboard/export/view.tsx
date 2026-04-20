@@ -9,7 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Select } from "@/components/ui/select";
-import { exportFullReportToPDF } from "@/lib/pdf-export";
+import {
+  exportAlertsToPDF,
+  exportCalendarToPDF,
+  exportFormationCoverageToPDF,
+  exportFullReportToPDF,
+  exportServiceCoverageToPDF,
+} from "@/lib/pdf-export";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -82,6 +88,8 @@ const excelExportLabels: Record<string, string> = {
   expiring: "Formations expirant dans 90 jours",
   expired: "Formations expirées",
   employees: "Liste des employés uniquement",
+  services: "Synthese par service",
+  formations: "Synthese par type de formation",
 };
 
 const excelExportFileNames: Record<string, string> = {
@@ -89,6 +97,18 @@ const excelExportFileNames: Record<string, string> = {
   expiring: "passeport-formation-expiring",
   expired: "passeport-formation-expired",
   employees: "passeport-formation-employees",
+  services: "synthese-services",
+  formations: "synthese-formations",
+};
+
+type PdfExportType = "full_report" | "alerts" | "calendar" | "coverage_formations" | "coverage_services";
+
+const pdfExportLabels: Record<PdfExportType, string> = {
+  full_report: "Rapport complet",
+  alerts: "Alertes expirations",
+  calendar: "Calendrier des echeances",
+  coverage_formations: "Couverture par formation",
+  coverage_services: "Conformite par service",
 };
 
 type ImportStep =
@@ -104,6 +124,7 @@ export default function ExportPage() {
   const [loading, setLoading] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState(false);
   const [exportType, setExportType] = useState("all");
+  const [pdfType, setPdfType] = useState<PdfExportType>("full_report");
   const [stats, setStats] = useState<Stats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
 
@@ -164,19 +185,28 @@ export default function ExportPage() {
   const handleExportPDF = async () => {
     setLoadingPdf(true);
     try {
-      const response = await fetch("/api/export/pdf-data");
-      if (response.ok) {
-        const data = await response.json();
-        exportFullReportToPDF(
-          data.employees,
-          stats || {
-            totalEmployees: 0,
-            totalCertificates: 0,
-            expiringThisMonth: 0,
-            expired: 0,
-          },
-          data.companyName || undefined,
-        );
+      const response = await fetch(`/api/export/pdf-data?type=${pdfType}`);
+      if (!response.ok) return;
+      const data = await response.json();
+
+      const statsData = stats ?? { totalEmployees: 0, totalCertificates: 0, expiringThisMonth: 0, expired: 0 };
+
+      switch (pdfType) {
+        case "full_report":
+          exportFullReportToPDF(data.employees, statsData, data.companyName ?? undefined);
+          break;
+        case "alerts":
+          exportAlertsToPDF(data.certificates);
+          break;
+        case "calendar":
+          exportCalendarToPDF(data.groupedCertificates);
+          break;
+        case "coverage_formations":
+          exportFormationCoverageToPDF(data.formations);
+          break;
+        case "coverage_services":
+          exportServiceCoverageToPDF(data.services);
+          break;
       }
     } catch (error) {
       console.error("PDF Export error:", error);
@@ -666,6 +696,8 @@ export default function ExportPage() {
                   <option value="employees">
                     {excelExportLabels.employees}
                   </option>
+                  <option value="services">{excelExportLabels.services}</option>
+                  <option value="formations">{excelExportLabels.formations}</option>
                 </Select>
               </div>
               <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
@@ -710,10 +742,21 @@ export default function ExportPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-500">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Type de rapport</label>
+                <Select
+                  value={pdfType}
+                  onChange={(e) => setPdfType(e.target.value as PdfExportType)}
+                >
+                  {(Object.entries(pdfExportLabels) as [PdfExportType, string][]).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </Select>
+              </div>
+              <div className="rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
                 <p>
-                  Génère un rapport PDF complet avec les statistiques et la
-                  liste de tous les employés avec leurs formations.
+                  Vous allez générer :{" "}
+                  <strong>{pdfExportLabels[pdfType]}</strong>
                 </p>
               </div>
               <Button
