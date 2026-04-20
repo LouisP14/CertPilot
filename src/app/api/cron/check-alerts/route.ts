@@ -1,5 +1,10 @@
 import { detectTrainingNeeds } from "@/lib/detect-training-needs";
-import { sendAlertEmail, sendOnboardingEmail } from "@/lib/email";
+import {
+  sendAlertEmail,
+  sendExpiryNotificationEmployee,
+  sendExpiryNotificationManager,
+  sendOnboardingEmail,
+} from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -52,6 +57,8 @@ export async function GET(request: NextRequest) {
         name: true,
         adminEmail: true,
         alertThresholds: true,
+        notifyEmployee: true,
+        notifyManager: true,
       },
     });
 
@@ -76,6 +83,8 @@ export async function GET(request: NextRequest) {
       alertsReady: number;
       alertsSent: number;
       convocationsClosed: number;
+      employeeNotifsSent?: number;
+      managerNotifsSent?: number;
     }> = [];
 
     for (const company of companies) {
@@ -109,6 +118,8 @@ export async function GET(request: NextRequest) {
               lastName: true,
               department: true,
               site: true,
+              email: true,
+              managerEmail: true,
             },
           },
           formationType: {
@@ -119,6 +130,7 @@ export async function GET(request: NextRequest) {
           alertLogs: {
             select: {
               alertType: true,
+              notifyType: true,
             },
           },
         },
@@ -242,12 +254,91 @@ export async function GET(request: NextRequest) {
 
       totalConvocationsClosed += closedConvocations.count;
 
+      // ========== NOTIFICATIONS DIRECTES EMPLOYÉ / MANAGER ==========
+      let employeeNotifsSent = 0;
+      let managerNotifsSent = 0;
+
+      if (company.notifyEmployee || company.notifyManager) {
+        for (const cert of certificates) {
+          if (!cert.expiryDate) continue;
+
+          const expiryDate = new Date(cert.expiryDate);
+          expiryDate.setHours(0, 0, 0, 0);
+          const daysLeft = Math.ceil(
+            (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+          );
+
+          // Only notify at J-7 window (daysLeft 0..7) or expired
+          if (daysLeft > 7) continue;
+
+          const alertType = daysLeft <= 0 ? "EXPIRED" : "7_DAYS";
+
+          // Employee notification
+          if (company.notifyEmployee && cert.employee.email) {
+            const alreadySent = cert.alertLogs.some(
+              (log) => log.alertType === alertType && log.notifyType === "EMPLOYEE",
+            );
+            if (!alreadySent) {
+              const { error } = await sendExpiryNotificationEmployee({
+                to: cert.employee.email,
+                employeeFirstName: cert.employee.firstName,
+                formationName: cert.formationType.name,
+                daysLeft,
+                companyName: company.name,
+              });
+              if (!error) {
+                await prisma.alertLog.create({
+                  data: {
+                    certificateId: cert.id,
+                    alertType,
+                    notifyType: "EMPLOYEE",
+                    recipients: cert.employee.email,
+                  },
+                });
+                employeeNotifsSent++;
+              }
+            }
+          }
+
+          // Manager notification
+          if (company.notifyManager && cert.employee.managerEmail) {
+            const alreadySent = cert.alertLogs.some(
+              (log) => log.alertType === alertType && log.notifyType === "MANAGER",
+            );
+            if (!alreadySent) {
+              const { error } = await sendExpiryNotificationManager({
+                to: cert.employee.managerEmail,
+                employeeFirstName: cert.employee.firstName,
+                employeeLastName: cert.employee.lastName,
+                employeeDepartment: cert.employee.department,
+                formationName: cert.formationType.name,
+                daysLeft,
+                companyName: company.name,
+              });
+              if (!error) {
+                await prisma.alertLog.create({
+                  data: {
+                    certificateId: cert.id,
+                    alertType,
+                    notifyType: "MANAGER",
+                    recipients: cert.employee.managerEmail,
+                  },
+                });
+                managerNotifsSent++;
+              }
+            }
+          }
+        }
+      }
+
       byCompany.push({
         companyId: company.id,
         companyName: company.name,
         alertsReady: alertsToSend.length,
         alertsSent: alertsSentForCompany,
         convocationsClosed: closedConvocations.count,
+        employeeNotifsSent,
+        managerNotifsSent,
       });
     }
 
@@ -322,10 +413,21 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const totalEmployeeNotifs = byCompany.reduce(
+      (sum, c) => sum + (c.employeeNotifsSent ?? 0),
+      0,
+    );
+    const totalManagerNotifs = byCompany.reduce(
+      (sum, c) => sum + (c.managerNotifsSent ?? 0),
+      0,
+    );
+
     return NextResponse.json({
       success: true,
-      message: `${totalAlertsSent} alerte(s) envoyée(s), ${onboardingEmailsSent} onboarding email(s), ${totalNeedsCreated} besoin(s) détecté(s)`,
+      message: `${totalAlertsSent} alerte(s) admin, ${totalEmployeeNotifs} notif(s) employé, ${totalManagerNotifs} notif(s) manager, ${onboardingEmailsSent} onboarding email(s), ${totalNeedsCreated} besoin(s) détecté(s)`,
       alertsSent: totalAlertsSent,
+      employeeNotificationsSent: totalEmployeeNotifs,
+      managerNotificationsSent: totalManagerNotifs,
       onboardingEmailsSent,
       trainingNeeds: { created: totalNeedsCreated, updated: totalNeedsUpdated },
       convocationsClosed: totalConvocationsClosed,
