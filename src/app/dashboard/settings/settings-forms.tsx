@@ -204,7 +204,7 @@ export function AlertForm({ alertThresholds, notifyEmployee, notifyManager }: Al
       <div className="mt-4 space-y-3 border-t pt-4">
         <p className="text-sm font-medium text-gray-700">Notifications directes</p>
         <p className="text-xs text-gray-500">
-          Déclenchement : J-7 et à l&apos;expiration
+          À partir de J-7 jusqu&apos;à expiration
         </p>
         <label className="flex items-center gap-3 cursor-pointer">
           <input
