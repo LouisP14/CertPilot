@@ -84,6 +84,8 @@ model Company {
   alertThresholds       String   @default("90,60,30,7") // jours avant expiration, séparés par virgule
   priorityThresholds    String   @default("7,30,60")   // jours pour Critique, Urgent, Normal (séparés par virgule)
   adminEmail            String?
+  notifyEmployee        Boolean  @default(false)
+  notifyManager         Boolean  @default(false)
   // Signature électronique du responsable
   signatureEnabled      Boolean  @default(false)
   signatureImage        String?  // Image de la signature en base64
@@ -264,6 +266,7 @@ model AlertLog {
   certificateId String
   certificate   Certificate @relation(fields: [certificateId], references: [id], onDelete: Cascade)
   alertType     String      // "90_DAYS", "60_DAYS", "30_DAYS", "7_DAYS", "EXPIRED"
+  notifyType    String      @default("ADMIN") // "ADMIN" | "EMPLOYEE" | "MANAGER"
   recipients    String      // Emails séparés par virgule
   sentAt        DateTime    @default(now())
 }
