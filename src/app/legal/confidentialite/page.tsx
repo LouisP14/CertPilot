@@ -208,7 +208,9 @@ export default function Confidentialite() {
               </li>
               <li>
                 <strong>Nos sous-traitants techniques</strong> : hébergement
-                (Railway), base de données, envoi d&apos;emails
+                (Railway — Pays-Bas, UE), envoi d&apos;emails (Resend — États-Unis, CCT),
+                paiements (Stripe — États-Unis, DPF+CCT), génération de QR codes
+                (api.qrserver.com — UE)
               </li>
               <li>
                 <strong>Les autorités</strong> : en cas d&apos;obligation légale
@@ -300,15 +302,19 @@ export default function Confidentialite() {
               8. Transferts hors UE
             </h2>
             <p className="mt-4">
-              Certaines de nos infrastructures techniques peuvent être situées
-              hors de l&apos;Union Européenne (notamment aux États-Unis pour
-              l&apos;hébergement Railway).
+              L&apos;hébergement de vos données est réalisé en Union Européenne
+              (Railway, Pays-Bas — région europe-west4). Certains sous-traitants
+              techniques sont établis aux États-Unis :
             </p>
+            <ul className="mt-2 ml-6 list-disc space-y-1">
+              <li><strong>Resend</strong> (envoi d&apos;emails transactionnels) — encadré par les clauses contractuelles types (CCT)</li>
+              <li><strong>Stripe</strong> (traitement des paiements) — certifié Data Privacy Framework (DPF) et clauses contractuelles types (CCT)</li>
+            </ul>
             <p className="mt-2">
               Ces transferts sont encadrés par des garanties appropriées :
             </p>
             <ul className="mt-2 ml-6 list-disc space-y-1">
-              <li>Clauses contractuelles types de la Commission européenne</li>
+              <li>Clauses contractuelles types de la Commission européenne (Art. 46 RGPD)</li>
               <li>
                 Data Privacy Framework (DPF) pour les transferts vers les USA
               </li>

@@ -83,7 +83,7 @@ export default function SecurityPage() {
             <ul className="space-y-3 text-slate-700">
               <Check>
                 <strong>Données hébergées en Europe</strong> — serveurs d&apos;application et base de données
-                localisés en Europe (Frankfurt, Allemagne) via Railway et son infrastructure cloud.
+                localisés en Europe (Pays-Bas, région europe-west4) via Railway et son infrastructure cloud.
               </Check>
               <Check>
                 <strong>Sous-traitants encadrés contractuellement</strong> — les prestataires tiers
@@ -238,8 +238,11 @@ export default function SecurityPage() {
                 sans intervention technique requise.
               </Check>
               <Check>
-                <strong>Données en Union Européenne</strong> — aucun sous-traitant
-                situé hors UE pour le traitement ou le stockage des données personnelles.
+                <strong>Données hébergées en Union Européenne</strong> — l&apos;hébergement
+                (Railway, Pays-Bas) est strictement intra-UE. Les sous-traitants techniques
+                américains (Resend pour les emails, Stripe pour les paiements) opèrent sous
+                clauses contractuelles types (CCT) et/ou Data Privacy Framework (DPF),
+                conformément au RGPD Art. 46.
               </Check>
               <Check>
                 <strong>Minimisation des données</strong> — seules les données nécessaires

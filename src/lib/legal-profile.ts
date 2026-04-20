@@ -21,7 +21,7 @@ export const legalProfile = {
   dpoEmail: process.env.NEXT_PUBLIC_DPO_EMAIL || "contact@certpilot.eu",
   hostName: process.env.NEXT_PUBLIC_HOST_NAME || "Railway",
   hostAddress:
-    process.env.NEXT_PUBLIC_HOST_ADDRESS || "Infrastructure cloud (UE/USA)",
+    process.env.NEXT_PUBLIC_HOST_ADDRESS || "Pays-Bas, Union Européenne (europe-west4)",
   hostWebsite: process.env.NEXT_PUBLIC_HOST_WEBSITE || "https://railway.app",
 };
 

@@ -273,6 +273,12 @@ export default function Cookies() {
               pas de publicité). Les seuls cookies présents sont les cookies
               techniques de session listés ci-dessus.
             </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Note : la génération des QR codes sur les passeports formation
+              utilise le service <strong>api.qrserver.com</strong> (UE). Cet
+              appel est effectué côté serveur et ne dépose aucun cookie sur
+              votre terminal.
+            </p>
           </section>
 
           <section>

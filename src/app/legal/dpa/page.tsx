@@ -133,10 +133,49 @@ export default function DpaPage() {
               6. Sous-traitants ultérieurs
             </h2>
             <p className="mt-4">
-              CertPilot peut recourir à des sous-traitants techniques
-              (hébergement, email transactionnel, facturation). La liste et les
-              localisations sont communiquées au Client et mises à jour en cas
-              de changement significatif.
+              CertPilot recourt aux sous-traitants techniques suivants :
+            </p>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50">
+                    <th className="px-4 py-2 text-left font-semibold">Sous-traitant</th>
+                    <th className="px-4 py-2 text-left font-semibold">Finalité</th>
+                    <th className="px-4 py-2 text-left font-semibold">Localisation</th>
+                    <th className="px-4 py-2 text-left font-semibold">Garanties RGPD</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr>
+                    <td className="px-4 py-2 font-medium">Railway</td>
+                    <td className="px-4 py-2">Hébergement applicatif et base de données</td>
+                    <td className="px-4 py-2">Pays-Bas (europe-west4) — UE</td>
+                    <td className="px-4 py-2">Intra-UE, pas de transfert</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-medium">Resend</td>
+                    <td className="px-4 py-2">Envoi d&apos;emails transactionnels</td>
+                    <td className="px-4 py-2">États-Unis</td>
+                    <td className="px-4 py-2">Clauses contractuelles types (CCT)</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-medium">Stripe</td>
+                    <td className="px-4 py-2">Traitement des paiements</td>
+                    <td className="px-4 py-2">États-Unis</td>
+                    <td className="px-4 py-2">Data Privacy Framework (DPF) + CCT</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-medium">api.qrserver.com</td>
+                    <td className="px-4 py-2">Génération de QR codes (passeports)</td>
+                    <td className="px-4 py-2">Union Européenne</td>
+                    <td className="px-4 py-2">Intra-UE, pas de transfert</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-sm text-slate-600">
+              Cette liste est mise à jour en cas de changement significatif et
+              communiquée au Client.
             </p>
           </section>
 
@@ -145,10 +184,11 @@ export default function DpaPage() {
               7. Localisation et transferts
             </h2>
             <p className="mt-4">
-              Les données sont hébergées selon l&apos;architecture technique du
-              service. En cas de transfert hors UE, des garanties appropriées
-              sont appliquées (clauses contractuelles types ou mécanisme
-              équivalent applicable).
+              Les données applicatives sont hébergées en Union Européenne
+              (Railway, Pays-Bas — europe-west4). Les transferts vers des
+              sous-traitants établis hors UE (Resend, Stripe) sont encadrés
+              par des clauses contractuelles types (CCT) et/ou le Data Privacy
+              Framework (DPF), conformément à l&apos;Art. 46 RGPD.
             </p>
           </section>
 
