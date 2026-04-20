@@ -1136,3 +1136,108 @@ www.certpilot.eu
     `,
   });
 }
+
+// Email : Notification d'expiration à l'employé (J-7 ou expirée)
+export async function sendExpiryNotificationEmployee(params: {
+  to: string;
+  employeeFirstName: string;
+  formationName: string;
+  daysLeft: number;
+  companyName: string;
+}) {
+  const { to, employeeFirstName, formationName, daysLeft, companyName } = params;
+  const isExpired = daysLeft <= 0;
+
+  const subjectLine = isExpired
+    ? `⚠️ Votre habilitation ${formationName} est expirée`
+    : `🔔 Votre habilitation ${formationName} expire dans ${daysLeft} jour(s)`;
+
+  const urgencyColor = isExpired ? "#dc2626" : "#f59e0b";
+  const urgencyBg = isExpired ? "#fef2f2" : "#fef3c7";
+  const statusText = isExpired
+    ? `Votre habilitation <strong>${formationName}</strong> est <strong>expirée depuis ${Math.abs(daysLeft)} jour(s)</strong>.`
+    : `Votre habilitation <strong>${formationName}</strong> arrive à expiration dans <strong>${daysLeft} jour(s)</strong>.`;
+  const actionText = isExpired
+    ? "Votre habilitation est expirée. Veuillez contacter votre service RH pour planifier le recyclage."
+    : "Votre habilitation expire bientôt. Votre service RH sera amené à vous convoquer pour le recyclage.";
+
+  return sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: subjectLine,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 22px;">CertPilot</h1>
+          <p style="color: #e2e8f0; margin: 8px 0 0 0;">Notification habilitation</p>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+          <p>Bonjour ${employeeFirstName},</p>
+          <div style="background: ${urgencyBg}; border-left: 4px solid ${urgencyColor}; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <p style="margin: 0; color: ${urgencyColor};">${statusText}</p>
+          </div>
+          <p style="color: #475569;">${actionText}</p>
+          <p style="margin-top: 30px;">Cordialement,<br><strong>${companyName} via CertPilot</strong></p>
+        </div>
+        <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0;">CertPilot — Gestion des habilitations et formations réglementaires</p>
+        </div>
+      </div>
+    `,
+    text: `Bonjour ${employeeFirstName},\n\n${isExpired ? `Votre habilitation ${formationName} est expirée depuis ${Math.abs(daysLeft)} jour(s).` : `Votre habilitation ${formationName} expire dans ${daysLeft} jour(s).`}\n\n${actionText}\n\nCordialement,\n${companyName} via CertPilot`,
+  });
+}
+
+// Email : Notification d'expiration au manager (J-7 ou expirée)
+export async function sendExpiryNotificationManager(params: {
+  to: string;
+  employeeFirstName: string;
+  employeeLastName: string;
+  employeeDepartment: string;
+  formationName: string;
+  daysLeft: number;
+  companyName: string;
+}) {
+  const { to, employeeFirstName, employeeLastName, employeeDepartment, formationName, daysLeft, companyName } = params;
+  const isExpired = daysLeft <= 0;
+  const appUrl = getAppBaseUrl();
+
+  const subjectLine = isExpired
+    ? `⚠️ Habilitation expirée — ${employeeFirstName} ${employeeLastName}`
+    : `🔔 Habilitation à renouveler — ${employeeFirstName} ${employeeLastName} (${daysLeft}j)`;
+
+  const urgencyColor = isExpired ? "#dc2626" : "#f59e0b";
+  const urgencyBg = isExpired ? "#fef2f2" : "#fef3c7";
+  const statusText = isExpired
+    ? `L'habilitation <strong>${formationName}</strong> de <strong>${employeeFirstName} ${employeeLastName}</strong> (${employeeDepartment}) est <strong>expirée depuis ${Math.abs(daysLeft)} jour(s)</strong>.`
+    : `L'habilitation <strong>${formationName}</strong> de <strong>${employeeFirstName} ${employeeLastName}</strong> (${employeeDepartment}) arrive à expiration dans <strong>${daysLeft} jour(s)</strong>.`;
+
+  return sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: subjectLine,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 22px;">CertPilot</h1>
+          <p style="color: #e2e8f0; margin: 8px 0 0 0;">Alerte responsable</p>
+        </div>
+        <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">
+          <p>Bonjour,</p>
+          <div style="background: ${urgencyBg}; border-left: 4px solid ${urgencyColor}; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <p style="margin: 0; color: ${urgencyColor};">${statusText}</p>
+          </div>
+          <p style="color: #475569;">Merci de vous rapprocher du service RH pour planifier le recyclage si ce n'est pas déjà prévu.</p>
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${appUrl}/dashboard" style="display: inline-block; padding: 12px 24px; background: #173B56; color: white; text-decoration: none; border-radius: 8px; font-weight: 500;">Accéder au tableau de bord</a>
+          </div>
+          <p style="margin-top: 30px;">Cordialement,<br><strong>${companyName} via CertPilot</strong></p>
+        </div>
+        <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px;">
+          <p style="margin: 0;">CertPilot — Gestion des habilitations et formations réglementaires</p>
+        </div>
+      </div>
+    `,
+    text: `Bonjour,\n\n${isExpired ? `L'habilitation ${formationName} de ${employeeFirstName} ${employeeLastName} (${employeeDepartment}) est expirée depuis ${Math.abs(daysLeft)} jour(s).` : `L'habilitation ${formationName} de ${employeeFirstName} ${employeeLastName} (${employeeDepartment}) expire dans ${daysLeft} jour(s).`}\n\nMerci de vous rapprocher du service RH pour planifier le recyclage.\n\nCordialement,\n${companyName} via CertPilot`,
+  });
+}
