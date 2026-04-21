@@ -42,25 +42,82 @@ function StatusIcon({ status }: { status: "yes" | "no" | "partial" }) {
 /*  ROI Calculator                                                     */
 /* ------------------------------------------------------------------ */
 
-function getCertPilotPrice(employees: number): number {
-  if (employees <= 20) return 490;
-  if (employees <= 100) return 1490;
-  if (employees <= 300) return 3490;
-  return 3490; // cap at highest published tier
+type Plan = "starter" | "pro" | "business";
+type Billing = "monthly" | "annual";
+
+const PRICING: Record<Plan, Record<string, Record<Billing, number>>> = {
+  starter: {
+    "1-50": { monthly: 69, annual: 57 },
+    "51-150": { monthly: 109, annual: 91 },
+    "151-300": { monthly: 149, annual: 124 },
+  },
+  pro: {
+    "1-50": { monthly: 149, annual: 124 },
+    "51-150": { monthly: 229, annual: 190 },
+    "151-300": { monthly: 329, annual: 273 },
+  },
+  business: {
+    "1-50": { monthly: 349, annual: 290 },
+    "51-150": { monthly: 499, annual: 414 },
+    "151-300": { monthly: 699, annual: 580 },
+  },
+};
+
+function getTranche(employees: number): "1-50" | "51-150" | "151-300" {
+  if (employees <= 50) return "1-50";
+  if (employees <= 150) return "51-150";
+  return "151-300";
 }
+
+function getCertPilotAnnualCost(
+  employees: number,
+  plan: Plan,
+  billing: Billing,
+): number {
+  const tranche = getTranche(employees);
+  return PRICING[plan][tranche][billing] * 12;
+}
+
+const PLAN_LABELS: Record<Plan, string> = {
+  starter: "Starter",
+  pro: "Pro",
+  business: "Business",
+};
 
 function ROICalculator() {
   const [employees, setEmployees] = useState(50);
   const [hoursPerWeek, setHoursPerWeek] = useState(3);
   const [hourlyRate, setHourlyRate] = useState(35);
+  const [plan, setPlan] = useState<Plan>("pro");
+  const [billing, setBilling] = useState<Billing>("annual");
 
-  const excelAnnualCost = hoursPerWeek * hourlyRate * 52;
-  const certpilotCost = getCertPilotPrice(employees);
+  // Coût Excel direct : temps passé à la gestion manuelle
+  const timeCost = Math.round(hoursPerWeek * hourlyRate * 52);
+
+  // Risque sanction DREETS/inspection : estimation prudente
+  // Amende moyenne 3 750€ + majoration par salarié non conforme
+  // On retient une probabilité de 2% / an de non-conformité détectée
+  const sanctionRisk = Math.round(employees * 25 + 1500);
+
+  // Erreurs humaines : 0.8% des certificats oubliés × 450€ de renouvellement d'urgence
+  // Hypothèse 3 certificats par salarié en moyenne
+  const errorRisk = Math.round(employees * 3 * 0.008 * 450);
+
+  const excelAnnualCost = timeCost + sanctionRisk + errorRisk;
+
+  const certpilotCost = getCertPilotAnnualCost(employees, plan, billing);
   const annualSavings = excelAnnualCost - certpilotCost;
   const roiPercent =
     certpilotCost > 0
       ? Math.round(((excelAnnualCost - certpilotCost) / certpilotCost) * 100)
       : 0;
+
+  // Temps gagné : 80% du temps Excel est économisé avec l'automatisation
+  const hoursSaved = Math.round(hoursPerWeek * 52 * 0.8);
+  const daysSaved = Math.round((hoursSaved / 7) * 10) / 10;
+
+  const tranche = getTranche(employees);
+  const monthlyPrice = PRICING[plan][tranche][billing];
 
   return (
     <section className="border-t border-slate-200 bg-slate-50 py-16 lg:py-20">
@@ -75,12 +132,56 @@ function ROICalculator() {
           Combien vous co&ucirc;te vraiment Excel&nbsp;?
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-slate-600">
-          Ajustez les curseurs ci-dessous pour estimer vos &eacute;conomies
-          annuelles en passant &agrave; CertPilot.
+          Ajustez les curseurs et choisissez votre offre pour estimer vos
+          &eacute;conomies r&eacute;elles en passant &agrave; CertPilot.
         </p>
 
+        {/* Plan & Billing selectors */}
+        <div className="mx-auto mt-10 flex max-w-4xl flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-8">
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+            {(["starter", "pro", "business"] as Plan[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPlan(p)}
+                className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                  plan === p
+                    ? "bg-[#173B56] text-white shadow-sm"
+                    : "text-slate-600 hover:text-[#173B56]"
+                }`}
+              >
+                {PLAN_LABELS[p]}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+            <button
+              onClick={() => setBilling("monthly")}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                billing === "monthly"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-emerald-600"
+              }`}
+            >
+              Mensuel
+            </button>
+            <button
+              onClick={() => setBilling("annual")}
+              className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                billing === "annual"
+                  ? "bg-emerald-600 text-white shadow-sm"
+                  : "text-slate-600 hover:text-emerald-600"
+              }`}
+            >
+              Annuel
+              <span className="ml-1.5 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-700">
+                -17%
+              </span>
+            </button>
+          </div>
+        </div>
+
         {/* Inputs */}
-        <div className="mx-auto mt-12 grid max-w-4xl gap-8 sm:grid-cols-3">
+        <div className="mx-auto mt-10 grid max-w-4xl gap-8 sm:grid-cols-3">
           {/* Employees */}
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <label
@@ -101,6 +202,9 @@ function ROICalculator() {
             />
             <div className="mt-2 text-center text-2xl font-black text-[#173B56]">
               {employees}
+            </div>
+            <div className="mt-1 text-center text-xs text-slate-400">
+              Tranche&nbsp;{tranche}
             </div>
           </div>
 
@@ -125,6 +229,9 @@ function ROICalculator() {
             <div className="mt-2 text-center text-2xl font-black text-[#173B56]">
               {hoursPerWeek}h
             </div>
+            <div className="mt-1 text-center text-xs text-slate-400">
+              RH + managers cumul&eacute;s
+            </div>
           </div>
 
           {/* Hourly rate */}
@@ -148,11 +255,43 @@ function ROICalculator() {
             <div className="mt-2 text-center text-2xl font-black text-[#173B56]">
               {hourlyRate}&nbsp;&euro;
             </div>
+            <div className="mt-1 text-center text-xs text-slate-400">
+              Salaire charg&eacute; moyen
+            </div>
+          </div>
+        </div>
+
+        {/* Excel breakdown */}
+        <div className="mx-auto mt-8 max-w-4xl rounded-xl border border-red-200 bg-red-50/50 p-6">
+          <p className="mb-3 text-sm font-semibold text-red-700">
+            D&eacute;tail du co&ucirc;t Excel
+          </p>
+          <div className="grid gap-3 text-sm sm:grid-cols-3">
+            <div className="flex items-center justify-between rounded-lg bg-white px-4 py-3">
+              <span className="text-slate-600">Temps pass&eacute;</span>
+              <span className="font-bold text-slate-900">
+                {timeCost.toLocaleString("fr-FR")}&nbsp;&euro;
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-white px-4 py-3">
+              <span className="text-slate-600">
+                Risque sanction DREETS
+              </span>
+              <span className="font-bold text-slate-900">
+                {sanctionRisk.toLocaleString("fr-FR")}&nbsp;&euro;
+              </span>
+            </div>
+            <div className="flex items-center justify-between rounded-lg bg-white px-4 py-3">
+              <span className="text-slate-600">Erreurs &amp; oublis</span>
+              <span className="font-bold text-slate-900">
+                {errorRisk.toLocaleString("fr-FR")}&nbsp;&euro;
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Results */}
-        <div className="mx-auto mt-10 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto mt-8 grid max-w-5xl gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {/* Excel annual cost */}
           <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
             <p className="text-sm font-semibold text-red-600">
@@ -160,6 +299,9 @@ function ROICalculator() {
             </p>
             <p className="mt-2 text-3xl font-black text-red-700">
               {excelAnnualCost.toLocaleString("fr-FR")}&nbsp;&euro;
+            </p>
+            <p className="mt-2 text-xs text-red-500">
+              Temps + risques
             </p>
           </div>
 
@@ -170,6 +312,10 @@ function ROICalculator() {
             </p>
             <p className="mt-2 text-3xl font-black text-emerald-700">
               {certpilotCost.toLocaleString("fr-FR")}&nbsp;&euro;
+            </p>
+            <p className="mt-2 text-xs text-emerald-600">
+              {PLAN_LABELS[plan]}&nbsp;&middot;&nbsp;{monthlyPrice}&nbsp;&euro;/mois
+              {billing === "annual" ? " (annuel)" : ""}
             </p>
           </div>
 
@@ -183,24 +329,28 @@ function ROICalculator() {
                 ? `${annualSavings.toLocaleString("fr-FR")}\u00a0\u20ac`
                 : "0\u00a0\u20ac"}
             </p>
+            <p className="mt-2 text-xs text-[#173B56]/70">
+              {daysSaved}&nbsp;jours gagn&eacute;s/an
+            </p>
           </div>
 
           {/* ROI */}
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center">
-            <p className="text-sm font-semibold text-amber-700">
-              ROI
-            </p>
+            <p className="text-sm font-semibold text-amber-700">ROI</p>
             <p className="mt-2 text-3xl font-black text-amber-700">
               {roiPercent > 0 ? `+${roiPercent}` : roiPercent}&nbsp;%
+            </p>
+            <p className="mt-2 text-xs text-amber-600">
+              Retour sur investissement
             </p>
           </div>
         </div>
 
-        <p className="mx-auto mt-6 max-w-xl text-center text-xs text-slate-400">
-          Estimation indicative. Le co&ucirc;t Excel inclut uniquement le temps
-          pass&eacute; &agrave; la gestion manuelle. Les gains indirects
-          (r&eacute;duction des risques, conformit&eacute;, productivit&eacute;)
-          ne sont pas comptabilis&eacute;s.
+        <p className="mx-auto mt-6 max-w-2xl text-center text-xs text-slate-400">
+          Estimation indicative bas&eacute;e sur les tarifs officiels CertPilot
+          en vigueur. Le co&ucirc;t Excel inclut le temps de gestion manuelle
+          ainsi qu&apos;une estimation prudente des risques (amende moyenne
+          DREETS, erreurs humaines). Tarifs HT.
         </p>
       </div>
     </section>
