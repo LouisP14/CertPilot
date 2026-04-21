@@ -1,4 +1,4 @@
-import { sendVerificationEmail } from "@/lib/email";
+import { sendNewTrialNotification, sendVerificationEmail } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { getClientIp, rateLimit } from "@/lib/rate-limit";
 import { parseBody, registerSchema } from "@/lib/validations";
@@ -105,6 +105,15 @@ export async function POST(request: NextRequest) {
       to: emailLower,
       name,
       token,
+    });
+
+    // Notifier contact@certpilot.eu du nouvel essai
+    await sendNewTrialNotification({
+      name,
+      companyName,
+      email: emailLower,
+      plan: trialConfig.subscriptionPlan,
+      trialEndsAt,
     });
 
     return NextResponse.json(

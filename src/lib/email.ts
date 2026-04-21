@@ -421,6 +421,71 @@ Voir dans le tableau de bord : ${baseUrl}/dashboard/admin
   });
 }
 
+// Notification interne : nouvel essai gratuit
+export async function sendNewTrialNotification(params: {
+  name: string;
+  companyName: string;
+  email: string;
+  plan: string;
+  trialEndsAt: Date;
+}) {
+  const { name, companyName, email, plan, trialEndsAt } = params;
+  const adminEmail =
+    process.env.ADMIN_NOTIFICATION_EMAIL || "contact@certpilot.eu";
+  const trialEndStr = trialEndsAt.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+  const baseUrl = getAppBaseUrl();
+
+  await sendEmail({
+    from: FROM_EMAIL,
+    to: adminEmail,
+    subject: `Nouvel essai CertPilot - ${companyName}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #173B56; color: white; padding: 24px 30px; border-radius: 10px 10px 0 0; }
+          .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; }
+          .footer { background: #f9fafb; padding: 16px; text-align: center; font-size: 12px; color: #6b7280; border-radius: 0 0 10px 10px; }
+          .badge { display: inline-block; background: #10b981; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 16px; }
+          .info-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+          .info-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+          .info-table td:first-child { font-weight: bold; color: #6b7280; width: 130px; }
+          .button { display: inline-block; padding: 11px 22px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; margin-top: 18px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h2 style="margin:0;">Nouvel essai gratuit CertPilot</h2>
+          </div>
+          <div class="content">
+            <div class="badge">Essai 14 jours</div>
+            <table class="info-table">
+              <tr><td>Contact</td><td><strong>${name}</strong></td></tr>
+              <tr><td>Entreprise</td><td><strong>${companyName}</strong></td></tr>
+              <tr><td>Email</td><td><a href="mailto:${email}">${email}</a></td></tr>
+              <tr><td>Plan</td><td>${plan}</td></tr>
+              <tr><td>Fin de trial</td><td>${trialEndStr}</td></tr>
+            </table>
+            <a href="${baseUrl}/dashboard/admin" class="button">Voir dans l'admin</a>
+          </div>
+          <div class="footer">CertPilot - Notification automatique</div>
+        </div>
+      </body>
+      </html>
+    `,
+    text: `Nouvel essai CertPilot\n\nContact : ${name}\nEntreprise : ${companyName}\nEmail : ${email}\nPlan : ${plan}\nFin de trial : ${trialEndStr}\n\nAdmin : ${baseUrl}/dashboard/admin`,
+  });
+}
+
 // Email 2 : Envoi du lien de paiement Stripe
 export async function sendPaymentLink(params: {
   to: string;
