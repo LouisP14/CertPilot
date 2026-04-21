@@ -727,10 +727,12 @@ export function exportFullReportToPDF(
     lastName: string;
     position: string;
     department: string | null;
+    site: string | null;
     certificates: {
       formationType: { name: string; category: string | null };
       obtainedDate: Date | null;
       expiryDate: Date | null;
+      organism: string | null;
     }[];
   }[],
   stats: {
@@ -741,13 +743,9 @@ export function exportFullReportToPDF(
   },
   companyName?: string,
 ) {
-  const doc = new jsPDF({
-    orientation: "landscape",
-    unit: "mm",
-    format: "a4",
-  });
-
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const now = new Date();
   const dateStr = now.toLocaleDateString("fr-FR", {
     day: "2-digit",
@@ -755,25 +753,98 @@ export function exportFullReportToPDF(
     year: "numeric",
   });
 
-  // === PAGE 1 : Page de couverture professionnelle ===
+  // Pre-compute
+  const allCerts = employees.flatMap((e) => e.certificates);
+  const certsWithExpiry = allCerts.filter((c) => c.expiryDate !== null);
+  const validCerts = allCerts.filter(
+    (c) => !c.expiryDate || new Date(c.expiryDate) >= now,
+  );
+  const globalRate =
+    allCerts.length > 0
+      ? Math.round((validCerts.length / allCerts.length) * 100)
+      : 100;
 
-  const pageHeight = doc.internal.pageSize.getHeight();
+  const deptMap = new Map<
+    string,
+    {
+      empSet: Set<string>;
+      valid: number;
+      expiring: number;
+      expired: number;
+      total: number;
+    }
+  >();
+  employees.forEach((emp, idx) => {
+    const dept = emp.department || "Non renseigne";
+    if (!deptMap.has(dept))
+      deptMap.set(dept, {
+        empSet: new Set(),
+        valid: 0,
+        expiring: 0,
+        expired: 0,
+        total: 0,
+      });
+    const d = deptMap.get(dept)!;
+    d.empSet.add(`${idx}`);
+    emp.certificates.forEach((cert) => {
+      d.total++;
+      if (!cert.expiryDate) {
+        d.valid++;
+        return;
+      }
+      const days = Math.ceil(
+        (new Date(cert.expiryDate).getTime() - now.getTime()) /
+          (1000 * 60 * 60 * 24),
+      );
+      if (days < 0) d.expired++;
+      else if (days <= 90) d.expiring++;
+      else d.valid++;
+    });
+  });
+  const depts = [...deptMap.entries()]
+    .map(([name, d]) => ({
+      name,
+      nbEmployees: d.empSet.size,
+      valid: d.valid,
+      expiring: d.expiring,
+      expired: d.expired,
+      total: d.total,
+      rate: d.total > 0 ? Math.round((d.valid / d.total) * 100) : 100,
+    }))
+    .sort((a, b) => a.rate - b.rate);
 
-  // Fond principal élégant
+  type AlertItem = {
+    emp: (typeof employees)[0];
+    cert: (typeof employees)[0]["certificates"][0];
+    days: number;
+  };
+  const expiredAlerts: AlertItem[] = [];
+  const expiring30Alerts: AlertItem[] = [];
+  employees.forEach((emp) => {
+    emp.certificates.forEach((cert) => {
+      if (!cert.expiryDate) return;
+      const days = Math.ceil(
+        (new Date(cert.expiryDate).getTime() - now.getTime()) /
+          (1000 * 60 * 60 * 24),
+      );
+      if (days < 0) expiredAlerts.push({ emp, cert, days });
+      else if (days <= 30) expiring30Alerts.push({ emp, cert, days });
+    });
+  });
+  expiredAlerts.sort((a, b) => a.days - b.days);
+  expiring30Alerts.sort((a, b) => a.days - b.days);
+
+  // PAGE 1 : Couverture
   doc.setFillColor(...COLORS.primary);
   doc.rect(0, 0, pageWidth, 95, "F");
-
-  // Bande accent en bas du header
   doc.setFillColor(...COLORS.accent);
   doc.rect(0, 92, pageWidth, 5, "F");
 
-  // Nom CertPilot en haut à gauche
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...COLORS.accent);
   doc.text("CertPilot", 20, 22);
 
-  // Badge "Rapport officiel" en haut à droite
   const badgeText = "Rapport officiel";
   doc.setFontSize(10);
   const badgeWidth = doc.getTextWidth(badgeText) + 12;
@@ -781,9 +852,10 @@ export function exportFullReportToPDF(
   doc.roundedRect(pageWidth - 25 - badgeWidth, 15, badgeWidth, 12, 2, 2, "F");
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...COLORS.white);
-  doc.text(badgeText, pageWidth - 25 - badgeWidth / 2, 23, { align: "center" });
+  doc.text(badgeText, pageWidth - 25 - badgeWidth / 2, 23, {
+    align: "center",
+  });
 
-  // Titre principal
   doc.setFontSize(32);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(...COLORS.white);
@@ -791,50 +863,38 @@ export function exportFullReportToPDF(
     align: "center",
   });
 
-  // Sous-titre
   doc.setFontSize(12);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(180, 200, 220);
   doc.text(
-    "Synthèse complète des habilitations et formations",
+    "Synthese complete des habilitations et formations",
     pageWidth / 2,
     70,
     { align: "center" },
   );
 
-  // Section entreprise et date
   const infoY = 110;
-
-  // Nom de l'entreprise (grande police)
   if (companyName) {
     doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...COLORS.primary);
     doc.text(companyName, pageWidth / 2, infoY, { align: "center" });
   }
-
-  // Date de génération
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...COLORS.textMuted);
-  doc.text(`Document généré le ${dateStr}`, pageWidth / 2, infoY + 10, {
+  doc.text(`Document genere le ${dateStr}`, pageWidth / 2, infoY + 10, {
     align: "center",
   });
 
-  // Cartes statistiques avec design amélioré
   const cardWidth = 55;
   const cardHeight = 45;
   const cardY = 135;
   const cardGap = 10;
   const totalCardsWidth = cardWidth * 4 + cardGap * 3;
-  const startX = (pageWidth - totalCardsWidth) / 2;
-
+  const startXCard = (pageWidth - totalCardsWidth) / 2;
   const statsData = [
-    {
-      label: "Employés",
-      value: stats.totalEmployees,
-      color: COLORS.primary,
-    },
+    { label: "Employes", value: stats.totalEmployees, color: COLORS.primary },
     {
       label: "Formations actives",
       value: stats.totalCertificates,
@@ -845,83 +905,318 @@ export function exportFullReportToPDF(
       value: stats.expiringThisMonth,
       color: COLORS.warning,
     },
-    {
-      label: "Expirées",
-      value: stats.expired,
-      color: COLORS.danger,
-    },
+    { label: "Expirees", value: stats.expired, color: COLORS.danger },
   ];
-
   statsData.forEach((stat, idx) => {
-    const x = startX + idx * (cardWidth + cardGap);
-
-    // Ombre portée légère
+    const x = startXCard + idx * (cardWidth + cardGap);
     doc.setFillColor(230, 230, 230);
     doc.roundedRect(x + 1, cardY + 1, cardWidth, cardHeight, 4, 4, "F");
-
-    // Fond de la carte
     doc.setFillColor(...COLORS.white);
     doc.roundedRect(x, cardY, cardWidth, cardHeight, 4, 4, "F");
-
-    // Bordure fine
     doc.setDrawColor(...COLORS.border);
     doc.setLineWidth(0.3);
     doc.roundedRect(x, cardY, cardWidth, cardHeight, 4, 4, "S");
-
-    // Bandeau coloré en haut
     doc.setFillColor(...stat.color);
     doc.roundedRect(x, cardY, cardWidth, 6, 4, 4, "F");
     doc.setFillColor(...COLORS.white);
     doc.rect(x, cardY + 3, cardWidth, 5, "F");
-
-    // Valeur
     doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...stat.color);
     doc.text(stat.value.toString(), x + cardWidth / 2, cardY + 24, {
       align: "center",
     });
-
-    // Label
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...COLORS.textMuted);
     doc.text(stat.label, x + cardWidth / 2, cardY + 36, { align: "center" });
   });
 
-  // Footer de la page de couverture
-  drawFooter(doc, 1, 2);
-
-  // === PAGE 2+ : Liste des employés et leurs formations ===
+  // PAGE 2 : Tableau de bord
   doc.addPage();
-
-  const startY = drawModernHeader(
+  const dashStartY = drawModernHeader(
     doc,
-    "Détail des formations par employé",
-    `${employees.length} employé(s) • ${stats.totalCertificates} formation(s)`,
+    "Tableau de bord",
+    "Synthese et indicateurs de conformite",
+    companyName,
+  );
+
+  const rateColor =
+    globalRate >= 80
+      ? COLORS.success
+      : globalRate >= 50
+        ? COLORS.warning
+        : COLORS.danger;
+  let y2 = dashStartY + 8;
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.textMuted);
+  doc.text("Taux de conformite global", pageWidth / 2, y2, {
+    align: "center",
+  });
+  y2 += 10;
+
+  doc.setFontSize(38);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...rateColor);
+  doc.text(`${globalRate}%`, pageWidth / 2, y2, { align: "center" });
+  y2 += 6;
+
+  const barW = 140;
+  const barH = 7;
+  const barX = (pageWidth - barW) / 2;
+  doc.setFillColor(220, 220, 220);
+  doc.roundedRect(barX, y2, barW, barH, 3, 3, "F");
+  const fillW = Math.max(4, (globalRate / 100) * barW);
+  doc.setFillColor(...rateColor);
+  doc.roundedRect(barX, y2, fillW, barH, 3, 3, "F");
+  y2 += barH + 5;
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.textMuted);
+  doc.text(
+    `${validCerts.length} formation(s) valides sur ${allCerts.length} (dont ${allCerts.length - certsWithExpiry.length} sans expiration)`,
+    pageWidth / 2,
+    y2,
+    { align: "center" },
+  );
+  y2 += 12;
+
+  doc.setDrawColor(...COLORS.border);
+  doc.setLineWidth(0.3);
+  doc.line(15, y2, pageWidth - 15, y2);
+  y2 += 8;
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Conformite par service", 15, y2);
+  y2 += 5;
+
+  if (depts.length > 0) {
+    autoTable(doc, {
+      head: [
+        [
+          "Service",
+          "Nb employes",
+          "Valides",
+          "Expirant bientot",
+          "Expirees",
+          "Taux %",
+        ],
+      ],
+      body: depts.map((d) => [
+        d.name,
+        d.nbEmployees.toString(),
+        d.valid.toString(),
+        d.expiring.toString(),
+        d.expired.toString(),
+        `${d.rate}%`,
+      ]),
+      startY: y2,
+      ...getModernTableStyles(),
+      margin: { left: 15, right: 15, bottom: 25 },
+      columnStyles: {
+        0: { cellWidth: 70 },
+        1: { cellWidth: 30, halign: "center" },
+        2: { cellWidth: 30, halign: "center" },
+        3: { cellWidth: 35, halign: "center" },
+        4: { cellWidth: 30, halign: "center" },
+        5: { cellWidth: 30, halign: "center", fontStyle: "bold" },
+      },
+      didParseCell: (cellData) => {
+        if (cellData.section !== "body") return;
+        if (cellData.column.index === 5) {
+          const rate = parseInt(cellData.cell.raw as string);
+          cellData.cell.styles.fontStyle = "bold";
+          if (rate >= 80) cellData.cell.styles.textColor = COLORS.success;
+          else if (rate >= 50)
+            cellData.cell.styles.textColor = COLORS.warning;
+          else cellData.cell.styles.textColor = COLORS.danger;
+        }
+        if (
+          cellData.column.index === 3 &&
+          parseInt(cellData.cell.raw as string) > 0
+        )
+          cellData.cell.styles.textColor = COLORS.warning;
+        if (
+          cellData.column.index === 4 &&
+          parseInt(cellData.cell.raw as string) > 0
+        )
+          cellData.cell.styles.textColor = COLORS.danger;
+      },
+    });
+  } else {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text("Aucun service renseigne.", 15, y2 + 6);
+  }
+
+  // PAGE 3 : Alertes prioritaires
+  doc.addPage();
+  const alertStartY = drawModernHeader(
+    doc,
+    "Alertes prioritaires",
+    `${expiredAlerts.length} expiree(s) - ${expiring30Alerts.length} expirant dans 30 jours`,
+    companyName,
+  );
+
+  let y3 = alertStartY + 5;
+
+  // Section expired
+  doc.setFillColor(254, 226, 226);
+  doc.rect(15, y3, pageWidth - 30, 14, "F");
+  doc.setFillColor(...COLORS.danger);
+  doc.rect(15, y3, 4, 14, "F");
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.danger);
+  doc.text(
+    `Formations expirees  -  ${expiredAlerts.length} action(s) immediate(s) requise(s)`,
+    25,
+    y3 + 9,
+  );
+  y3 += 18;
+
+  if (expiredAlerts.length === 0) {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...COLORS.success);
+    doc.text("Aucune formation expiree. Excellent !", 20, y3 + 5);
+    y3 += 15;
+  } else {
+    autoTable(doc, {
+      head: [
+        [
+          "Employe",
+          "Service",
+          "Formation",
+          "Date expiration",
+          "Jours de retard",
+        ],
+      ],
+      body: expiredAlerts.map(({ emp, cert, days }) => [
+        `${emp.lastName.toUpperCase()} ${emp.firstName}`,
+        emp.department || "-",
+        cert.formationType.name,
+        new Date(cert.expiryDate!).toLocaleDateString("fr-FR"),
+        `${Math.abs(days)}j`,
+      ]),
+      startY: y3,
+      ...getModernTableStyles(),
+      margin: { left: 15, right: 15, bottom: 25 },
+      columnStyles: { 4: { halign: "center", fontStyle: "bold" } },
+      didParseCell: (cellData) => {
+        if (cellData.section === "body" && cellData.column.index === 4) {
+          cellData.cell.styles.textColor = COLORS.danger;
+          cellData.cell.styles.fontStyle = "bold";
+        }
+      },
+    });
+    y3 = (
+      doc as unknown as { lastAutoTable: { finalY: number } }
+    ).lastAutoTable.finalY;
+  }
+
+  y3 += 10;
+  if (y3 > pageHeight - 70) {
+    doc.addPage();
+    drawModernHeader(doc, "Alertes prioritaires (suite)", "", companyName);
+    y3 = 59;
+  }
+
+  // Section expiring 30
+  doc.setFillColor(254, 243, 199);
+  doc.rect(15, y3, pageWidth - 30, 14, "F");
+  doc.setFillColor(...COLORS.warning);
+  doc.rect(15, y3, 4, 14, "F");
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.warning);
+  doc.text(
+    `Expirant dans 30 jours  -  ${expiring30Alerts.length} formation(s) a renouveler`,
+    25,
+    y3 + 9,
+  );
+  y3 += 18;
+
+  if (expiring30Alerts.length === 0) {
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...COLORS.success);
+    doc.text(
+      "Aucune formation n expire dans les 30 prochains jours.",
+      20,
+      y3 + 5,
+    );
+  } else {
+    autoTable(doc, {
+      head: [
+        [
+          "Employe",
+          "Service",
+          "Formation",
+          "Date expiration",
+          "Jours restants",
+        ],
+      ],
+      body: expiring30Alerts.map(({ emp, cert, days }) => [
+        `${emp.lastName.toUpperCase()} ${emp.firstName}`,
+        emp.department || "-",
+        cert.formationType.name,
+        new Date(cert.expiryDate!).toLocaleDateString("fr-FR"),
+        `${days}j`,
+      ]),
+      startY: y3,
+      ...getModernTableStyles(),
+      margin: { left: 15, right: 15, bottom: 25 },
+      columnStyles: { 4: { halign: "center", fontStyle: "bold" } },
+      didParseCell: (cellData) => {
+        if (cellData.section === "body" && cellData.column.index === 4) {
+          cellData.cell.styles.textColor = COLORS.warning;
+          cellData.cell.styles.fontStyle = "bold";
+        }
+      },
+    });
+  }
+
+  // PAGE 4+ : Detail complet
+  doc.addPage();
+  const detailStartY = drawModernHeader(
+    doc,
+    "Detail des formations par employe",
+    `${employees.length} employe(s)  -  ${stats.totalCertificates} formation(s)`,
     companyName,
   );
 
   const headers = [
-    "Employé",
+    "Employe",
     "Fonction",
     "Service",
+    "Site",
     "Formation",
-    "Catégorie",
+    "Categorie",
     "Obtention",
-    "Validité",
+    "Validite",
+    "Organisme",
+    "J. restants",
     "Statut",
   ];
-
-  // Aplatir les données
   const data: (string | number)[][] = [];
+
   employees.forEach((emp) => {
     if (emp.certificates.length === 0) {
       data.push([
         `${emp.lastName.toUpperCase()} ${emp.firstName}`,
         emp.position || "-",
         emp.department || "-",
+        emp.site || "-",
         "Aucune formation",
+        "-",
+        "-",
         "-",
         "-",
         "-",
@@ -929,32 +1224,36 @@ export function exportFullReportToPDF(
       ]);
     } else {
       emp.certificates.forEach((cert, idx) => {
-        const expiryDate = cert.expiryDate ? new Date(cert.expiryDate) : null;
+        const expiryDate = cert.expiryDate
+          ? new Date(cert.expiryDate)
+          : null;
         const daysLeft = expiryDate
           ? Math.ceil(
               (expiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
             )
           : null;
-
         let status = "Valide";
         if (expiryDate) {
-          if (daysLeft !== null && daysLeft < 0) {
-            status = "Expirée";
-          } else if (daysLeft !== null && daysLeft <= 90) {
-            status = "Bientôt";
-          }
+          if (daysLeft !== null && daysLeft < 0) status = "Expiree";
+          else if (daysLeft !== null && daysLeft <= 90) status = "Bientot";
         }
-
         data.push([
-          idx === 0 ? `${emp.lastName.toUpperCase()} ${emp.firstName}` : "",
+          idx === 0
+            ? `${emp.lastName.toUpperCase()} ${emp.firstName}`
+            : "",
           idx === 0 ? emp.position || "-" : "",
           idx === 0 ? emp.department || "-" : "",
+          idx === 0 ? emp.site || "-" : "",
           cert.formationType.name,
           cert.formationType.category || "-",
           cert.obtainedDate
             ? new Date(cert.obtainedDate).toLocaleDateString("fr-FR")
             : "-",
-          expiryDate ? expiryDate.toLocaleDateString("fr-FR") : "Illimitée",
+          expiryDate
+            ? expiryDate.toLocaleDateString("fr-FR")
+            : "Illimitee",
+          (cert as typeof cert & { organism?: string | null }).organism || "-",
+          daysLeft !== null ? daysLeft.toString() : "-",
           status,
         ]);
       });
@@ -964,58 +1263,72 @@ export function exportFullReportToPDF(
   autoTable(doc, {
     head: [headers],
     body: data,
-    startY,
+    startY: detailStartY,
     ...getModernTableStyles(),
     styles: {
       ...getModernTableStyles().styles,
-      fontSize: 8,
-      cellPadding: 3,
+      fontSize: 7,
+      cellPadding: 2.5,
     },
     headStyles: {
       ...getModernTableStyles().headStyles,
-      fontSize: 8,
-      cellPadding: 4,
+      fontSize: 7,
+      cellPadding: 3,
     },
-    margin: { left: 10, right: 10, bottom: 25 },
+    margin: { left: 8, right: 8, bottom: 25 },
     tableWidth: "auto",
     columnStyles: {
-      0: { cellWidth: 45, fontStyle: "bold" }, // Employé
-      1: { cellWidth: 35 }, // Fonction
-      2: { cellWidth: 30 }, // Service
-      3: { cellWidth: 55 }, // Formation
-      4: { cellWidth: 30 }, // Catégorie
-      5: { cellWidth: 28 }, // Obtention
-      6: { cellWidth: 28 }, // Validité
-      7: { cellWidth: 20, halign: "center" },
+      0: { cellWidth: 36, fontStyle: "bold" },
+      1: { cellWidth: 24 },
+      2: { cellWidth: 22 },
+      3: { cellWidth: 18 },
+      4: { cellWidth: 42 },
+      5: { cellWidth: 20 },
+      6: { cellWidth: 20 },
+      7: { cellWidth: 20 },
+      8: { cellWidth: 26 },
+      9: { cellWidth: 16, halign: "center" },
+      10: { cellWidth: 16, halign: "center" },
     },
     didParseCell: (cellData) => {
-      // Colorer le statut
-      if (cellData.section === "body" && cellData.column.index === 7) {
+      if (cellData.section !== "body") return;
+      if (cellData.column.index === 10) {
         const status = cellData.cell.raw as string;
-        if (status === "Expirée") {
+        if (status === "Expiree") {
           cellData.cell.styles.textColor = COLORS.danger;
           cellData.cell.styles.fontStyle = "bold";
-        } else if (status === "Bientôt") {
+        } else if (status === "Bientot") {
           cellData.cell.styles.textColor = COLORS.warning;
           cellData.cell.styles.fontStyle = "bold";
         } else if (status === "Valide") {
           cellData.cell.styles.textColor = COLORS.success;
         }
       }
+      if (cellData.column.index === 9) {
+        const val = cellData.cell.raw as string;
+        if (val === "-") return;
+        const days = parseInt(val);
+        if (!isNaN(days)) {
+          if (days < 0) {
+            cellData.cell.styles.textColor = COLORS.danger;
+            cellData.cell.styles.fontStyle = "bold";
+          } else if (days <= 30) {
+            cellData.cell.styles.textColor = COLORS.warning;
+            cellData.cell.styles.fontStyle = "bold";
+          }
+        }
+      }
     },
   });
 
-  // Ajouter les footers sur toutes les pages
+  // FOOTERS sur toutes les pages
   const pageCount = (
     doc as unknown as { internal: { getNumberOfPages: () => number } }
   ).internal.getNumberOfPages();
-  for (let i = 2; i <= pageCount; i++) {
+  for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     drawFooter(doc, i, pageCount);
   }
-  // Mettre à jour le footer de la page 1 avec le bon total
-  doc.setPage(1);
-  drawFooter(doc, 1, pageCount);
 
   doc.save(
     `rapport-passeports-formation-${now.toISOString().split("T")[0]}.pdf`,
