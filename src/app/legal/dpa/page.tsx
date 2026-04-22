@@ -79,7 +79,9 @@ export default function DpaPage() {
             <p className="mt-4">
               Fourniture du service SaaS de gestion des habilitations,
               formations, passeports, alertes, convocations, signatures
-              électroniques et audit trail.
+              électroniques, audit trail et préparation des déclarations au
+              Passeport de Prévention national (décret n° 2025-748, article
+              L4141-5 du Code du travail).
             </p>
           </section>
 
@@ -91,6 +93,15 @@ export default function DpaPage() {
               <li>Données d&apos;identification et RH (nom, poste, service)</li>
               <li>Données de suivi de formation et certificats</li>
               <li>Données d&apos;usage et de sécurité (logs, audit trail)</li>
+              <li>
+                <strong>
+                  Numéro d&apos;identification au répertoire (NIR)
+                </strong>{" "}
+                — collecté et traité uniquement pour les formations éligibles
+                au Passeport de Prévention, conformément à l&apos;article
+                L4141-5 du Code du travail. Donnée hébergée dans l&apos;UE,
+                non affichée dans les passeports consultables par QR code.
+              </li>
               <li>Données potentiellement sensibles selon usage client</li>
             </ul>
           </section>

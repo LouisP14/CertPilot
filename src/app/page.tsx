@@ -126,6 +126,7 @@ function JsonLd() {
           "Convocations automatiques par email",
           "Signature électronique",
           "Passeport formation PDF avec QR Code",
+          "Passeport de Prévention : rappels + export CSV officiel (décret 2025-748)",
           "Import / Export Excel",
           "Audit trail complet",
           "Export PDF illimité",
@@ -703,6 +704,12 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-[#173B56]">Solutions</h4>
               <nav className="mt-3 flex flex-col gap-2 text-sm text-slate-600">
+                <Link
+                  href="/solutions/passeport-prevention"
+                  className="hover:text-[#173B56]"
+                >
+                  Passeport de Prévention
+                </Link>
                 <Link href="/solutions/caces" className="hover:text-[#173B56]">
                   Gestion CACES
                 </Link>

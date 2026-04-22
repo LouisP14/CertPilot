@@ -345,9 +345,15 @@ export default function CACESPage() {
       <footer className="border-t border-slate-200 bg-white py-8">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 text-sm text-slate-500">
           <p>© {new Date().getFullYear()} CertPilot. Tous droits réservés.</p>
-          <nav className="flex gap-4">
+          <nav className="flex flex-wrap gap-4">
             <Link href="/" className="hover:text-[#173B56]">
               Accueil
+            </Link>
+            <Link
+              href="/solutions/passeport-prevention"
+              className="hover:text-[#173B56]"
+            >
+              Passeport Prévention
             </Link>
             <Link href="/solutions/sst" className="hover:text-[#173B56]">
               SST

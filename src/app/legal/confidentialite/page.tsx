@@ -126,7 +126,42 @@ export default function Confidentialite() {
             </ul>
 
             <h3 className="mt-4 font-semibold text-[#173B56]">
-              3.3 Données de connexion
+              3.3 Données liées au Passeport de Prévention
+            </h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Dans le cadre de l&apos;obligation employeur instaurée par le
+              décret n° 2025-748 du 1er août 2025 (article L4141-5 du Code du
+              travail), les catégories suivantes peuvent être traitées :
+            </p>
+            <ul className="mt-2 ml-6 list-disc space-y-1">
+              <li>
+                <strong>Numéro d&apos;identification au répertoire (NIR)</strong>{" "}
+                — 13 chiffres, obligatoire pour la déclaration à la plateforme
+                nationale. Stocké sur notre base en Union Européenne, jamais
+                exposé dans les interfaces consultables par des tiers.
+              </li>
+              <li>Nom de naissance du salarié (si différent du nom d&apos;usage)</li>
+              <li>
+                Modalité de formation (présentiel / distanciel / mixte),
+                qualification du formateur, codes RNCP / Formacode / NSF /
+                ROME
+              </li>
+              <li>
+                Référence horodatée de chaque déclaration exportée (pour
+                audit)
+              </li>
+            </ul>
+            <p className="mt-2 text-sm text-slate-600">
+              Le NIR n&apos;est ni utilisé pour identifier l&apos;employé dans
+              l&apos;interface utilisateur, ni affiché sur le passeport QR
+              code. Il sert exclusivement à la génération du fichier officiel
+              déposé sur{" "}
+              <em>prevention.moncompteformation.gouv.fr</em> (Caisse des
+              Dépôts).
+            </p>
+
+            <h3 className="mt-4 font-semibold text-[#173B56]">
+              3.4 Données de connexion
             </h3>
             <ul className="mt-2 ml-6 list-disc space-y-1">
               <li>Adresse email professionnelle</li>
@@ -150,6 +185,14 @@ export default function Confidentialite() {
               <li>
                 <strong>Génération de documents :</strong> passeports formation,
                 convocations, attestations
+              </li>
+              <li>
+                <strong>
+                  Déclaration au Passeport de Prévention national :
+                </strong>{" "}
+                préparation du fichier officiel exigé par l&apos;article
+                L4141-5 du Code du travail et déposé par l&apos;employeur sur
+                la plateforme de la Caisse des Dépôts.
               </li>
               <li>
                 <strong>Conformité réglementaire :</strong> respect des

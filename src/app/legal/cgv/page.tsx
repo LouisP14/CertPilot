@@ -200,6 +200,10 @@ export default function CGV() {
               <li>Planification des sessions et convocations</li>
               <li>Signatures électroniques</li>
               <li>Exports PDF et Excel</li>
+              <li>
+                Export CSV officiel Passeport de Prévention (décret n°
+                2025-748) — offre Business et supérieure
+              </li>
               <li>Audit trail complet</li>
               <li>Support par email</li>
               <li>Mises à jour incluses</li>
