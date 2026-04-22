@@ -41,6 +41,12 @@ export default async function FormationsPage() {
     service: ft.service,
     defaultValidityMonths: ft.defaultValidityMonths,
     certificateCount: ft._count.certificates,
+    isConcernedPP: ft.isConcernedPP,
+    isCertifiante: ft.isCertifiante,
+    certificationCode: ft.certificationCode,
+    formacodes: ft.formacodes,
+    nsfCodes: ft.nsfCodes,
+    romeCodes: ft.romeCodes,
   }));
 
   return (

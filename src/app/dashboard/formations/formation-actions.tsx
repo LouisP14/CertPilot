@@ -14,6 +14,12 @@ interface FormationType {
   service: string | null;
   defaultValidityMonths: number | null;
   certificateCount: number;
+  isConcernedPP?: boolean;
+  isCertifiante?: boolean | null;
+  certificationCode?: string | null;
+  formacodes?: string | null;
+  nsfCodes?: string | null;
+  romeCodes?: string | null;
 }
 
 export function FormationActions({ formation }: { formation: FormationType }) {
@@ -43,6 +49,17 @@ export function FormationActions({ formation }: { formation: FormationType }) {
     category: formation.category || "",
     services: savedServices,
     defaultValidityMonths: formation.defaultValidityMonths?.toString() || "",
+    isConcernedPP: formation.isConcernedPP ?? false,
+    isCertifiante:
+      formation.isCertifiante === true
+        ? ("OUI" as const)
+        : formation.isCertifiante === false
+          ? ("NON" as const)
+          : ("" as ""),
+    certificationCode: formation.certificationCode || "",
+    formacodes: formation.formacodes || "",
+    nsfCodes: formation.nsfCodes || "",
+    romeCodes: formation.romeCodes || "",
   });
 
   // Charger les services dynamiquement à l'ouverture du modal
@@ -102,6 +119,12 @@ export function FormationActions({ formation }: { formation: FormationType }) {
               ? ""
               : formData.services.join(","),
           defaultValidityMonths: formData.defaultValidityMonths,
+          isConcernedPP: formData.isConcernedPP,
+          isCertifiante: formData.isCertifiante || null,
+          certificationCode: formData.certificationCode || null,
+          formacodes: formData.formacodes || null,
+          nsfCodes: formData.nsfCodes || null,
+          romeCodes: formData.romeCodes || null,
         }),
       });
 
@@ -166,8 +189,8 @@ export function FormationActions({ formation }: { formation: FormationType }) {
 
       {/* Modal Édition */}
       {editOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">
                 Modifier la formation
@@ -257,6 +280,132 @@ export function FormationActions({ formation }: { formation: FormationType }) {
                     }))
                   }
                 />
+              </div>
+
+              {/* Passeport Prévention */}
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
+                <div className="mb-3 flex items-start gap-2">
+                  <span className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                    Passeport Prévention
+                  </span>
+                </div>
+                <label className="mb-3 flex cursor-pointer items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.isConcernedPP}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        isConcernedPP: e.target.checked,
+                      }))
+                    }
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Formation concernée par le Passeport de Prévention
+                  </span>
+                </label>
+                {formData.isConcernedPP && (
+                  <div className="space-y-3 border-t border-emerald-200 pt-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-isCertifiante">
+                        Formation certifiante ?
+                      </Label>
+                      <select
+                        id="edit-isCertifiante"
+                        value={formData.isCertifiante}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            isCertifiante: e.target.value as
+                              | ""
+                              | "OUI"
+                              | "NON",
+                          }))
+                        }
+                        className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      >
+                        <option value="">-- Non renseigné --</option>
+                        <option value="OUI">Oui (RS/RNCP)</option>
+                        <option value="NON">Non</option>
+                      </select>
+                    </div>
+                    {formData.isCertifiante === "OUI" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="edit-certCode">
+                          Code certification (RS/RNCP)
+                        </Label>
+                        <Input
+                          id="edit-certCode"
+                          maxLength={9}
+                          value={formData.certificationCode}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              certificationCode: e.target.value,
+                            }))
+                          }
+                          placeholder="Ex: RS6550"
+                        />
+                      </div>
+                    )}
+                    {formData.isCertifiante === "NON" && (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-formacodes">
+                            Codes Formacode (séparés par /)
+                          </Label>
+                          <Input
+                            id="edit-formacodes"
+                            value={formData.formacodes}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                formacodes: e.target.value,
+                              }))
+                            }
+                            placeholder="Ex: 42829/42817"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-nsfCodes">
+                            Codes NSF (séparés par /)
+                          </Label>
+                          <Input
+                            id="edit-nsfCodes"
+                            value={formData.nsfCodes}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                nsfCodes: e.target.value,
+                              }))
+                            }
+                            placeholder="Ex: 344r/344p"
+                          />
+                        </div>
+                      </>
+                    )}
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-romeCodes">
+                        Codes ROME - compétences transférables (séparés par /)
+                      </Label>
+                      <Input
+                        id="edit-romeCodes"
+                        value={formData.romeCodes}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            romeCodes: e.target.value,
+                          }))
+                        }
+                        placeholder="Ex: 115650/121885/400635"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Jusqu&apos;à 10 codes. Voir les fiches pratiques INRS.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {error && (

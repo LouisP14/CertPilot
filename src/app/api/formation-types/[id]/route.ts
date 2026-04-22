@@ -26,7 +26,18 @@ export async function PUT(
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { name, category, service, defaultValidityMonths } = parsed.data;
+    const {
+      name,
+      category,
+      service,
+      defaultValidityMonths,
+      isConcernedPP,
+      isCertifiante,
+      certificationCode,
+      formacodes,
+      nsfCodes,
+      romeCodes,
+    } = parsed.data;
 
     // Récupérer l'ancienne formation pour l'audit + vérification appartenance
     const oldFormation = await prisma.formationType.findFirst({
@@ -48,6 +59,17 @@ export async function PUT(
         defaultValidityMonths: defaultValidityMonths
           ? parseInt(String(defaultValidityMonths))
           : null,
+        isConcernedPP: isConcernedPP ?? oldFormation.isConcernedPP,
+        isCertifiante:
+          isCertifiante === "OUI"
+            ? true
+            : isCertifiante === "NON"
+              ? false
+              : null,
+        certificationCode: certificationCode || null,
+        formacodes: formacodes || null,
+        nsfCodes: nsfCodes || null,
+        romeCodes: romeCodes || null,
       },
     });
 

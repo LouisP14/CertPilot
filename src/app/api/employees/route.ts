@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
       managerId,
       managerEmail,
       medicalCheckupDate,
+      nir,
+      birthName,
     } = parsed.data;
 
     // Check if employeeId already exists (dans la même companyId)
@@ -138,6 +140,8 @@ export async function POST(request: NextRequest) {
         medicalCheckupDate: medicalCheckupDate
           ? new Date(medicalCheckupDate)
           : null,
+        nir: nir || null,
+        birthName: birthName || null,
         companyId: session.user.companyId, // Ajouter le companyId
       },
     });

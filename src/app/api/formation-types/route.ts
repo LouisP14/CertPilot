@@ -53,7 +53,18 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { name, category, service, defaultValidityMonths } = parsed.data;
+    const {
+      name,
+      category,
+      service,
+      defaultValidityMonths,
+      isConcernedPP,
+      isCertifiante,
+      certificationCode,
+      formacodes,
+      nsfCodes,
+      romeCodes,
+    } = parsed.data;
 
     const formationType = await prisma.formationType.create({
       data: {
@@ -63,6 +74,17 @@ export async function POST(request: NextRequest) {
         defaultValidityMonths: defaultValidityMonths
           ? parseInt(String(defaultValidityMonths))
           : null,
+        isConcernedPP: isConcernedPP ?? false,
+        isCertifiante:
+          isCertifiante === "OUI"
+            ? true
+            : isCertifiante === "NON"
+              ? false
+              : null,
+        certificationCode: certificationCode || null,
+        formacodes: formacodes || null,
+        nsfCodes: nsfCodes || null,
+        romeCodes: romeCodes || null,
         companyId: session.user.companyId, // Ajouter le companyId
       },
     });

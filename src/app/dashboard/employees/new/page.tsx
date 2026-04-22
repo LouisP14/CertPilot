@@ -30,6 +30,8 @@ interface EmployeeFormProps {
     managerId: string | null;
     managerEmail: string | null;
     medicalCheckupDate: Date | null;
+    nir?: string | null;
+    birthName?: string | null;
   };
   employees?: { id: string; firstName: string; lastName: string }[];
 }
@@ -128,6 +130,8 @@ export function EmployeeForm({ employee, employees = [] }: EmployeeFormProps) {
       ? new Date(employee.medicalCheckupDate).toISOString().split("T")[0]
       : "",
     photo: employee?.photo || "",
+    nir: employee?.nir || "",
+    birthName: employee?.birthName || "",
   });
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -589,6 +593,58 @@ export function EmployeeForm({ employee, employees = [] }: EmployeeFormProps) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Passeport de Prévention */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <span className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                Passeport Prévention
+              </span>
+              Identité officielle
+            </CardTitle>
+            <p className="mt-1 text-sm text-gray-500">
+              Ces informations sont requises pour déclarer les formations
+              santé-sécurité au Passeport de Prévention (obligation employeur
+              au 1er octobre 2026). Optionnelles pour l&apos;instant.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="nir">
+                  NIR (numéro de sécurité sociale)
+                </Label>
+                <Input
+                  id="nir"
+                  name="nir"
+                  value={formData.nir}
+                  onChange={handleChange}
+                  maxLength={13}
+                  placeholder="13 caractères (ex: 1850875123456)"
+                />
+                <p className="text-xs text-gray-400">
+                  Obligatoire pour la déclaration au Passeport de Prévention.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="birthName">
+                  Nom de naissance
+                </Label>
+                <Input
+                  id="birthName"
+                  name="birthName"
+                  value={formData.birthName}
+                  onChange={handleChange}
+                  placeholder="Si différent du nom d'usage"
+                />
+                <p className="text-xs text-gray-400">
+                  Tel qu&apos;indiqué sur la carte d&apos;identité / passeport.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {error && (
           <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-600">

@@ -179,11 +179,15 @@ model Employee {
   hourlyCost         Float?        // Coût horaire chargé (€/h)
   contractType       String?       // CDI, CDD, Interim, etc.
   workingHoursPerDay Float         @default(7) // Heures travaillées/jour
-  
+
+  // Données Passeport de Prévention (déclaration État, décret n° 2025-748)
+  nir                String?       // Numéro de sécurité sociale (13 caractères)
+  birthName          String?       // Nom de naissance (peut différer du nom d'usage)
+
   // Isolation par entreprise
   companyId          String?
   company            Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
@@ -220,11 +224,19 @@ model FormationType {
   // Coûts indicatifs (peuvent être surchargés par TrainingCenter)
   estimatedCostPerPerson Float?       // Coût estimé par personne (€)
   estimatedCostPerSession Float?      // Coût estimé par session intra (€)
-  
+
+  // Données Passeport de Prévention (décret n° 2025-748)
+  isConcernedPP         Boolean       @default(false)   // Concernée par le Passeport Prévention
+  isCertifiante         Boolean?      // true = certifiante (RS/RNCP) ; false = non certifiante
+  certificationCode     String?       // Code RS/RNCP (9 car. max) si certifiante
+  formacodes            String?       // Codes Formacode séparés par "/" (jusqu'à 5)
+  nsfCodes              String?       // Codes NSF séparés par "/" (jusqu'à 3)
+  romeCodes             String?       // Codes ROME compétences transférables, séparés par "/" (jusqu'à 10)
+
   // Isolation par entreprise
   companyId             String?
   company               Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
@@ -251,6 +263,14 @@ model Certificate {
   attachmentUrl   String?       // Pièce jointe
   isArchived      Boolean       @default(false)
   archivedAt      DateTime?     // Date d'archivage (renouvellement)
+
+  // Passeport de Prévention - spécifiques à la session (peut varier d'un cert à l'autre)
+  trainingStartDate     DateTime?  // Date début formation (si différente de obtainedDate)
+  trainingMode          String?    // PRESENTIEL / A_DISTANCE / MIXTE
+  trainerQualification  String?    // ENSEIGNANT, INGENIEUR, PREVENTEUR, etc.
+  ppDeclaredAt          DateTime?  // Date de déclaration au Passeport Prévention
+  ppDeclarationRef      String?    // Référence export (pour traçabilité)
+
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 

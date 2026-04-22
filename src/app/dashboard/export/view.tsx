@@ -784,7 +784,236 @@ export default function ExportPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Passeport de Prévention */}
+        <PasseportPreventionExport />
       </div>
     </div>
+  );
+}
+
+// ============================================================
+// PASSEPORT DE PRÉVENTION — Export CSV au format officiel État
+// Spec : Caisse des Dépôts, ADF v. 27/02/2026
+// Obligation employeur : 16 mars 2026 → pleine au 1er oct 2026
+// ============================================================
+
+interface PPStats {
+  totalConcerned: number;
+  exportable: number;
+  skipped: number;
+  employeesWithoutNir: number;
+}
+
+function PasseportPreventionExport() {
+  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState<string>(String(currentYear));
+  const [trimestre, setTrimestre] = useState<string>("");
+  const [ppStats, setPpStats] = useState<PPStats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+  const [loadingExport, setLoadingExport] = useState(false);
+
+  const fetchStats = useCallback(async () => {
+    setLoadingStats(true);
+    try {
+      const params = new URLSearchParams({ stats: "1" });
+      if (year) params.set("year", year);
+      if (trimestre) params.set("trimestre", trimestre);
+      const res = await fetch(
+        `/api/export/passeport-prevention?${params.toString()}`,
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setPpStats(data);
+      }
+    } catch (err) {
+      console.error("PP stats error:", err);
+    } finally {
+      setLoadingStats(false);
+    }
+  }, [year, trimestre]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  const handleExport = async () => {
+    setLoadingExport(true);
+    try {
+      const params = new URLSearchParams();
+      if (year) params.set("year", year);
+      if (trimestre) params.set("trimestre", trimestre);
+      const res = await fetch(
+        `/api/export/passeport-prevention?${params.toString()}`,
+      );
+      if (!res.ok) {
+        throw new Error("Erreur lors de la génération du CSV");
+      }
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const datePart = new Date().toISOString().split("T")[0];
+      const periodPart = year ? `_${year}${trimestre ? `_${trimestre}` : ""}` : "";
+      a.download = `passeport-prevention-adf${periodPart}_${datePart}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      console.error("Export PP error:", err);
+    } finally {
+      setLoadingExport(false);
+    }
+  };
+
+  const hasNoData =
+    ppStats !== null && ppStats.totalConcerned === 0;
+  const canExport =
+    ppStats !== null && ppStats.exportable > 0 && !loadingExport;
+
+  return (
+    <Card className="border-emerald-200">
+      <CardHeader>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <span className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                Nouveau — obligation 1er octobre 2026
+              </span>
+            </div>
+            <CardTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 text-emerald-600" />
+              Passeport de Prévention
+            </CardTitle>
+            <CardDescription className="mt-2">
+              Générez le fichier CSV au format officiel de la Caisse des
+              Dépôts pour l&apos;import en masse des attestations de formation
+              (ADF). Déclaration obligatoire en santé-sécurité au travail
+              (décret n° 2025-748).
+            </CardDescription>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Année
+            </label>
+            <Select
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+            >
+              <option value={String(currentYear)}>{currentYear}</option>
+              <option value={String(currentYear - 1)}>
+                {currentYear - 1}
+              </option>
+              <option value={String(currentYear - 2)}>
+                {currentYear - 2}
+              </option>
+              <option value="">Toutes les années</option>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700">
+              Trimestre (optionnel)
+            </label>
+            <Select
+              value={trimestre}
+              onChange={(e) => setTrimestre(e.target.value)}
+            >
+              <option value="">Année complète</option>
+              <option value="Q1">T1 (janv. - mars)</option>
+              <option value="Q2">T2 (avril - juin)</option>
+              <option value="Q3">T3 (juil. - sept.)</option>
+              <option value="Q4">T4 (oct. - déc.)</option>
+            </Select>
+          </div>
+        </div>
+
+        {/* Stats */}
+        {loadingStats ? (
+          <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-3 text-sm text-gray-500">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Calcul des certificats à déclarer...
+          </div>
+        ) : ppStats ? (
+          <div className="space-y-2">
+            <div className="grid gap-2 sm:grid-cols-3">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+                <div className="text-xs font-semibold text-emerald-700">
+                  À déclarer (prêtes)
+                </div>
+                <div className="mt-1 text-2xl font-bold text-emerald-900">
+                  {ppStats.exportable}
+                </div>
+              </div>
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <div className="text-xs font-semibold text-amber-700">
+                  En attente (NIR manquant)
+                </div>
+                <div className="mt-1 text-2xl font-bold text-amber-900">
+                  {ppStats.skipped}
+                </div>
+              </div>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div className="text-xs font-semibold text-gray-600">
+                  Total concernées
+                </div>
+                <div className="mt-1 text-2xl font-bold text-gray-900">
+                  {ppStats.totalConcerned}
+                </div>
+              </div>
+            </div>
+            {ppStats.employeesWithoutNir > 0 && (
+              <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+                <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  <strong>{ppStats.employeesWithoutNir}</strong>{" "}
+                  employé(s) ont des formations concernées mais n&apos;ont
+                  pas de NIR renseigné. Leurs formations ne seront pas
+                  exportées. Complétez leur fiche employé.
+                </div>
+              </div>
+            )}
+            {hasNoData && (
+              <div className="flex items-start gap-2 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                <div>
+                  Aucune formation concernée par le Passeport de Prévention
+                  sur cette période. Cochez la case &laquo;&nbsp;Concernée
+                  par le Passeport de Prévention&nbsp;&raquo; dans le
+                  catalogue des formations.
+                </div>
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        <Button
+          onClick={handleExport}
+          disabled={!canExport}
+          className="w-full bg-emerald-600 text-white hover:bg-emerald-700"
+        >
+          {loadingExport ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Génération du CSV...
+            </>
+          ) : (
+            <>
+              <Download className="mr-2 h-4 w-4" />
+              Télécharger le CSV Passeport Prévention
+            </>
+          )}
+        </Button>
+        <p className="text-center text-xs text-gray-500">
+          Format : séparateur <code>|</code>, UTF-8 — à déposer sur
+          prevention.moncompteformation.gouv.fr (dépôt de fichier
+          disponible à partir du 9 juillet 2026)
+        </p>
+      </CardContent>
+    </Card>
   );
 }

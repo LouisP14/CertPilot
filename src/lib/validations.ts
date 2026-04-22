@@ -36,6 +36,14 @@ export const createEmployeeSchema = z.object({
   managerId: z.string().optional(),
   managerEmail: z.string().email().optional().or(z.literal("")),
   medicalCheckupDate: z.string().optional(),
+  nir: z
+    .string()
+    .optional()
+    .refine(
+      (v) => !v || /^\d{13}$/.test(v),
+      "Le NIR doit contenir exactement 13 chiffres",
+    ),
+  birthName: z.string().optional(),
 });
 
 export const updateEmployeeSchema = createEmployeeSchema.extend({
@@ -98,6 +106,12 @@ export const createFormationTypeSchema = z.object({
   category: z.string().optional(),
   service: z.string().optional(),
   defaultValidityMonths: z.union([z.string(), z.number()]).optional(),
+  isConcernedPP: z.boolean().optional(),
+  isCertifiante: z.enum(["OUI", "NON"]).nullable().optional(),
+  certificationCode: z.string().max(9).nullable().optional(),
+  formacodes: z.string().nullable().optional(),
+  nsfCodes: z.string().nullable().optional(),
+  romeCodes: z.string().nullable().optional(),
 });
 
 export const updateFormationTypeSchema = createFormationTypeSchema;

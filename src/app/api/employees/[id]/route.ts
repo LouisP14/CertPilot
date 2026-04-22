@@ -93,6 +93,8 @@ export async function PUT(
       managerId,
       managerEmail,
       medicalCheckupDate,
+      nir,
+      birthName,
     } = parsed.data;
 
     // Récupérer l'employé actuel pour l'audit - avec vérification companyId
@@ -144,6 +146,8 @@ export async function PUT(
         medicalCheckupDate: medicalCheckupDate
           ? new Date(medicalCheckupDate)
           : null,
+        nir: nir || null,
+        birthName: birthName || null,
       },
     });
 

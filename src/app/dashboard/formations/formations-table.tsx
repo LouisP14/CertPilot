@@ -21,6 +21,12 @@ interface FormationType {
   service: string | null;
   defaultValidityMonths: number | null;
   certificateCount: number;
+  isConcernedPP?: boolean;
+  isCertifiante?: boolean | null;
+  certificationCode?: string | null;
+  formacodes?: string | null;
+  nsfCodes?: string | null;
+  romeCodes?: string | null;
 }
 
 interface FormationsTableProps {

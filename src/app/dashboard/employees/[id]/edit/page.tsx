@@ -23,6 +23,8 @@ async function getEmployee(id: string) {
       managerId: true,
       managerEmail: true,
       medicalCheckupDate: true,
+      nir: true,
+      birthName: true,
     },
   });
 
