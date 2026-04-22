@@ -95,3 +95,80 @@ export const MODALITES_DISPENSE: CodeEntry[] = [
   { code: "A_DISTANCE", label: "À distance" },
   { code: "MIXTE", label: "Mixte (présentiel + distance)" },
 ];
+
+// Codes RS (Répertoire Spécifique) pour CERTIFICATION_VISEE
+// Source : opendata.caissedesdepots.fr/dataset/code-des-certification-rs-sst-passeport-de-prevention
+// Liste non exhaustive (~40 codes les plus courants en santé-sécurité)
+// Liste complète : https://www.francecompetences.fr/
+export const RS_CODES: CodeEntry[] = [
+  // CACES R489 - Chariots de manutention
+  { code: "RS6866", label: "CACES R489 cat. 1A - Transpalettes" },
+  { code: "RS6867", label: "CACES R489 cat. 1B - Gerbeurs > 1,20 m" },
+  { code: "RS6800", label: "CACES R489 cat. 2A - Chariots à plateau porteur" },
+  { code: "RS6868", label: "CACES R489 cat. 2B - Chariots tracteurs" },
+  { code: "RS6869", label: "CACES R489 cat. 3 - Chariots élévateurs porte-à-faux" },
+  { code: "RS6871", label: "CACES R489 cat. 4 - Chariots élévateurs frontaux" },
+  { code: "RS6870", label: "CACES R489 cat. 5 - Chariots élévateurs à mât rétractable" },
+  { code: "RS6872", label: "CACES R489 cat. 6 - Chariots poste de conduite élevable" },
+  { code: "RS6873", label: "CACES R489 cat. 7 - Conduite hors production" },
+  // CACES R482 - Engins de chantier
+  { code: "RS7040", label: "CACES R482 cat. A - Engins compacts" },
+  { code: "RS7041", label: "CACES R482 cat. B1 - Engins d'extraction" },
+  { code: "RS7044", label: "CACES R482 cat. C1 - Engins de chargement" },
+  { code: "RS7045", label: "CACES R482 cat. C2 - Engins de réglage" },
+  { code: "RS7046", label: "CACES R482 cat. C3 - Engins de nivellement" },
+  { code: "RS7047", label: "CACES R482 cat. D - Engins de compactage" },
+  { code: "RS7048", label: "CACES R482 cat. E - Engins de transport" },
+  { code: "RS7049", label: "CACES R482 cat. F - Chariots de manutention BTP" },
+  { code: "RS7023", label: "CACES R482 cat. G - Conduite hors production" },
+  // CACES R483 - Grues mobiles
+  { code: "RS6998", label: "CACES R483 cat. A - Grues mobiles à flèche treillis" },
+  { code: "RS6999", label: "CACES R483 cat. B - Grues mobiles" },
+  // CACES R484 - Ponts roulants
+  { code: "RS6879", label: "CACES R484 cat. 1 - Ponts roulants télécommande" },
+  { code: "RS6934", label: "CACES R484 cat. 2 - Ponts roulants en cabine" },
+  // CACES R485 - Gerbeurs
+  { code: "RS6937", label: "CACES R485 cat. 1 - Gerbeurs accompagnant" },
+  { code: "RS6938", label: "CACES R485 cat. 2 - Gerbeurs > 2,5 m" },
+  // CACES R486A - PEMP (nacelles)
+  { code: "RS7000", label: "CACES R486A cat. A - PEMP à élévation verticale" },
+  { code: "RS7001", label: "CACES R486A cat. B - PEMP multidirectionnelle" },
+  { code: "RS7002", label: "CACES R486A cat. C - Conduite hors production PEMP" },
+  // CACES R487 - Grues à tour
+  { code: "RS6880", label: "CACES R487 cat. 1 - Grues à tour" },
+  { code: "RS6935", label: "CACES R487 cat. 2 - Grues à tour" },
+  { code: "RS6936", label: "CACES R487 cat. 3 - Montage automatisé" },
+  // CACES R490 - Grues auxiliaires
+  { code: "RS6997", label: "CACES R490 - Grues de chargement" },
+  // Amiante
+  { code: "RS6417", label: "Amiante SS3 - Opérateurs de chantier" },
+  { code: "RS6422", label: "Amiante SS3 - Encadrement technique" },
+  { code: "RS6423", label: "Amiante SS3 - Encadrement de chantier" },
+  { code: "RS6418", label: "Amiante SS4 - Encadrement technique" },
+  { code: "RS6419", label: "Amiante SS4 - Encadrement de chantier" },
+  { code: "RS6420", label: "Amiante - Cumul fonctions d'encadrement" },
+  // ADR - Transport matières dangereuses
+  { code: "RS5629", label: "ADR - Conducteur (base)" },
+  { code: "RS5630", label: "ADR - Spécialisation citernes" },
+  { code: "RS5633", label: "ADR - Spécialisation classe 1 (explosifs)" },
+  { code: "RS5634", label: "ADR - Spécialisation classe 7 (radioactif)" },
+  { code: "RS5770", label: "Conseiller sécurité transport marchandises dangereuses" },
+  // Santé-sécurité générale
+  { code: "RS5774", label: "Coordonnateur sécurité et de santé (SPS)" },
+  { code: "RS5995", label: "CCP Référent santé-sécurité-environnement" },
+  { code: "RS6727", label: "Prévenir et gérer les risques SST (DU)" },
+  { code: "RS6742", label: "Référent santé, sécurité et QVT" },
+  { code: "RS5719", label: "PSE1 - Premiers secours en équipe niveau 1" },
+  { code: "RS5720", label: "PSE2 - Premiers secours en équipe niveau 2" },
+  { code: "RS6192", label: "Gestion du stress et prévention des TMS" },
+  { code: "RS5226", label: "Ergomotricité - Manutention de personnes" },
+  { code: "RS5877", label: "Santé et qualité de vie au travail" },
+  // Fluides frigorigènes
+  { code: "RS5638", label: "Manipulation fluides frigorigènes" },
+  // Biocides / Phytopharmaceutiques
+  { code: "RS6440", label: "Biocides - Désinfectants" },
+  { code: "RS6441", label: "Biocides - Autres produits" },
+  { code: "RS6442", label: "Biocides - Nuisibles" },
+  { code: "RS5655", label: "Phytopharmaceutiques - Décideur" },
+  { code: "RS5653", label: "Phytopharmaceutiques - Opérateur" },
+];

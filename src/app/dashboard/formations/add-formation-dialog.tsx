@@ -8,6 +8,7 @@ import {
   FORMACODES,
   NSF_CODES,
   ROME_CODES,
+  RS_CODES,
 } from "@/lib/passeport-prevention-codes";
 import { Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -277,23 +278,22 @@ export function AddFormationTypeDialog() {
                   </select>
                 </div>
                 {formData.isCertifiante === "OUI" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="certificationCode">
-                      Code certification (RS/RNCP)
-                    </Label>
-                    <Input
-                      id="certificationCode"
-                      maxLength={9}
-                      value={formData.certificationCode}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          certificationCode: e.target.value,
-                        }))
-                      }
-                      placeholder="Ex: RS6550"
-                    />
-                  </div>
+                  <CodeHelpField
+                    id="certificationCode"
+                    label="Code certification (RS/RNCP)"
+                    value={formData.certificationCode}
+                    onChange={(v) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        certificationCode: v,
+                      }))
+                    }
+                    codes={RS_CODES}
+                    separator=""
+                    placeholder="Ex: RS6869"
+                    maxLength={9}
+                    description="Un seul code. Liste complète sur francecompetences.fr"
+                  />
                 )}
                 {formData.isCertifiante === "NON" && (
                   <>
