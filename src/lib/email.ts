@@ -826,6 +826,172 @@ export async function sendAlertEmail(params: {
   });
 }
 
+// ============================================================
+// Email : Rappel déclaration Passeport Prévention
+// ============================================================
+// Contexte légal : décret n° 2025-748 — l'employeur doit déclarer
+// au Passeport Prévention national les formations éligibles dans un
+// délai de 6 mois après leur obtention (180 jours).
+// Seuils de relance : J-60, J-30, J-7 avant échéance, puis OVERDUE.
+
+export type PPReminderItem = {
+  employeeName: string;
+  formationName: string;
+  department: string;
+  site: string | null;
+  obtainedDateFormatted: string;
+  daysUntilDeadline: number; // négatif si en retard
+};
+
+export type PPReminderGroupKey =
+  | "PP_OVERDUE"
+  | "PP_7_DAYS"
+  | "PP_30_DAYS"
+  | "PP_60_DAYS";
+
+function buildPPReminderHtml(params: {
+  companyName: string;
+  groupedItems: Partial<Record<PPReminderGroupKey, PPReminderItem[]>>;
+}) {
+  const { companyName, groupedItems } = params;
+  const appUrl = getAppBaseUrl();
+
+  let html = `
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 720px; margin: 0 auto; background: #f8fafc;">
+      <div style="background: linear-gradient(135deg, #173B56 0%, #1e4a6b 100%); padding: 30px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 22px;">📋 Passeport Prévention — Déclarations en attente</h1>
+        <p style="color: #e2e8f0; margin: 10px 0 0 0;">CertPilot · ${new Date().toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</p>
+      </div>
+      <div style="padding: 30px;">
+        <p style="color: #475569; font-size: 16px; margin-bottom: 16px;">Bonjour,</p>
+        <p style="color: #475569; font-size: 14px; margin-bottom: 20px;">
+          Le décret n° 2025-748 impose à l'employeur de déclarer les formations éligibles au Passeport Prévention national
+          dans un <strong>délai de 6 mois</strong> suivant leur obtention. Les formations listées ci-dessous arrivent à échéance :
+        </p>
+  `;
+
+  const sections: Array<{
+    key: PPReminderGroupKey;
+    title: string;
+    subtitle: string;
+    bg: string;
+    border: string;
+    text: string;
+    badge: string;
+    badgeLabel: (item: PPReminderItem) => string;
+  }> = [
+    {
+      key: "PP_OVERDUE",
+      title: "❌ Délai dépassé",
+      subtitle: "Ces formations auraient dû être déclarées.",
+      bg: "#fef2f2",
+      border: "#dc2626",
+      text: "#991b1b",
+      badge: "#dc2626",
+      badgeLabel: (item) => `${Math.abs(item.daysUntilDeadline)} j de retard`,
+    },
+    {
+      key: "PP_7_DAYS",
+      title: "⚠️ Échéance dans 7 jours ou moins",
+      subtitle: "À déclarer en priorité.",
+      bg: "#fef3c7",
+      border: "#f59e0b",
+      text: "#92400e",
+      badge: "#f59e0b",
+      badgeLabel: (item) => `${item.daysUntilDeadline} j restants`,
+    },
+    {
+      key: "PP_30_DAYS",
+      title: "⏳ Échéance dans 30 jours ou moins",
+      subtitle: "À planifier prochainement.",
+      bg: "#fef9c3",
+      border: "#eab308",
+      text: "#854d0e",
+      badge: "#eab308",
+      badgeLabel: (item) => `${item.daysUntilDeadline} j restants`,
+    },
+    {
+      key: "PP_60_DAYS",
+      title: "📆 Échéance dans 60 jours ou moins",
+      subtitle: "Rappel anticipé.",
+      bg: "#ecfdf5",
+      border: "#10b981",
+      text: "#065f46",
+      badge: "#10b981",
+      badgeLabel: (item) => `${item.daysUntilDeadline} j restants`,
+    },
+  ];
+
+  for (const section of sections) {
+    const items = groupedItems[section.key];
+    if (!items || items.length === 0) continue;
+
+    html += `
+      <div style="margin-bottom: 25px;">
+        <div style="background: ${section.bg}; border-left: 4px solid ${section.border}; padding: 15px; border-radius: 0 8px 8px 0; margin-bottom: 15px;">
+          <h3 style="color: ${section.text}; margin: 0 0 5px 0;">${section.title} (${items.length})</h3>
+          <p style="color: ${section.text}; margin: 0; font-size: 14px;">${section.subtitle}</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <thead>
+            <tr style="background: #f8fafc;">
+              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Employé</th>
+              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Formation</th>
+              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Service</th>
+              <th style="padding: 12px; text-align: left; color: #475569; font-size: 13px;">Date formation</th>
+              <th style="padding: 12px; text-align: center; color: #475569; font-size: 13px;">Échéance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items
+              .map(
+                (item) => `
+                  <tr style="border-top: 1px solid #e5e7eb;">
+                    <td style="padding: 12px; color: #1f2937;">${item.employeeName}</td>
+                    <td style="padding: 12px; color: #1f2937;">${item.formationName}</td>
+                    <td style="padding: 12px; color: #6b7280;">${item.department}${item.site ? ` - ${item.site}` : ""}</td>
+                    <td style="padding: 12px; color: #6b7280;">${item.obtainedDateFormatted}</td>
+                    <td style="padding: 12px; text-align: center;"><span style="background: ${section.badge}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; white-space: nowrap;">${section.badgeLabel(item)}</span></td>
+                  </tr>
+                `,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  html += `
+        <div style="margin-top: 30px; padding: 20px; background: #f1f5f9; border-radius: 8px; text-align: center;">
+          <p style="color: #64748b; margin: 0 0 15px 0; font-size: 14px;">Exportez et déclarez les formations concernées depuis votre tableau de bord</p>
+          <a href="${appUrl}/dashboard/export" style="display: inline-block; background: #173B56; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 500;">📤 Déclarer au Passeport Prévention</a>
+        </div>
+      </div>
+      <div style="background: #173B56; padding: 20px; text-align: center;">
+        <p style="color: #94a3b8; margin: 0; font-size: 12px;">Cet email a été envoyé automatiquement par CertPilot<br>${companyName}</p>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+export async function sendPPDeclarationReminder(params: {
+  to: string;
+  companyName: string;
+  totalCount: number;
+  groupedItems: Partial<Record<PPReminderGroupKey, PPReminderItem[]>>;
+}) {
+  const { to, companyName, totalCount, groupedItems } = params;
+  return sendEmail({
+    from: FROM_EMAIL,
+    to,
+    subject: `📋 Passeport Prévention — ${totalCount} déclaration(s) à effectuer`,
+    html: buildPPReminderHtml({ companyName, groupedItems }),
+  });
+}
+
 // Email 3 : Bienvenue + Identifiants après paiement
 // Email : Notification de rejet de passeport à l'employé
 export async function sendPassportRejectedEmail(params: {

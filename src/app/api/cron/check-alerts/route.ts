@@ -4,9 +4,25 @@ import {
   sendExpiryNotificationEmployee,
   sendExpiryNotificationManager,
   sendOnboardingEmail,
+  sendPPDeclarationReminder,
+  type PPReminderGroupKey,
+  type PPReminderItem,
 } from "@/lib/email";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+
+// Délai légal de déclaration au Passeport Prévention (décret n° 2025-748) : 6 mois
+const PP_DEADLINE_DAYS = 180;
+
+function getPPThresholdForDaysUntilDeadline(
+  daysUntilDeadline: number,
+): PPReminderGroupKey | null {
+  if (daysUntilDeadline <= 0) return "PP_OVERDUE";
+  if (daysUntilDeadline <= 7) return "PP_7_DAYS";
+  if (daysUntilDeadline <= 30) return "PP_30_DAYS";
+  if (daysUntilDeadline <= 60) return "PP_60_DAYS";
+  return null;
+}
 
 type AlertItem = {
   threshold: number;
@@ -85,6 +101,7 @@ export async function GET(request: NextRequest) {
       convocationsClosed: number;
       employeeNotifsSent?: number;
       managerNotifsSent?: number;
+      ppRemindersSent?: number;
     }> = [];
 
     for (const company of companies) {
@@ -332,6 +349,122 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      // ========== RAPPELS DÉCLARATION PASSEPORT PRÉVENTION ==========
+      // Isolé dans un try/catch : ne doit JAMAIS casser le flow d'alertes existant.
+      let ppRemindersSent = 0;
+      try {
+        const ppCertificates = await prisma.certificate.findMany({
+          where: {
+            isArchived: false,
+            ppDeclaredAt: null,
+            formationType: { isConcernedPP: true },
+            employee: { companyId: company.id },
+          },
+          include: {
+            employee: {
+              select: {
+                firstName: true,
+                lastName: true,
+                department: true,
+                site: true,
+              },
+            },
+            formationType: { select: { name: true } },
+            alertLogs: { select: { alertType: true, notifyType: true } },
+          },
+        });
+
+        const ppGrouped: Partial<Record<PPReminderGroupKey, PPReminderItem[]>> =
+          {};
+        const ppAlertsToLog: Array<{
+          certificateId: string;
+          alertType: PPReminderGroupKey;
+        }> = [];
+
+        for (const cert of ppCertificates) {
+          if (!cert.obtainedDate) continue;
+          const obtained = new Date(cert.obtainedDate);
+          obtained.setHours(0, 0, 0, 0);
+          const daysSinceObtained = Math.floor(
+            (now.getTime() - obtained.getTime()) / (1000 * 60 * 60 * 24),
+          );
+          // Ignorer dates futures (erreur de saisie potentielle)
+          if (daysSinceObtained < 0) continue;
+
+          const daysUntilDeadline = PP_DEADLINE_DAYS - daysSinceObtained;
+          const thresholdKey = getPPThresholdForDaysUntilDeadline(
+            daysUntilDeadline,
+          );
+          if (!thresholdKey) continue;
+
+          const alreadySent = cert.alertLogs.some(
+            (log) =>
+              log.alertType === thresholdKey && log.notifyType === "ADMIN",
+          );
+          if (alreadySent) continue;
+
+          const item: PPReminderItem = {
+            employeeName: `${cert.employee.lastName} ${cert.employee.firstName}`,
+            formationName: cert.formationType.name,
+            department: cert.employee.department,
+            site: cert.employee.site,
+            obtainedDateFormatted: obtained.toLocaleDateString("fr-FR"),
+            daysUntilDeadline,
+          };
+
+          if (!ppGrouped[thresholdKey]) ppGrouped[thresholdKey] = [];
+          ppGrouped[thresholdKey]!.push(item);
+          ppAlertsToLog.push({
+            certificateId: cert.id,
+            alertType: thresholdKey,
+          });
+        }
+
+        if (ppAlertsToLog.length > 0 && company.adminEmail) {
+          const { error } = await sendPPDeclarationReminder({
+            to: company.adminEmail,
+            companyName: company.name,
+            totalCount: ppAlertsToLog.length,
+            groupedItems: ppGrouped,
+          });
+
+          if (!error) {
+            for (const entry of ppAlertsToLog) {
+              await prisma.alertLog.create({
+                data: {
+                  certificateId: entry.certificateId,
+                  alertType: entry.alertType,
+                  notifyType: "ADMIN",
+                  recipients: company.adminEmail,
+                },
+              });
+            }
+
+            await prisma.notification.create({
+              data: {
+                type: "FORMATION_EXPIRED",
+                title: "Rappel Passeport Prévention",
+                message: `${ppAlertsToLog.length} déclaration(s) Passeport Prévention à effectuer`,
+                link: "/dashboard/export",
+                companyId: company.id,
+              },
+            });
+
+            ppRemindersSent = ppAlertsToLog.length;
+          } else {
+            console.error(
+              `[cron/check-alerts] Erreur envoi rappel PP pour ${company.name}:`,
+              error,
+            );
+          }
+        }
+      } catch (ppError) {
+        console.error(
+          `[cron/check-alerts] Bloc rappel PP en échec pour ${company.name} (flow principal préservé):`,
+          ppError,
+        );
+      }
+
       byCompany.push({
         companyId: company.id,
         companyName: company.name,
@@ -340,6 +473,7 @@ export async function GET(request: NextRequest) {
         convocationsClosed: closedConvocations.count,
         employeeNotifsSent,
         managerNotifsSent,
+        ppRemindersSent,
       });
     }
 
