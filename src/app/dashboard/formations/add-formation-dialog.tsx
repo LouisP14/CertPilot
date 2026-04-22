@@ -1,8 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { CodeHelpField } from "@/components/ui/code-help-field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  FORMACODES,
+  NSF_CODES,
+  ROME_CODES,
+} from "@/lib/passeport-prevention-codes";
 import { Loader2, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -291,59 +297,41 @@ export function AddFormationTypeDialog() {
                 )}
                 {formData.isCertifiante === "NON" && (
                   <>
-                    <div className="space-y-2">
-                      <Label htmlFor="formacodes">
-                        Codes Formacode (séparés par /)
-                      </Label>
-                      <Input
-                        id="formacodes"
-                        value={formData.formacodes}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            formacodes: e.target.value,
-                          }))
-                        }
-                        placeholder="Ex: 42829/42817"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="nsfCodes">
-                        Codes NSF (séparés par /)
-                      </Label>
-                      <Input
-                        id="nsfCodes"
-                        value={formData.nsfCodes}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            nsfCodes: e.target.value,
-                          }))
-                        }
-                        placeholder="Ex: 344r/344p"
-                      />
-                    </div>
+                    <CodeHelpField
+                      id="formacodes"
+                      label="Codes Formacode (séparés par /)"
+                      value={formData.formacodes}
+                      onChange={(v) =>
+                        setFormData((prev) => ({ ...prev, formacodes: v }))
+                      }
+                      codes={FORMACODES}
+                      placeholder="Ex: 42829/42817"
+                      description="Jusqu'à 5 codes de domaine de formation"
+                    />
+                    <CodeHelpField
+                      id="nsfCodes"
+                      label="Codes NSF (séparés par /)"
+                      value={formData.nsfCodes}
+                      onChange={(v) =>
+                        setFormData((prev) => ({ ...prev, nsfCodes: v }))
+                      }
+                      codes={NSF_CODES}
+                      placeholder="Ex: 344r/344p"
+                      description="Jusqu'à 3 codes de spécialité de formation"
+                    />
                   </>
                 )}
-                <div className="space-y-2">
-                  <Label htmlFor="romeCodes">
-                    Codes ROME - compétences transférables (séparés par /)
-                  </Label>
-                  <Input
-                    id="romeCodes"
-                    value={formData.romeCodes}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        romeCodes: e.target.value,
-                      }))
-                    }
-                    placeholder="Ex: 115650/121885/400635"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Jusqu&apos;à 10 codes. Voir les fiches pratiques INRS.
-                  </p>
-                </div>
+                <CodeHelpField
+                  id="romeCodes"
+                  label="Codes ROME - compétences transférables (séparés par /)"
+                  value={formData.romeCodes}
+                  onChange={(v) =>
+                    setFormData((prev) => ({ ...prev, romeCodes: v }))
+                  }
+                  codes={ROME_CODES}
+                  placeholder="Ex: 115650/121885/400635"
+                  description="Jusqu'à 10 codes. Voir les fiches pratiques INRS."
+                />
               </div>
             )}
           </div>
