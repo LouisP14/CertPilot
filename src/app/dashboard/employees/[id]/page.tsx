@@ -52,6 +52,7 @@ async function getEmployee(id: string) {
               name: true,
               category: true,
               defaultValidityMonths: true,
+              isConcernedPP: true,
             },
           },
         },

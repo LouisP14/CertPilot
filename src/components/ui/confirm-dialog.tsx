@@ -2,13 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, X } from "lucide-react";
+import type { ReactNode } from "react";
 
 interface ConfirmDialogProps {
   open: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
-  message?: string;
+  message?: ReactNode;
   confirmText?: string;
   cancelText?: string;
   variant?: "danger" | "warning" | "info";
@@ -33,7 +34,7 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
@@ -68,8 +69,8 @@ export function ConfirmDialog({
 
         {/* Content */}
         {message && (
-          <div className="p-6">
-            <p className="text-gray-600">{message}</p>
+          <div className="p-6 text-gray-600">
+            {typeof message === "string" ? <p>{message}</p> : message}
           </div>
         )}
 

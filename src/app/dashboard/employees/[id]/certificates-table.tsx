@@ -10,11 +10,13 @@ import {
 } from "@/lib/utils";
 import {
   ArrowUpDown,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Filter,
   Mail,
   Search,
+  Shield,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -29,11 +31,13 @@ interface Certificate {
   expiryDate: Date | null;
   details: string | null;
   attachmentUrl: string | null;
+  ppDeclaredAt?: Date | null;
   formationType: {
     id: string;
     name: string;
     category: string | null;
     defaultValidityMonths: number | null;
+    isConcernedPP?: boolean;
   };
 }
 
@@ -330,7 +334,29 @@ export function CertificatesTable({
                   className="border-b last:border-0 hover:bg-gray-50"
                 >
                   <td className="py-3 font-medium">
-                    {cert.formationType.name}
+                    <div className="flex flex-col gap-1">
+                      <span>{cert.formationType.name}</span>
+                      {cert.formationType.isConcernedPP && (
+                        cert.ppDeclaredAt ? (
+                          <span
+                            className="inline-flex w-fit items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700"
+                            title={`Déclarée au Passeport Prévention le ${formatDate(cert.ppDeclaredAt)}`}
+                          >
+                            <CheckCircle2 className="h-3 w-3" />
+                            Passeport Prévention · déclarée le{" "}
+                            {formatDate(cert.ppDeclaredAt)}
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex w-fit items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700"
+                            title="Formation concernée par le Passeport de Prévention — à déclarer"
+                          >
+                            <Shield className="h-3 w-3" />
+                            Passeport Prévention · à déclarer
+                          </span>
+                        )
+                      )}
+                    </div>
                   </td>
                   <td className="py-3">
                     {cert.formationType.category ? (
@@ -397,7 +423,12 @@ export function CertificatesTable({
                         }}
                         employeeId={employeeId}
                       />
-                      <DeleteCertificateButton certificateId={cert.id} />
+                      <DeleteCertificateButton
+                        certificateId={cert.id}
+                        isConcernedPP={cert.formationType.isConcernedPP}
+                        ppDeclaredAt={cert.ppDeclaredAt}
+                        formationName={cert.formationType.name}
+                      />
                     </div>
                   </td>
                 </tr>

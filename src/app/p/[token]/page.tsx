@@ -227,9 +227,18 @@ export default async function PassportPage({
                         className="rounded-xl border border-slate-200 bg-slate-50 p-4"
                       >
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <h4 className="font-semibold text-[#173B56] text-sm leading-tight">
-                            {cert.formationType.name}
-                          </h4>
+                          <div className="flex flex-col gap-1">
+                            <h4 className="font-semibold text-[#173B56] text-sm leading-tight">
+                              {cert.formationType.name}
+                            </h4>
+                            {cert.ppDeclaredAt && (
+                              <span className="inline-flex w-fit items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                                <CheckCircle2 className="h-2.5 w-2.5" />
+                                Passeport Prévention · déclarée le{" "}
+                                {formatDate(cert.ppDeclaredAt)}
+                              </span>
+                            )}
+                          </div>
                           <StatusBadge status={status} />
                         </div>
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
@@ -287,8 +296,19 @@ export default async function PassportPage({
                             key={cert.id}
                             className="border-b border-slate-100 last:border-0"
                           >
-                            <td className="py-3 font-semibold text-[#173B56]">
-                              {cert.formationType.name}
+                            <td className="py-3">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-semibold text-[#173B56]">
+                                  {cert.formationType.name}
+                                </span>
+                                {cert.ppDeclaredAt && (
+                                  <span className="inline-flex w-fit items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                                    <CheckCircle2 className="h-2.5 w-2.5" />
+                                    Passeport Prévention · déclarée le{" "}
+                                    {formatDate(cert.ppDeclaredAt)}
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3 text-slate-600">
                               {cert.formationType.category || "-"}

@@ -1,4 +1,4 @@
-import { auditDelete, auditUpdate } from "@/lib/audit";
+import { auditDelete, auditUpdate, createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { invalidateSignatureIfExists } from "@/lib/signature-utils";
@@ -50,19 +50,45 @@ export async function PUT(
       );
     }
 
+    // Détection : si ce certificat avait déjà été déclaré au Passeport Prévention
+    // ET que l'une des données envoyées dans le CSV a changé, on réinitialise la
+    // déclaration (ppDeclaredAt = null) pour forcer une nouvelle déclaration.
+    // Les champs impactant le CSV : formationType, dates de formation, validité,
+    // modalité, qualification formateur.
+    const newObtainedDate = new Date(obtainedDate);
+    const newExpiryDate = expiryDate ? new Date(expiryDate) : null;
+    const newTrainingStartDate = trainingStartDate
+      ? new Date(trainingStartDate)
+      : null;
+    const csvFieldsChanged =
+      currentCertificate.ppDeclaredAt !== null &&
+      (currentCertificate.formationTypeId !== formationTypeId ||
+        currentCertificate.obtainedDate.getTime() !== newObtainedDate.getTime() ||
+        (currentCertificate.expiryDate?.getTime() ?? null) !==
+          (newExpiryDate?.getTime() ?? null) ||
+        (currentCertificate.trainingStartDate?.getTime() ?? null) !==
+          (newTrainingStartDate?.getTime() ?? null) ||
+        (currentCertificate.trainingMode ?? null) !==
+          (trainingMode || null) ||
+        (currentCertificate.trainerQualification ?? null) !==
+          (trainerQualification || null));
+
     const certificate = await prisma.certificate.update({
       where: { id },
       data: {
         formationTypeId,
-        obtainedDate: new Date(obtainedDate),
-        expiryDate: expiryDate ? new Date(expiryDate) : null,
+        obtainedDate: newObtainedDate,
+        expiryDate: newExpiryDate,
         organism: organism || null,
         details: details || null,
-        trainingStartDate: trainingStartDate
-          ? new Date(trainingStartDate)
-          : null,
+        trainingStartDate: newTrainingStartDate,
         trainingMode: trainingMode || null,
         trainerQualification: trainerQualification || null,
+        // Reset automatique si les champs CSV ont changé
+        ...(csvFieldsChanged && {
+          ppDeclaredAt: null,
+          ppDeclarationRef: null,
+        }),
       },
       include: {
         formationType: true,
@@ -72,6 +98,27 @@ export async function PUT(
 
     // Invalider la signature si elle existe (modification du contenu du passeport)
     await invalidateSignatureIfExists(certificate.employeeId);
+
+    // Audit spécifique : la déclaration PP a été réinitialisée
+    if (csvFieldsChanged) {
+      await createAuditLog({
+        userId: session.user.id,
+        userName: session.user.name || undefined,
+        userEmail: session.user.email || undefined,
+        companyId: session.user.companyId,
+        action: "UPDATE",
+        entityType: "CERTIFICATE",
+        entityId: certificate.id,
+        entityName: `${certificate.formationType.name} - ${certificate.employee.firstName} ${certificate.employee.lastName}`,
+        description: `Déclaration Passeport Prévention réinitialisée suite à la modification du certificat (doit être re-déclaré)`,
+        metadata: {
+          previousDeclarationRef: currentCertificate.ppDeclarationRef,
+          previousDeclaredAt:
+            currentCertificate.ppDeclaredAt?.toISOString() || null,
+          reason: "csv_fields_changed",
+        },
+      });
+    }
 
     // Audit Trail — inclut les champs Passeport Prévention
     if (currentCertificate) {
