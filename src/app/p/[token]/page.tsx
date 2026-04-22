@@ -227,20 +227,29 @@ export default async function PassportPage({
                         className="rounded-xl border border-slate-200 bg-slate-50 p-4"
                       >
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex flex-col gap-1">
-                            <h4 className="font-semibold text-[#173B56] text-sm leading-tight">
-                              {cert.formationType.name}
-                            </h4>
-                            {cert.ppDeclaredAt && (
-                              <span className="inline-flex w-fit items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
-                                <CheckCircle2 className="h-2.5 w-2.5" />
-                                Passeport Prévention · déclarée le{" "}
-                                {formatDate(cert.ppDeclaredAt)}
+                          <h4 className="font-semibold text-[#173B56] text-sm leading-tight">
+                            {cert.formationType.name}
+                          </h4>
+                          <StatusBadge status={status} />
+                        </div>
+                        {cert.formationType.isConcernedPP && (
+                          <div className="mb-2">
+                            {cert.ppDeclaredAt ? (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 leading-tight">
+                                <CheckCircle2 className="h-2.5 w-2.5 shrink-0" />
+                                <span>
+                                  Passeport Prévention · déclarée le{" "}
+                                  {formatDate(cert.ppDeclaredAt)}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 leading-tight">
+                                <Shield className="h-2.5 w-2.5 shrink-0" />
+                                <span>Passeport Prévention · à déclarer</span>
                               </span>
                             )}
                           </div>
-                          <StatusBadge status={status} />
-                        </div>
+                        )}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
                           {cert.formationType.category && (
                             <>
@@ -301,12 +310,19 @@ export default async function PassportPage({
                                 <span className="font-semibold text-[#173B56]">
                                   {cert.formationType.name}
                                 </span>
-                                {cert.ppDeclaredAt && (
-                                  <span className="inline-flex w-fit items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
-                                    <CheckCircle2 className="h-2.5 w-2.5" />
-                                    Passeport Prévention · déclarée le{" "}
-                                    {formatDate(cert.ppDeclaredAt)}
-                                  </span>
+                                {cert.formationType.isConcernedPP && (
+                                  cert.ppDeclaredAt ? (
+                                    <span className="inline-flex w-fit items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700">
+                                      <CheckCircle2 className="h-2.5 w-2.5" />
+                                      Passeport Prévention · déclarée le{" "}
+                                      {formatDate(cert.ppDeclaredAt)}
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex w-fit items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                                      <Shield className="h-2.5 w-2.5" />
+                                      Passeport Prévention · à déclarer
+                                    </span>
+                                  )
                                 )}
                               </div>
                             </td>
