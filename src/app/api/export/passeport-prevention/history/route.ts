@@ -15,7 +15,8 @@ export async function GET() {
 
     const companyId = session.user.companyId;
 
-    // Récupère tous les certs déclarés, groupés en mémoire par declarationRef
+    // Récupère tous les certs déclarés (y compris archivés, pour traçabilité
+    // légale complète). On distingue ensuite les actifs/archivés côté UI.
     const certs = await prisma.certificate.findMany({
       where: {
         ppDeclaredAt: { not: null },
@@ -26,6 +27,7 @@ export async function GET() {
         id: true,
         ppDeclaredAt: true,
         ppDeclarationRef: true,
+        isArchived: true,
         employee: {
           select: {
             firstName: true,
@@ -45,11 +47,14 @@ export async function GET() {
         declarationRef: string;
         declaredAt: Date;
         count: number;
+        activeCount: number;
+        archivedCount: number;
         certificates: Array<{
           id: string;
           employeeName: string;
           employeeMatricule: string;
           formationName: string;
+          isArchived: boolean;
         }>;
       }
     >();
@@ -61,16 +66,24 @@ export async function GET() {
           declarationRef: ref,
           declaredAt: c.ppDeclaredAt!,
           count: 0,
+          activeCount: 0,
+          archivedCount: 0,
           certificates: [],
         });
       }
       const batch = grouped.get(ref)!;
       batch.count++;
+      if (c.isArchived) {
+        batch.archivedCount++;
+      } else {
+        batch.activeCount++;
+      }
       batch.certificates.push({
         id: c.id,
         employeeName: `${c.employee.lastName} ${c.employee.firstName}`,
         employeeMatricule: c.employee.employeeId,
         formationName: c.formationType.name,
+        isArchived: c.isArchived,
       });
     }
 

@@ -810,11 +810,14 @@ interface PPBatch {
   declarationRef: string;
   declaredAt: string;
   count: number;
+  activeCount?: number;
+  archivedCount?: number;
   certificates: Array<{
     id: string;
     employeeName: string;
     employeeMatricule: string;
     formationName: string;
+    isArchived?: boolean;
   }>;
 }
 
@@ -1153,44 +1156,72 @@ function PasseportPreventionExport() {
                     Aucune déclaration confirmée pour l&apos;instant.
                   </p>
                 ) : (
-                  history.map((batch) => (
-                    <div
-                      key={batch.declarationRef}
-                      className="rounded-lg border border-gray-200 bg-white p-3"
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-[#173B56]">
-                              {new Date(batch.declaredAt).toLocaleDateString(
-                                "fr-FR",
-                                {
-                                  day: "2-digit",
-                                  month: "long",
-                                  year: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
+                  history.map((batch) => {
+                    const archivedCount = batch.archivedCount ?? 0;
+                    const activeCount =
+                      batch.activeCount ?? batch.count - archivedCount;
+                    return (
+                      <div
+                        key={batch.declarationRef}
+                        className="rounded-lg border border-gray-200 bg-white p-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-semibold text-[#173B56]">
+                                {new Date(batch.declaredAt).toLocaleDateString(
+                                  "fr-FR",
+                                  {
+                                    day: "2-digit",
+                                    month: "long",
+                                    year: "numeric",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  },
+                                )}
+                              </span>
+                              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+                                {batch.count} déclaration(s)
+                              </span>
+                              {archivedCount > 0 && (
+                                <span
+                                  className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700"
+                                  title="Certaines formations déclarées ont été archivées (supprimées) depuis. Les déclarations restent dans l'audit pour traçabilité légale."
+                                >
+                                  ⚠ {archivedCount} archivée(s){activeCount > 0 ? ` · ${activeCount} active(s)` : ""}
+                                </span>
                               )}
-                            </span>
-                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
-                              {batch.count} déclaration(s)
-                            </span>
+                            </div>
+                            <p className="mt-0.5 font-mono text-xs text-gray-400">
+                              {batch.declarationRef}
+                            </p>
+                            {archivedCount > 0 && (
+                              <ul className="mt-2 space-y-0.5 text-xs text-gray-600">
+                                {batch.certificates
+                                  .filter((c) => c.isArchived)
+                                  .map((c) => (
+                                    <li key={c.id} className="flex items-center gap-1">
+                                      <span className="text-amber-600">•</span>
+                                      <span className="line-through decoration-amber-400 decoration-1">
+                                        {c.employeeName} — {c.formationName}
+                                      </span>
+                                      <span className="text-amber-700">(archivée)</span>
+                                    </li>
+                                  ))}
+                              </ul>
+                            )}
                           </div>
-                          <p className="mt-0.5 font-mono text-xs text-gray-400">
-                            {batch.declarationRef}
-                          </p>
+                          <button
+                            type="button"
+                            onClick={() => handleUndoBatch(batch.declarationRef)}
+                            className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100"
+                          >
+                            Annuler
+                          </button>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => handleUndoBatch(batch.declarationRef)}
-                          className="rounded-md border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100"
-                        >
-                          Annuler
-                        </button>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}
