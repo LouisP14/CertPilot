@@ -75,6 +75,14 @@ export async function GET(request: NextRequest) {
         alertThresholds: true,
         notifyEmployee: true,
         notifyManager: true,
+        users: {
+          where: { role: "ADMIN", isActive: true },
+          select: {
+            email: true,
+            receivesHabilitationAlerts: true,
+            receivesPPAlerts: true,
+          },
+        },
       },
     });
 
@@ -220,8 +228,33 @@ export async function GET(request: NextRequest) {
           >,
         );
 
+        // Destinataires : admins opt-in + fallback adminEmail si aucun coché
+        const habRecipients = company.users
+          .filter((u) => u.receivesHabilitationAlerts && u.email)
+          .map((u) => u.email);
+        if (habRecipients.length === 0 && company.adminEmail) {
+          habRecipients.push(company.adminEmail);
+        }
+
+        if (habRecipients.length === 0) {
+          // Aucun destinataire → on skip sans rien logger (évite faux positifs)
+          console.warn(
+            `[cron/check-alerts] Aucun destinataire habilitation pour ${company.name}, skip`,
+          );
+          byCompany.push({
+            companyId: company.id,
+            companyName: company.name,
+            alertsReady: alertsToSend.length,
+            alertsSent: 0,
+            convocationsClosed: 0,
+          });
+          continue;
+        }
+
+        const recipientsStr = habRecipients.join(",");
+
         const { error } = await sendAlertEmail({
-          to: company.adminEmail,
+          to: habRecipients,
           companyName: company.name,
           alertCount: alertsToSend.length,
           groupedAlerts,
@@ -233,7 +266,7 @@ export async function GET(request: NextRequest) {
               data: {
                 certificateId: alert.certificateId,
                 alertType: getAlertType(alert.daysLeft, alert.threshold),
-                recipients: company.adminEmail,
+                recipients: recipientsStr,
               },
             });
           }
@@ -242,7 +275,7 @@ export async function GET(request: NextRequest) {
             data: {
               type: "FORMATION_EXPIRED",
               title: "Alertes habilitations envoyées",
-              message: `${alertsToSend.length} alerte(s) envoyée(s) à ${company.adminEmail}`,
+              message: `${alertsToSend.length} alerte(s) envoyée(s) à ${recipientsStr}`,
               link: "/dashboard",
               companyId: company.id,
             },
@@ -420,9 +453,18 @@ export async function GET(request: NextRequest) {
           });
         }
 
-        if (ppAlertsToLog.length > 0 && company.adminEmail) {
+        // Destinataires PP : admins opt-in + fallback adminEmail si aucun coché
+        const ppRecipients = company.users
+          .filter((u) => u.receivesPPAlerts && u.email)
+          .map((u) => u.email);
+        if (ppRecipients.length === 0 && company.adminEmail) {
+          ppRecipients.push(company.adminEmail);
+        }
+        const ppRecipientsStr = ppRecipients.join(",");
+
+        if (ppAlertsToLog.length > 0 && ppRecipients.length > 0) {
           const { error } = await sendPPDeclarationReminder({
-            to: company.adminEmail,
+            to: ppRecipients,
             companyName: company.name,
             totalCount: ppAlertsToLog.length,
             groupedItems: ppGrouped,
@@ -435,7 +477,7 @@ export async function GET(request: NextRequest) {
                   certificateId: entry.certificateId,
                   alertType: entry.alertType,
                   notifyType: "ADMIN",
-                  recipients: company.adminEmail,
+                  recipients: ppRecipientsStr,
                 },
               });
             }

@@ -812,7 +812,7 @@ function buildAlertEmailHtml(params: {
 }
 
 export async function sendAlertEmail(params: {
-  to: string;
+  to: string | string[];
   companyName: string;
   alertCount: number;
   groupedAlerts: Record<string, AlertEmailItem[]>;
@@ -978,7 +978,7 @@ function buildPPReminderHtml(params: {
 }
 
 export async function sendPPDeclarationReminder(params: {
-  to: string;
+  to: string | string[];
   companyName: string;
   totalCount: number;
   groupedItems: Partial<Record<PPReminderGroupKey, PPReminderItem[]>>;

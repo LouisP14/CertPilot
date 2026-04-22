@@ -5,9 +5,9 @@ import { SettingsAccordion } from "./settings-accordion";
 async function getCompanyData() {
   const session = await auth();
   if (!session?.user?.companyId) {
-    return { company: null, services: [], totpEnabled: false };
+    return { company: null, services: [], totpEnabled: false, adminUsers: [] };
   }
-  const [company, serviceData, userData] = await Promise.all([
+  const [company, serviceData, userData, adminUsers] = await Promise.all([
     prisma.company.findUnique({ where: { id: session.user.companyId } }),
     prisma.referenceData.findMany({
       where: { companyId: session.user.companyId, type: "SERVICE", isActive: true },
@@ -18,16 +18,32 @@ async function getCompanyData() {
       where: { id: session.user.id },
       select: { totpEnabled: true },
     }),
+    prisma.user.findMany({
+      where: {
+        companyId: session.user.companyId,
+        role: "ADMIN",
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        receivesHabilitationAlerts: true,
+        receivesPPAlerts: true,
+      },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
   return {
     company,
     services: serviceData.map((s) => s.value),
     totpEnabled: userData?.totpEnabled ?? false,
+    adminUsers,
   };
 }
 
 export default async function SettingsPage() {
-  const { company, services, totpEnabled } = await getCompanyData();
+  const { company, services, totpEnabled, adminUsers } = await getCompanyData();
 
   return (
     <SettingsAccordion
@@ -46,6 +62,7 @@ export default async function SettingsPage() {
       }
       availableServices={services}
       totpEnabled={totpEnabled}
+      adminUsers={adminUsers}
     />
   );
 }

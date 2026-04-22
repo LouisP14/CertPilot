@@ -30,6 +30,9 @@ model User {
   updatedAt           DateTime  @updatedAt
   totpSecret          String?
   totpEnabled         Boolean   @default(false)
+  // Préférences de notification par type d'alerte (opt-in par défaut)
+  receivesHabilitationAlerts Boolean @default(true)
+  receivesPPAlerts           Boolean @default(true)
 }
 
 model EmailVerificationToken {

@@ -222,6 +222,18 @@ export const alertSettingsSchema = z.object({
   notifyManager: z.boolean().optional(),
 });
 
+export const alertRecipientsSchema = z.object({
+  preferences: z
+    .array(
+      z.object({
+        userId: z.string().min(1),
+        receivesHabilitationAlerts: z.boolean(),
+        receivesPPAlerts: z.boolean(),
+      }),
+    )
+    .min(1, "Au moins un destinataire est requis"),
+});
+
 export const signatureSettingsSchema = z.object({
   signatureEnabled: z.boolean(),
   signatureImage: z.string().optional(),

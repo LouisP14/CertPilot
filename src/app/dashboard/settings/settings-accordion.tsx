@@ -18,6 +18,10 @@ import {
   UserCog,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  AlertRecipientAdmin,
+  AlertRecipientsForm,
+} from "./alert-recipients-form";
 import { ReferenceManager } from "./reference-manager";
 import {
   AlertForm,
@@ -40,12 +44,19 @@ interface SettingsAccordionProps {
   } | null;
   availableServices: string[];
   totpEnabled: boolean;
+  adminUsers: AlertRecipientAdmin[];
 }
 
-export function SettingsAccordion({ company, availableServices, totpEnabled }: SettingsAccordionProps) {
+export function SettingsAccordion({
+  company,
+  availableServices,
+  totpEnabled,
+  adminUsers,
+}: SettingsAccordionProps) {
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     company: true,
     alerts: false,
+    recipients: false,
     priority: false,
     planning: false,
     references: false,
@@ -137,6 +148,40 @@ export function SettingsAccordion({ company, availableServices, totpEnabled }: S
                 alertThresholds={company?.alertThresholds || "90,60,30,7"}
                 notifyEmployee={company?.notifyEmployee ?? false}
                 notifyManager={company?.notifyManager ?? false}
+              />
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Alert Recipients */}
+        <Card>
+          <CardHeader
+            className="cursor-pointer hover:bg-gray-50 transition-colors"
+            onClick={() => toggleSection("recipients")}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-emerald-600" />
+                <div>
+                  <CardTitle>Destinataires des alertes</CardTitle>
+                  <CardDescription className="mt-1">
+                    Choisissez quels administrateurs reçoivent les alertes
+                    habilitations et les rappels Passeport Prévention
+                  </CardDescription>
+                </div>
+              </div>
+              <ChevronDown
+                className={`h-5 w-5 text-gray-500 transition-transform ${
+                  openSections.recipients ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </CardHeader>
+          {openSections.recipients && (
+            <CardContent className="pt-0">
+              <AlertRecipientsForm
+                admins={adminUsers}
+                companyAdminEmail={company?.adminEmail ?? null}
               />
             </CardContent>
           )}
