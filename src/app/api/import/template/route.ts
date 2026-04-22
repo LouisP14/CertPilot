@@ -31,6 +31,8 @@ export async function GET() {
       "Manager (matricule)",
       "Email manager",
       "Date visite médicale (JJ/MM/AAAA)",
+      "NIR (13 chiffres)",
+      "Nom de naissance",
     ];
     const employeesExample = [
       "MAT001",
@@ -44,6 +46,8 @@ export async function GET() {
       "MAT000",
       "chef@email.com",
       "15/03/2026",
+      "1850875123456",
+      "Dupont",
     ];
     const employeesSheet = workbook.addWorksheet("Employés");
     employeesSheet.columns = employeesHeader.map((h) => ({
@@ -59,12 +63,24 @@ export async function GET() {
       "Catégorie",
       "Service",
       "Validité (mois)",
+      "Passeport Prévention (oui/non)",
+      "Certifiante (oui/non)",
+      "Code certification (RS/RNCP)",
+      "Codes Formacode (séparés par /)",
+      "Codes NSF (séparés par /)",
+      "Codes ROME (séparés par /)",
     ];
     const formationsExample = [
       "Habilitation électrique B0-H0V",
       "Sécurité électrique",
       "Maintenance",
       "36",
+      "oui",
+      "non",
+      "",
+      "23671",
+      "227u",
+      "F1603",
     ];
     const formationsSheet = workbook.addWorksheet("Formations");
     formationsSheet.columns = formationsHeader.map((h) => ({
@@ -128,6 +144,24 @@ export async function GET() {
       ["  - Le Matricule employé doit correspondre à un employé existant ou présent dans l'onglet Employés."],
       ["  - Le Nom formation doit correspondre à une formation existante ou présente dans l'onglet Formations."],
       ["  - Date expiration : laissez vide si la formation n'expire pas."],
+      [""],
+      ["PASSEPORT DE PRÉVENTION (obligation employeur au 1er oct. 2026) :"],
+      ["  Ces colonnes sont optionnelles. Elles permettent d'alimenter l'export CSV"],
+      ["  officiel du Passeport de Prévention (décret n° 2025-748)."],
+      [""],
+      ["  Onglet Employés :"],
+      ["    - NIR : numéro de sécurité sociale du salarié (13 chiffres, sans espace)."],
+      ["    - Nom de naissance : uniquement si différent du nom d'usage."],
+      [""],
+      ["  Onglet Formations :"],
+      ["    - Passeport Prévention : 'oui' pour les formations santé-sécurité concernées"],
+      ["      (CACES, SST, habilitation électrique, amiante, ATEX, etc.)."],
+      ["    - Certifiante : 'oui' si RS/RNCP, 'non' sinon."],
+      ["    - Code certification : code RS (ex: RS6869 pour CACES R489 cat. 3)."],
+      ["      Seulement si Certifiante = oui. Liste : francecompetences.fr"],
+      ["    - Codes Formacode / NSF : séparés par / si plusieurs (ex: 42829/42817)."],
+      ["      Seulement si Certifiante = non."],
+      ["    - Codes ROME : compétences transférables, séparés par / (ex: K1705/H1302)."],
     ];
     for (const line of instructionLines) {
       instructionsSheet.addRow(line);

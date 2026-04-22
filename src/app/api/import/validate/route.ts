@@ -68,6 +68,8 @@ interface ParsedEmployee {
   managerMatricule?: string;
   managerEmail?: string;
   medicalCheckupDate?: Date;
+  nir?: string;
+  birthName?: string;
   _action: "CREATE" | "UPDATE";
 }
 
@@ -76,6 +78,12 @@ interface ParsedFormation {
   category?: string;
   service?: string;
   defaultValidityMonths?: number;
+  isConcernedPP?: boolean;
+  isCertifiante?: boolean | null;
+  certificationCode?: string;
+  formacodes?: string;
+  nsfCodes?: string;
+  romeCodes?: string;
   _action: "CREATE" | "UPDATE";
 }
 
@@ -298,6 +306,24 @@ function parseEmployeesSheet(
       });
     }
 
+    // NIR : 13 chiffres si renseigné
+    const nirRaw = strVal(row, "NIR (13 chiffres)", "NIR") || undefined;
+    let nirClean: string | undefined;
+    if (nirRaw) {
+      const nirDigits = nirRaw.replace(/\s+/g, "");
+      if (!/^\d{13}$/.test(nirDigits)) {
+        errors.push({
+          sheet: "Employés",
+          row: rowNum,
+          column: "NIR",
+          message: `Le NIR doit contenir exactement 13 chiffres (valeur : "${nirRaw}").`,
+        });
+      } else {
+        nirClean = nirDigits;
+      }
+    }
+    const birthNameVal = strVal(row, "Nom de naissance") || undefined;
+
     employees.push({
       matricule,
       lastName,
@@ -311,6 +337,8 @@ function parseEmployeesSheet(
         strVal(row, "Manager (matricule)", "Manager") || undefined,
       managerEmail: strVal(row, "Email manager") || undefined,
       medicalCheckupDate: medicalDate,
+      nir: nirClean,
+      birthName: birthNameVal,
       _action: existingMatricules.has(matricule) ? "UPDATE" : "CREATE",
     });
   }
@@ -370,6 +398,43 @@ function parseFormationsSheet(
       });
     }
 
+    // Champs Passeport de Prévention (optionnels)
+    const parseYesNo = (v: string): boolean | null => {
+      const s = v.toLowerCase().trim();
+      if (s === "oui" || s === "yes" || s === "true" || s === "1") return true;
+      if (s === "non" || s === "no" || s === "false" || s === "0") return false;
+      return null;
+    };
+    const isConcernedPPRaw = strVal(
+      row,
+      "Passeport Prévention (oui/non)",
+      "Passeport Prévention",
+      "Passeport Prevention",
+    );
+    const isConcernedPP = isConcernedPPRaw
+      ? parseYesNo(isConcernedPPRaw) ?? undefined
+      : undefined;
+
+    const isCertifianteRaw = strVal(
+      row,
+      "Certifiante (oui/non)",
+      "Certifiante",
+    );
+    const isCertifiante = isCertifianteRaw
+      ? parseYesNo(isCertifianteRaw)
+      : null;
+
+    const certificationCode =
+      strVal(row, "Code certification (RS/RNCP)", "Code certification") ||
+      undefined;
+    const formacodes =
+      strVal(row, "Codes Formacode (séparés par /)", "Codes Formacode") ||
+      undefined;
+    const nsfCodes =
+      strVal(row, "Codes NSF (séparés par /)", "Codes NSF") || undefined;
+    const romeCodes =
+      strVal(row, "Codes ROME (séparés par /)", "Codes ROME") || undefined;
+
     formations.push({
       name,
       category: strVal(row, "Catégorie", "Categorie") || undefined,
@@ -377,6 +442,12 @@ function parseFormationsSheet(
       defaultValidityMonths: parseInt_(
         cellValue(row, "Validité (mois)", "Validité"),
       ),
+      isConcernedPP,
+      isCertifiante,
+      certificationCode,
+      formacodes,
+      nsfCodes,
+      romeCodes,
       _action: existingNames.has(name.toLowerCase()) ? "UPDATE" : "CREATE",
     });
   }
@@ -806,6 +877,16 @@ export async function POST(request: NextRequest) {
 
       // 1. Upsert FormationTypes
       for (const ft of parsedFormations) {
+        // Construit les champs PP uniquement s'ils sont renseignés (évite d'écraser)
+        const ppData: Record<string, unknown> = {};
+        if (ft.isConcernedPP !== undefined) ppData.isConcernedPP = ft.isConcernedPP;
+        if (ft.isCertifiante !== null) ppData.isCertifiante = ft.isCertifiante;
+        if (ft.certificationCode !== undefined)
+          ppData.certificationCode = ft.certificationCode;
+        if (ft.formacodes !== undefined) ppData.formacodes = ft.formacodes;
+        if (ft.nsfCodes !== undefined) ppData.nsfCodes = ft.nsfCodes;
+        if (ft.romeCodes !== undefined) ppData.romeCodes = ft.romeCodes;
+
         const existingId = existingFormationNamesMap.get(ft.name.toLowerCase());
         if (existingId) {
           await tx.formationType.update({
@@ -815,6 +896,7 @@ export async function POST(request: NextRequest) {
               service: ft.service,
               defaultValidityMonths: ft.defaultValidityMonths,
               isActive: true,
+              ...ppData,
             },
           });
           stats.formationsUpdated++;
@@ -827,6 +909,7 @@ export async function POST(request: NextRequest) {
               defaultValidityMonths: ft.defaultValidityMonths,
               isActive: true,
               companyId,
+              ...ppData,
             },
           });
           existingFormationNamesMap.set(ft.name.toLowerCase(), created.id);
@@ -847,6 +930,9 @@ export async function POST(request: NextRequest) {
           managerEmail: emp.managerEmail,
           medicalCheckupDate: emp.medicalCheckupDate,
           isActive: true,
+          // Passeport Prévention : n'écrase que si renseigné dans l'import
+          ...(emp.nir !== undefined && { nir: emp.nir }),
+          ...(emp.birthName !== undefined && { birthName: emp.birthName }),
         };
 
         const existingId = existingMatriculesMap.get(emp.matricule);
