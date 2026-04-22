@@ -1,4 +1,4 @@
-import { ArrowRight, Heart, Shield, Zap } from "lucide-react";
+import { ArrowRight, BadgeCheck, Heart, Shield, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -7,15 +7,28 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title:
-    "Solutions par formation | CACES, SST, Habilitation électrique - CertPilot",
+    "Solutions par formation | Passeport Prévention, CACES, SST, Habilitation électrique - CertPilot",
   description:
-    "Découvrez comment CertPilot gère chaque type de formation : CACES, SST, habilitations électriques, ATEX, travail en hauteur. Logiciel adapté à chaque besoin métier.",
+    "Découvrez comment CertPilot gère chaque type de formation : Passeport Prévention (décret 2025-748), CACES, SST, habilitations électriques, ATEX, travail en hauteur. Logiciel adapté à chaque besoin métier.",
   alternates: {
     canonical: "/solutions",
   },
 };
 
 const SOLUTIONS = [
+  {
+    href: "/solutions/passeport-prevention",
+    icon: BadgeCheck,
+    title: "Passeport de Prévention",
+    subtitle: "Décret n° 2025-748 — Obligation en vigueur",
+    description:
+      "Déclarez vos formations santé-sécurité au Passeport de Prévention national. Export CSV conforme, alertes de relance, traçabilité complète.",
+    color: "emerald",
+    bgColor: "bg-emerald-100",
+    textColor: "text-emerald-600",
+    btnColor: "bg-emerald-600 hover:bg-emerald-700",
+    badge: "Nouveau",
+  },
   {
     href: "/solutions/caces",
     icon: Shield,

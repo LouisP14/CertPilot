@@ -275,12 +275,12 @@ export default function Home() {
             >
               Blog
             </Link>
-            <a
-              href="#contact"
+            <Link
+              href="/contact"
               className="text-sm font-medium text-slate-600 transition-colors hover:text-[#173B56]"
             >
               Contact
-            </a>
+            </Link>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -313,7 +313,10 @@ export default function Home() {
 
           <div className="relative mx-auto max-w-7xl px-6 py-20 lg:py-28">
             {/* FeatureHub ghost background — desktop only */}
-            <div className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 opacity-70 lg:block" style={{ width: 560, height: 560 }}>
+            <div
+              className="pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 opacity-70 lg:block"
+              style={{ width: 560, height: 560 }}
+            >
               <FeatureHub ghost />
             </div>
 
@@ -327,7 +330,8 @@ export default function Home() {
               </div>
 
               <h1 className="text-5xl font-black leading-[1.06] tracking-tight text-white lg:text-6xl">
-                Zéro habilitation<br />
+                Zéro habilitation
+                <br />
                 <span className="text-emerald-400">expirée.</span>
                 <span className="mt-1 block text-4xl font-bold text-white/50 lg:text-5xl">
                   Zéro surprise en audit.
@@ -336,8 +340,11 @@ export default function Home() {
 
               <p className="mt-6 max-w-md text-base leading-relaxed text-white/55">
                 Arrêtez de courir après les échéances.{" "}
-                <strong className="font-semibold text-white/80">CACES, SST, habilitations électriques</strong>{" "}
-                — chaque alerte au bon moment, chaque audit préparé automatiquement.
+                <strong className="font-semibold text-white/80">
+                  CACES, SST, habilitations électriques
+                </strong>{" "}
+                — chaque alerte au bon moment, chaque audit préparé
+                automatiquement.
               </p>
 
               <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -360,15 +367,23 @@ export default function Home() {
               <div className="mt-12 flex items-center gap-0 border-t border-white/10 pt-8">
                 <div className="pr-8 mr-8 border-r border-white/10">
                   <p className="text-xl font-black text-white">0 retard</p>
-                  <p className="text-xs text-white/40">grâce aux alertes automatiques</p>
+                  <p className="text-xs text-white/40">
+                    grâce aux alertes automatiques
+                  </p>
                 </div>
                 <div className="pr-8 mr-8 border-r border-white/10">
-                  <p className="text-xl font-black text-white">Fin des <span className="text-emerald-400">Excel</span></p>
-                  <p className="text-xs text-white/40">import en 1 clic, passeport QR code</p>
+                  <p className="text-xl font-black text-white">
+                    Fin des <span className="text-emerald-400">Excel</span>
+                  </p>
+                  <p className="text-xs text-white/40">
+                    import en 1 clic, passeport QR code
+                  </p>
                 </div>
                 <div>
                   <p className="text-xl font-black text-white">&lt; 24h</p>
-                  <p className="text-xs text-white/40">pour être opérationnel</p>
+                  <p className="text-xs text-white/40">
+                    pour être opérationnel
+                  </p>
                 </div>
               </div>
             </div>
@@ -405,7 +420,10 @@ export default function Home() {
               "Convocations en 1 clic",
               "Sans engagement · Résiliation libre",
             ].map((item, i) => (
-              <span key={i} className="flex shrink-0 items-center gap-2 border-r border-white/15 px-10 text-sm font-semibold whitespace-nowrap text-white">
+              <span
+                key={i}
+                className="flex shrink-0 items-center gap-2 border-r border-white/15 px-10 text-sm font-semibold whitespace-nowrap text-white"
+              >
                 <span className="text-emerald-400">✓</span> {item}
               </span>
             ))}
@@ -423,7 +441,8 @@ export default function Home() {
                 La plateforme
               </p>
               <h2 className="mt-3 text-3xl font-black text-[#173B56] sm:text-4xl">
-                La conformité habilitations<br />
+                La conformité habilitations
+                <br />
                 qui s&apos;occupe{" "}
                 <span className="text-emerald-500">d&apos;elle-même.</span>
               </h2>
@@ -468,18 +487,44 @@ export default function Home() {
         <section className="border-t border-slate-200 bg-slate-50 py-20 lg:py-28">
           <div className="mx-auto max-w-7xl px-6">
             <div className="text-center">
-              <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">Ils nous font confiance</p>
-              <h2 className="mt-3 text-3xl font-black text-[#173B56] sm:text-4xl">Ce que nos clients en disent</h2>
+              <p className="text-sm font-bold uppercase tracking-widest text-emerald-600">
+                Ils nous font confiance
+              </p>
+              <h2 className="mt-3 text-3xl font-black text-[#173B56] sm:text-4xl">
+                Ce que nos clients en disent
+              </h2>
             </div>
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[
-                { quote: "Avant CertPilot, on gérait 200 habilitations sur Excel. On a découvert 12 CACES expirés dès le premier import. Aujourd'hui, plus aucun oubli.", name: "Responsable Maintenance", company: "Industrie agroalimentaire · 180 employés" },
-                { quote: "Lors du dernier audit DREAL, j'ai sorti tous les justificatifs en 5 minutes. L'inspecteur n'en revenait pas. Avant, ça me prenait une demi-journée.", name: "Responsable QHSE", company: "BTP · 95 employés" },
-                { quote: "Les alertes automatiques nous ont évité 3 arrêts de chantier cette année. Le ROI est immédiat. Je le recommande à tous les responsables sécurité.", name: "Directeur des opérations", company: "Logistique & transport · 320 employés" },
+                {
+                  quote:
+                    "Avant CertPilot, on gérait 200 habilitations sur Excel. On a découvert 12 CACES expirés dès le premier import. Aujourd'hui, plus aucun oubli.",
+                  name: "Responsable Maintenance",
+                  company: "Industrie agroalimentaire · 180 employés",
+                },
+                {
+                  quote:
+                    "Lors du dernier audit DREAL, j'ai sorti tous les justificatifs en 5 minutes. L'inspecteur n'en revenait pas. Avant, ça me prenait une demi-journée.",
+                  name: "Responsable QHSE",
+                  company: "BTP · 95 employés",
+                },
+                {
+                  quote:
+                    "Les alertes automatiques nous ont évité 3 arrêts de chantier cette année. Le ROI est immédiat. Je le recommande à tous les responsables sécurité.",
+                  name: "Directeur des opérations",
+                  company: "Logistique & transport · 320 employés",
+                },
               ].map((t, i) => (
-                <div key={i} className="flex flex-col rounded-2xl border border-slate-200 bg-white p-7">
-                  <div className="font-serif text-5xl leading-none text-emerald-500 opacity-40">&ldquo;</div>
-                  <p className="mt-1 flex-1 text-sm italic leading-relaxed text-slate-600">{t.quote}</p>
+                <div
+                  key={i}
+                  className="flex flex-col rounded-2xl border border-slate-200 bg-white p-7"
+                >
+                  <div className="font-serif text-5xl leading-none text-emerald-500 opacity-40">
+                    &ldquo;
+                  </div>
+                  <p className="mt-1 flex-1 text-sm italic leading-relaxed text-slate-600">
+                    {t.quote}
+                  </p>
                   <div className="mt-5 border-t border-slate-100 pt-4">
                     <p className="text-sm font-bold text-[#173B56]">{t.name}</p>
                     <p className="text-xs text-slate-400">{t.company}</p>
@@ -501,7 +546,8 @@ export default function Home() {
                 Démo en vidéo
               </p>
               <h2 className="mt-2 text-3xl font-black text-[#173B56] sm:text-4xl">
-                Découvrez CertPilot<br />
+                Découvrez CertPilot
+                <br />
                 <span className="text-emerald-500">en 2 minutes</span>
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-slate-600">
@@ -755,7 +801,11 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 hover:text-[#173B56]"
                 >
-                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                  <svg
+                    className="h-4 w-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                   </svg>
                   LinkedIn
@@ -798,14 +848,7 @@ function FeatureCard({
   );
 }
 
-
-function FaqItem({
-  question,
-  answer,
-}: {
-  question: string;
-  answer: string;
-}) {
+function FaqItem({ question, answer }: { question: string; answer: string }) {
   return (
     <details className="group rounded-2xl border border-slate-200 bg-white transition-all hover:border-emerald-200 [[open]]:border-emerald-200 [[open]]:shadow-sm">
       <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-left text-sm font-semibold text-[#173B56] [&::-webkit-details-marker]:hidden">
@@ -817,7 +860,11 @@ function FaqItem({
           stroke="currentColor"
           strokeWidth={2}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </summary>
       <div className="px-6 pb-5 text-sm leading-relaxed text-slate-600">
@@ -826,7 +873,6 @@ function FaqItem({
     </details>
   );
 }
-
 
 function PlayIcon() {
   return (
@@ -839,14 +885,62 @@ function PlayIcon() {
 // ============ FEATURE HUB ============
 
 const HUB_NODES = [
-  { label: "Alertes\nautomatiques", angle: 270, color: "#dc2626", bg: "#fef2f2", icon: "M16 3C9.4 3 4 8.4 4 15c0 9.5-3 12-3 12h30s-3-2.5-3-12c0-6.6-5.4-12-12-12z|M12.5 27a3.5 3.5 0 0 0 7 0" },
-  { label: "Convocations\nautomatiques", angle: 315, color: "#2563eb", bg: "#eff6ff", icon: "M3 8l13 8 13-8|M3 8v16h26V8" },
-  { label: "Signature\nélectronique", angle: 0, color: "#16a34a", bg: "#f0fdf4", icon: "M4 26c0 0 3-3 7-3s6 4 10 4 6-3 6-3|M20 6l4 4L12 22H8v-4L20 6z" },
-  { label: "Passeport\nformation", angle: 45, color: "#7c3aed", bg: "#f5f3ff", icon: "M5 3h22v26H5z|M10 11h12|M10 15h12|M10 19h8" },
-  { label: "Audit\nTrail", angle: 90, color: "#0ea5e9", bg: "#f0f9ff", icon: "M3 16l5 0 3-7 5 14 5-11 4 4 4 0" },
-  { label: "Suivi\nbudget", angle: 135, color: "#10b981", bg: "#ecfdf5", icon: "M3 4h26v24H3z|M3 11h26|M16 4v24" },
-  { label: "Planning\n& Sessions", angle: 180, color: "#d97706", bg: "#fffbeb", icon: "M3 5h26v24H3z|M3 13h26|M10 3v5|M22 3v5" },
-  { label: "Détection\ndes besoins", angle: 225, color: "#a21caf", bg: "#fdf4ff", icon: "M13 5a8 8 0 1 0 0 16 8 8 0 0 0 0-16z|M19 19l8 8" },
+  {
+    label: "Alertes\nautomatiques",
+    angle: 270,
+    color: "#dc2626",
+    bg: "#fef2f2",
+    icon: "M16 3C9.4 3 4 8.4 4 15c0 9.5-3 12-3 12h30s-3-2.5-3-12c0-6.6-5.4-12-12-12z|M12.5 27a3.5 3.5 0 0 0 7 0",
+  },
+  {
+    label: "Convocations\nautomatiques",
+    angle: 315,
+    color: "#2563eb",
+    bg: "#eff6ff",
+    icon: "M3 8l13 8 13-8|M3 8v16h26V8",
+  },
+  {
+    label: "Signature\nélectronique",
+    angle: 0,
+    color: "#16a34a",
+    bg: "#f0fdf4",
+    icon: "M4 26c0 0 3-3 7-3s6 4 10 4 6-3 6-3|M20 6l4 4L12 22H8v-4L20 6z",
+  },
+  {
+    label: "Passeport\nformation",
+    angle: 45,
+    color: "#7c3aed",
+    bg: "#f5f3ff",
+    icon: "M5 3h22v26H5z|M10 11h12|M10 15h12|M10 19h8",
+  },
+  {
+    label: "Audit\nTrail",
+    angle: 90,
+    color: "#0ea5e9",
+    bg: "#f0f9ff",
+    icon: "M3 16l5 0 3-7 5 14 5-11 4 4 4 0",
+  },
+  {
+    label: "Suivi\nbudget",
+    angle: 135,
+    color: "#10b981",
+    bg: "#ecfdf5",
+    icon: "M3 4h26v24H3z|M3 11h26|M16 4v24",
+  },
+  {
+    label: "Planning\n& Sessions",
+    angle: 180,
+    color: "#d97706",
+    bg: "#fffbeb",
+    icon: "M3 5h26v24H3z|M3 13h26|M10 3v5|M22 3v5",
+  },
+  {
+    label: "Détection\ndes besoins",
+    angle: 225,
+    color: "#a21caf",
+    bg: "#fdf4ff",
+    icon: "M13 5a8 8 0 1 0 0 16 8 8 0 0 0 0-16z|M19 19l8 8",
+  },
 ];
 
 function FeatureHub({ ghost }: { ghost?: boolean }) {
@@ -858,22 +952,39 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
   return (
     <div className="relative mx-auto" style={{ width: 500, height: 500 }}>
       {/* SVG rings + connectors */}
-      <svg
-        className="absolute inset-0"
-        viewBox="0 0 500 500"
-        fill="none"
-      >
+      <svg className="absolute inset-0" viewBox="0 0 500 500" fill="none">
         {/* Dot grid */}
         <defs>
-          <pattern id="dots" x="0" y="0" width="25" height="25" patternUnits="userSpaceOnUse">
+          <pattern
+            id="dots"
+            x="0"
+            y="0"
+            width="25"
+            height="25"
+            patternUnits="userSpaceOnUse"
+          >
             <circle cx="12.5" cy="12.5" r="0.8" fill="rgba(16,185,129,0.15)" />
           </pattern>
         </defs>
         <circle cx={cx} cy={cy} r="245" fill="url(#dots)" />
 
         {/* Orbital rings */}
-        <circle cx={cx} cy={cy} r={r} stroke="rgba(16,185,129,0.35)" strokeWidth="1.5" strokeDasharray="6 8" />
-        <circle cx={cx} cy={cy} r={r * 0.55} stroke="rgba(16,185,129,0.20)" strokeWidth="1" strokeDasharray="4 10" />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          stroke="rgba(16,185,129,0.35)"
+          strokeWidth="1.5"
+          strokeDasharray="6 8"
+        />
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r * 0.55}
+          stroke="rgba(16,185,129,0.20)"
+          strokeWidth="1"
+          strokeDasharray="4 10"
+        />
 
         {/* Connector lines + traveling dots */}
         {HUB_NODES.map((node, i) => {
@@ -885,8 +996,13 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
           return (
             <g key={i}>
               <line
-                x1={sx} y1={sy} x2={nx} y2={ny}
-                stroke="rgba(16,185,129,0.45)" strokeWidth="1.2" strokeDasharray="4 6"
+                x1={sx}
+                y1={sy}
+                x2={nx}
+                y2={ny}
+                stroke="rgba(16,185,129,0.45)"
+                strokeWidth="1.2"
+                strokeDasharray="4 6"
               />
               <circle r="3" fill="#16a34a" opacity="0.6">
                 <animateMotion
@@ -905,15 +1021,30 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
       <div
         className="absolute flex flex-col items-center justify-center gap-2 rounded-3xl border border-emerald-200/50 bg-white shadow-xl"
         style={{
-          width: 110, height: 110,
-          left: cx - 55, top: cy - 55,
-          boxShadow: "0 0 0 8px rgba(16,185,129,0.06), 0 0 0 20px rgba(16,185,129,0.03), 0 20px 60px rgba(15,23,42,0.12)",
+          width: 110,
+          height: 110,
+          left: cx - 55,
+          top: cy - 55,
+          boxShadow:
+            "0 0 0 8px rgba(16,185,129,0.06), 0 0 0 20px rgba(16,185,129,0.03), 0 20px 60px rgba(15,23,42,0.12)",
           zIndex: 10,
         }}
       >
         <svg width="40" height="40" viewBox="0 0 52 52" fill="none">
-          <path d="M26 4L8 11v14c0 11.5 8.3 22.3 18 24.8C35.7 47.3 44 36.5 44 25V11L26 4z" fill="rgba(16,185,129,0.12)" stroke="#16a34a" strokeWidth="2" />
-          <polyline points="17,26 23,32 35,20" stroke="#16a34a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          <path
+            d="M26 4L8 11v14c0 11.5 8.3 22.3 18 24.8C35.7 47.3 44 36.5 44 25V11L26 4z"
+            fill="rgba(16,185,129,0.12)"
+            stroke="#16a34a"
+            strokeWidth="2"
+          />
+          <polyline
+            points="17,26 23,32 35,20"
+            stroke="#16a34a"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
         </svg>
         <span className="text-xs font-extrabold tracking-tight text-[#173B56]">
           Cert<span className="text-emerald-600">Pilot</span>
@@ -932,7 +1063,8 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
             key={i}
             className="absolute flex flex-col items-center gap-1.5"
             style={{
-              left: nx, top: ny,
+              left: nx,
+              top: ny,
               transform: "translate(-50%, -50%)",
               zIndex: 10,
               animation: `hubFloat${i % 4} ${4.5 + i * 0.3}s ease-in-out infinite`,
@@ -976,4 +1108,3 @@ function FeatureHub({ ghost }: { ghost?: boolean }) {
     </div>
   );
 }
-

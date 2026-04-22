@@ -30,6 +30,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
+      url: `${siteUrl}/solutions/passeport-prevention`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
+    {
       url: `${siteUrl}/solutions/caces`,
       lastModified: now,
       changeFrequency: "monthly",
