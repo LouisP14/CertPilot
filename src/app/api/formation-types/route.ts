@@ -89,12 +89,23 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Audit Trail
+    // Audit Trail — inclut les champs Passeport Prévention
     await auditCreate(
       "FORMATION_TYPE",
       formationType.id,
       formationType.name,
-      { name, category, service, defaultValidityMonths },
+      {
+        name,
+        category,
+        service,
+        defaultValidityMonths,
+        isConcernedPP: formationType.isConcernedPP,
+        isCertifiante: formationType.isCertifiante,
+        certificationCode: formationType.certificationCode,
+        formacodes: formationType.formacodes,
+        nsfCodes: formationType.nsfCodes,
+        romeCodes: formationType.romeCodes,
+      },
       session.user
         ? {
             id: session.user.id,

@@ -151,7 +151,7 @@ export async function PUT(
       },
     });
 
-    // Audit Trail
+    // Audit Trail — inclut les champs Passeport Prévention (NIR, nom de naissance)
     await auditUpdate(
       "EMPLOYEE",
       employee.id,
@@ -162,8 +162,28 @@ export async function PUT(
         email: currentEmployee.email,
         position: currentEmployee.position,
         department: currentEmployee.department,
+        site: currentEmployee.site,
+        team: currentEmployee.team,
+        managerId: currentEmployee.managerId,
+        managerEmail: currentEmployee.managerEmail,
+        medicalCheckupDate: currentEmployee.medicalCheckupDate,
+        nir: currentEmployee.nir,
+        birthName: currentEmployee.birthName,
       },
-      { firstName, lastName, email, position, department },
+      {
+        firstName,
+        lastName,
+        email,
+        position,
+        department,
+        site,
+        team,
+        managerId,
+        managerEmail,
+        medicalCheckupDate,
+        nir: nir || null,
+        birthName: birthName || null,
+      },
       session.user
         ? {
             id: session.user.id,

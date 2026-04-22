@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Audit Trail
+    // Audit Trail — inclut les champs Passeport Prévention
     await auditCreate(
       "EMPLOYEE",
       employee.id,
@@ -160,6 +160,8 @@ export async function POST(request: NextRequest) {
         department,
         site,
         team,
+        nir: nir || null,
+        birthName: birthName || null,
       },
       session.user
         ? {

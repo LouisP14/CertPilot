@@ -73,8 +73,14 @@ export async function PUT(
       },
     });
 
-    // Audit Trail
+    // Audit Trail — inclut les champs Passeport Prévention
     if (oldFormation) {
+      const newIsCertifiante =
+        isCertifiante === "OUI"
+          ? true
+          : isCertifiante === "NON"
+            ? false
+            : null;
       await auditUpdate(
         "FORMATION_TYPE",
         formationType.id,
@@ -83,8 +89,26 @@ export async function PUT(
           name: oldFormation.name,
           category: oldFormation.category,
           service: oldFormation.service,
+          defaultValidityMonths: oldFormation.defaultValidityMonths,
+          isConcernedPP: oldFormation.isConcernedPP,
+          isCertifiante: oldFormation.isCertifiante,
+          certificationCode: oldFormation.certificationCode,
+          formacodes: oldFormation.formacodes,
+          nsfCodes: oldFormation.nsfCodes,
+          romeCodes: oldFormation.romeCodes,
         },
-        { name, category, service },
+        {
+          name,
+          category,
+          service,
+          defaultValidityMonths,
+          isConcernedPP: isConcernedPP ?? oldFormation.isConcernedPP,
+          isCertifiante: newIsCertifiante,
+          certificationCode: certificationCode || null,
+          formacodes: formacodes || null,
+          nsfCodes: nsfCodes || null,
+          romeCodes: romeCodes || null,
+        },
         session.user
           ? {
               id: session.user.id,

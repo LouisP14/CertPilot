@@ -66,6 +66,10 @@ export const createCertificateSchema = z.object({
   expiryDate: z.string().optional(),
   organism: z.string().optional(),
   details: z.string().optional(),
+  // Passeport Prévention (optionnels, spécifiques à la session)
+  trainingStartDate: z.string().optional(),
+  trainingMode: z.enum(["PRESENTIEL", "A_DISTANCE", "MIXTE"]).optional().or(z.literal("")),
+  trainerQualification: z.string().optional(),
 });
 
 export const updateCertificateSchema = z.object({
@@ -74,6 +78,10 @@ export const updateCertificateSchema = z.object({
   expiryDate: z.string().optional(),
   organism: z.string().optional(),
   details: z.string().optional(),
+  // Passeport Prévention (optionnels)
+  trainingStartDate: z.string().optional(),
+  trainingMode: z.enum(["PRESENTIEL", "A_DISTANCE", "MIXTE"]).optional().or(z.literal("")),
+  trainerQualification: z.string().optional(),
 });
 
 // ============================================

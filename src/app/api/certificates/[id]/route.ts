@@ -27,8 +27,16 @@ export async function PUT(
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { formationTypeId, obtainedDate, expiryDate, organism, details } =
-      parsed.data;
+    const {
+      formationTypeId,
+      obtainedDate,
+      expiryDate,
+      organism,
+      details,
+      trainingStartDate,
+      trainingMode,
+      trainerQualification,
+    } = parsed.data;
 
     // Récupérer le certificat actuel + vérification appartenance entreprise
     const currentCertificate = await prisma.certificate.findFirst({
@@ -50,6 +58,11 @@ export async function PUT(
         expiryDate: expiryDate ? new Date(expiryDate) : null,
         organism: organism || null,
         details: details || null,
+        trainingStartDate: trainingStartDate
+          ? new Date(trainingStartDate)
+          : null,
+        trainingMode: trainingMode || null,
+        trainerQualification: trainerQualification || null,
       },
       include: {
         formationType: true,
@@ -60,18 +73,33 @@ export async function PUT(
     // Invalider la signature si elle existe (modification du contenu du passeport)
     await invalidateSignatureIfExists(certificate.employeeId);
 
-    // Audit Trail
+    // Audit Trail — inclut les champs Passeport Prévention
     if (currentCertificate) {
       await auditUpdate(
         "CERTIFICATE",
         certificate.id,
         `${certificate.formationType.name} - ${certificate.employee.firstName} ${certificate.employee.lastName}`,
         {
+          formationTypeId: currentCertificate.formationTypeId,
           obtainedDate: currentCertificate.obtainedDate?.toISOString(),
           expiryDate: currentCertificate.expiryDate?.toISOString(),
           organism: currentCertificate.organism,
+          details: currentCertificate.details,
+          trainingStartDate:
+            currentCertificate.trainingStartDate?.toISOString() || null,
+          trainingMode: currentCertificate.trainingMode,
+          trainerQualification: currentCertificate.trainerQualification,
         },
-        { obtainedDate, expiryDate, organism },
+        {
+          formationTypeId,
+          obtainedDate,
+          expiryDate,
+          organism,
+          details,
+          trainingStartDate: trainingStartDate || null,
+          trainingMode: trainingMode || null,
+          trainerQualification: trainerQualification || null,
+        },
         session.user
           ? {
               id: session.user.id,

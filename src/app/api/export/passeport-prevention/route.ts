@@ -1,4 +1,4 @@
-import { auditExportPdf } from "@/lib/audit";
+import { createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -53,7 +53,6 @@ function mapTrainingMode(mode: string | null | undefined): string {
 
 function sanitizeCsvField(value: string | null | undefined): string {
   if (value === null || value === undefined) return "";
-  // Remplacer tous les séparateurs `|` par `-` pour éviter de casser le format
   return String(value).replace(/\|/g, "-").trim();
 }
 
@@ -68,6 +67,37 @@ function buildDeclarationId(params: {
     .substring(0, 40);
   const shortId = params.certificateId.substring(0, 8);
   return `${slug}_${dateStr}_${shortId}`.substring(0, 255);
+}
+
+function newDeclarationRef(): string {
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").substring(0, 19);
+  const rand = Math.random().toString(36).substring(2, 8);
+  return `exp_${ts}_${rand}`;
+}
+
+function parseDateFilter(
+  year: string | null,
+  trimestre: string | null,
+): { gte?: Date; lte?: Date } | undefined {
+  if (!year) return undefined;
+  const y = parseInt(year);
+  if (trimestre) {
+    const trimMap: Record<string, [number, number]> = {
+      Q1: [0, 2],
+      Q2: [3, 5],
+      Q3: [6, 8],
+      Q4: [9, 11],
+    };
+    const [startMonth, endMonth] = trimMap[trimestre] || [0, 11];
+    return {
+      gte: new Date(y, startMonth, 1),
+      lte: new Date(y, endMonth + 1, 0, 23, 59, 59),
+    };
+  }
+  return {
+    gte: new Date(y, 0, 1),
+    lte: new Date(y, 11, 31, 23, 59, 59),
+  };
 }
 
 export async function GET(request: NextRequest) {
@@ -86,87 +116,74 @@ export async function GET(request: NextRequest) {
     const companyId = session.user.companyId;
     const { searchParams } = new URL(request.url);
     const statsOnly = searchParams.get("stats") === "1";
+    const includeDeclared = searchParams.get("includeDeclared") === "1";
 
-    // Période : year + trimestre (optionnels)
     const year = searchParams.get("year");
-    const trimestre = searchParams.get("trimestre"); // Q1 | Q2 | Q3 | Q4
+    const trimestre = searchParams.get("trimestre");
+    const dateFilter = parseDateFilter(year, trimestre);
 
-    let dateFilter: { gte?: Date; lte?: Date } | undefined;
-    if (year) {
-      const y = parseInt(year);
-      if (trimestre) {
-        const trimMap: Record<string, [number, number]> = {
-          Q1: [0, 2],
-          Q2: [3, 5],
-          Q3: [6, 8],
-          Q4: [9, 11],
-        };
-        const [startMonth, endMonth] = trimMap[trimestre] || [0, 11];
-        dateFilter = {
-          gte: new Date(y, startMonth, 1),
-          lte: new Date(y, endMonth + 1, 0, 23, 59, 59),
-        };
-      } else {
-        dateFilter = {
-          gte: new Date(y, 0, 1),
-          lte: new Date(y, 11, 31, 23, 59, 59),
-        };
-      }
-    }
-
-    // Si mode stats uniquement, retourner un JSON avec les compteurs (pour l'UI)
+    // Mode stats : JSON avec les compteurs pour l'UI
     if (statsOnly) {
-      const [total, exportableCount, employeesWithoutNir] = await Promise.all([
-        prisma.certificate.count({
-          where: {
-            isArchived: false,
-            employee: { companyId, isActive: true },
-            formationType: { isConcernedPP: true },
-            ...(dateFilter && { obtainedDate: dateFilter }),
-          },
-        }),
-        prisma.certificate.count({
-          where: {
-            isArchived: false,
-            employee: {
+      const baseWhere = {
+        isArchived: false,
+        employee: { companyId, isActive: true },
+        formationType: { isConcernedPP: true },
+        ...(dateFilter && { obtainedDate: dateFilter }),
+      };
+
+      const [total, alreadyDeclared, exportableReady, employeesWithoutNir] =
+        await Promise.all([
+          // Total concernées sur la période
+          prisma.certificate.count({ where: baseWhere }),
+          // Déjà déclarées (ppDeclaredAt renseigné)
+          prisma.certificate.count({
+            where: { ...baseWhere, ppDeclaredAt: { not: null } },
+          }),
+          // Prêtes à déclarer : non encore déclarées + NIR ok
+          prisma.certificate.count({
+            where: {
+              ...baseWhere,
+              ppDeclaredAt: null,
+              employee: { companyId, isActive: true, nir: { not: null } },
+            },
+          }),
+          // Employés sans NIR qui ont des formations concernées non déclarées
+          prisma.employee.count({
+            where: {
               companyId,
               isActive: true,
-              nir: { not: null },
-            },
-            formationType: { isConcernedPP: true },
-            ...(dateFilter && { obtainedDate: dateFilter }),
-          },
-        }),
-        prisma.employee.count({
-          where: {
-            companyId,
-            isActive: true,
-            nir: null,
-            certificates: {
-              some: {
-                isArchived: false,
-                formationType: { isConcernedPP: true },
-                ...(dateFilter && { obtainedDate: dateFilter }),
+              nir: null,
+              certificates: {
+                some: {
+                  isArchived: false,
+                  ppDeclaredAt: null,
+                  formationType: { isConcernedPP: true },
+                  ...(dateFilter && { obtainedDate: dateFilter }),
+                },
               },
             },
-          },
-        }),
-      ]);
+          }),
+        ]);
+
+      const notDeclared = total - alreadyDeclared;
+      const skipped = notDeclared - exportableReady;
 
       return NextResponse.json({
         totalConcerned: total,
-        exportable: exportableCount,
-        skipped: total - exportableCount,
+        exportable: exportableReady,
+        skipped,
+        alreadyDeclared,
         employeesWithoutNir,
       });
     }
 
-    // Récupérer les certificats concernés par le Passeport Prévention
+    // Mode génération CSV : ne prend par défaut que les non-déclarés
     const certificates = await prisma.certificate.findMany({
       where: {
         isArchived: false,
         employee: { companyId, isActive: true },
         formationType: { isConcernedPP: true },
+        ...(!includeDeclared && { ppDeclaredAt: null }),
         ...(dateFilter && { obtainedDate: dateFilter }),
       },
       include: {
@@ -195,10 +212,13 @@ export async function GET(request: NextRequest) {
       orderBy: [{ obtainedDate: "asc" }, { id: "asc" }],
     });
 
-    // Filtrer : on ne peut déclarer que les certificats avec NIR + nom de naissance
+    // Filtrer : on ne peut déclarer que les certificats avec NIR + nom
     const exportable = certificates.filter(
       (c) => c.employee.nir && (c.employee.birthName || c.employee.lastName),
     );
+
+    // Identifiant unique pour ce batch (permet de confirmer/annuler plus tard)
+    const declarationRef = newDeclarationRef();
 
     // Construire le CSV
     const lines: string[] = [CSV_HEADERS.join("|")];
@@ -219,34 +239,32 @@ export async function GET(request: NextRequest) {
         isCert === true ? "OUI" : isCert === false ? "NON" : "";
 
       const row = [
-        declId, // ID_DECLARATION
-        `REF_${cert.id.substring(0, 20)}`, // REFERENCE_DECLARATION
-        `${cert.employee.id.substring(0, 12)}_${cert.id.substring(0, 12)}`, // ID_UNIQUE_PARTENAIRE
-        sanitizeCsvField(cert.formationType.name), // NOM_FORMATION
-        formatDateFr(startDate), // DATE_DEBUT_FORMATION
-        formatDateFr(endDate), // DATE_FIN_FORMATION
-        mapTrainingMode(
-          cert.trainingMode || cert.formationType.trainingMode,
-        ), // MODALITE_DISPENSE
-        sanitizeCsvField(cert.formationType.romeCodes), // COMPETENCE_TRANSFERABLE
-        sanitizeCsvField(cert.trainerQualification), // QUALIFICATION_FORMATEUR
-        formationCertifiante, // FORMATION_CERTIFIANTE
+        declId,
+        `REF_${cert.id.substring(0, 20)}`,
+        `${cert.employee.id.substring(0, 12)}_${cert.id.substring(0, 12)}`,
+        sanitizeCsvField(cert.formationType.name),
+        formatDateFr(startDate),
+        formatDateFr(endDate),
+        mapTrainingMode(cert.trainingMode || cert.formationType.trainingMode),
+        sanitizeCsvField(cert.formationType.romeCodes),
+        sanitizeCsvField(cert.trainerQualification),
+        formationCertifiante,
         isCert === true
           ? sanitizeCsvField(cert.formationType.certificationCode)
-          : "", // CERTIFICATION_VISEE
+          : "",
         isCert === false
           ? sanitizeCsvField(cert.formationType.formacodes)
-          : "", // DOMAINE_FORMATION
+          : "",
         isCert === false
           ? sanitizeCsvField(cert.formationType.nsfCodes)
-          : "", // SPECIALITE_FORMATION
-        sanitizeCsvField(cert.employee.nir), // NIR
-        sanitizeCsvField(nomTitulaire), // NOM_TITULAIRE
-        "", // PRESENCE_EMPLOYEUR (vide pour employeur)
-        "", // SIRET_EMPLOYEUR (vide pour employeur)
-        sanitizeCsvField(cert.ppDeclarationRef), // REFERENCE_EMPLOYEUR
-        formatDateFr(endDate), // DATE_DEBUT_VALIDITE
-        formatDateFr(cert.expiryDate), // DATE_FIN_VALIDITE
+          : "",
+        sanitizeCsvField(cert.employee.nir),
+        sanitizeCsvField(nomTitulaire),
+        "",
+        "",
+        declarationRef,
+        formatDateFr(endDate),
+        formatDateFr(cert.expiryDate),
       ];
 
       lines.push(row.join("|"));
@@ -254,32 +272,34 @@ export async function GET(request: NextRequest) {
 
     const csvContent = lines.join("\n");
 
-    // Audit
-    await auditExportPdf(
-      "CERTIFICATE",
+    // Audit : génération du CSV (pas encore confirmé comme déposé)
+    await createAuditLog({
+      userId: session.user.id,
+      userName: session.user.name || undefined,
+      userEmail: session.user.email || undefined,
       companyId,
-      `Export CSV Passeport Prévention - ${exportable.length} déclaration(s) sur ${certificates.length} concernée(s)`,
-      session.user
-        ? {
-            id: session.user.id,
-            name: session.user.name || undefined,
-            email: session.user.email || undefined,
-            companyId,
-          }
-        : null,
-    );
+      action: "EXPORT",
+      entityType: "CERTIFICATE",
+      description: `Génération CSV Passeport Prévention - ${exportable.length} déclaration(s) sur ${certificates.length} concernée(s)`,
+      metadata: {
+        declarationRef,
+        exportableCount: exportable.length,
+        totalConcerned: certificates.length,
+        period: { year, trimestre },
+      },
+    });
 
     const now = new Date();
     const dateStr = now.toISOString().split("T")[0];
     const periodPart = year ? `_${year}${trimestre ? `_${trimestre}` : ""}` : "";
     const filename = `passeport-prevention-adf${periodPart}_${dateStr}.csv`;
 
-    // Le CSV doit être UTF-8 (sans BOM, car la spec ne le mentionne pas)
     return new NextResponse(csvContent, {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": `attachment; filename="${filename}"`,
+        "X-PP-Declaration-Ref": declarationRef,
         "X-PP-Total-Concerned": String(certificates.length),
         "X-PP-Exportable": String(exportable.length),
         "X-PP-Skipped": String(certificates.length - exportable.length),
