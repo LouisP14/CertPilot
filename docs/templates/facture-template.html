@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Facture CertPilot</title>
+  <style>
+    /* ============================================================
+       Modèle de facture CertPilot
+       Usage : ouvrir dans un éditeur, remplacer les [CROCHETS],
+               ouvrir dans un navigateur, Ctrl+P → "Enregistrer au format PDF"
+
+       ATTENTION (obligation légale) :
+       - Le numéro de facture doit être SÉQUENTIEL et UNIQUE
+         (ex : 2026-001, 2026-002, 2026-003 ...)
+       - Aucune rupture, aucune réutilisation, même en cas d'erreur
+         (faire un avoir pour annuler)
+       - Tenir un registre des factures émises
+       ============================================================ */
+
+    @page {
+      size: A4;
+      margin: 15mm 15mm 20mm 15mm;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Helvetica, Arial, sans-serif;
+      color: #0f172a;
+      font-size: 11pt;
+      line-height: 1.5;
+      margin: 0;
+      background: #fff;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .wrapper {
+      max-width: 190mm;
+      margin: 0 auto;
+      padding: 10mm 0;
+    }
+
+    /* ============ HEADER ============ */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 3px solid #173B56;
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      color: #173B56;
+      font-weight: 800;
+      font-size: 22pt;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-accent { color: #10B981; }
+
+    .doc-title {
+      text-align: right;
+    }
+
+    .doc-title h1 {
+      margin: 0;
+      font-size: 26pt;
+      color: #173B56;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .doc-meta {
+      color: #64748b;
+      font-size: 10pt;
+      margin-top: 4px;
+    }
+
+    .doc-meta strong { color: #0f172a; }
+
+    /* ============ PARTIES ============ */
+    .parties {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .party {
+      flex: 1;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 14px;
+      background: #f8fafc;
+    }
+
+    .party .label {
+      text-transform: uppercase;
+      font-size: 8pt;
+      color: #64748b;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .party .name {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #173B56;
+      margin-bottom: 4px;
+    }
+
+    .party p { margin: 2px 0; }
+
+    .party .muted {
+      color: #64748b;
+      font-size: 10pt;
+    }
+
+    /* ============ INFOS FACTURATION ============ */
+    .billing-info {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 12px 14px;
+      background: #f0fdf4;
+      border-left: 4px solid #10B981;
+      border-radius: 3px;
+      font-size: 10pt;
+    }
+
+    .billing-info .item { flex: 1; }
+    .billing-info .item .lbl { color: #64748b; font-size: 9pt; text-transform: uppercase; letter-spacing: 1px; }
+    .billing-info .item .val { font-weight: 700; color: #173B56; font-size: 11pt; margin-top: 2px; }
+
+    /* ============ TABLEAU ============ */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+
+    thead th {
+      background: #173B56;
+      color: #fff;
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 10pt;
+      font-weight: 700;
+    }
+
+    thead th.num { text-align: right; width: 25mm; }
+    thead th.qty { text-align: center; width: 20mm; }
+
+    tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) td { background: #f8fafc; }
+
+    tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tbody td.qty { text-align: center; }
+
+    tbody .desc {
+      font-weight: 600;
+      color: #173B56;
+    }
+
+    tbody .detail {
+      color: #64748b;
+      font-size: 9.5pt;
+      margin-top: 2px;
+    }
+
+    /* ============ TOTAUX ============ */
+    .totals {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .totals-box {
+      width: 80mm;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .totals-box .row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 14px;
+      font-size: 10.5pt;
+    }
+
+    .totals-box .row.sub { background: #f8fafc; }
+
+    .totals-box .row.total {
+      background: #173B56;
+      color: #fff;
+      font-weight: 800;
+      font-size: 13pt;
+      padding: 12px 14px;
+    }
+
+    /* ============ MENTIONS ============ */
+    .tva-notice {
+      padding: 10px 14px;
+      background: #fef3c7;
+      border-left: 4px solid #F59E0B;
+      color: #78350f;
+      font-size: 10pt;
+      margin-bottom: 20px;
+      border-radius: 3px;
+    }
+
+    .legal-mentions {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 14px;
+      margin-bottom: 24px;
+    }
+
+    .legal-mentions h3 {
+      margin: 0 0 8px 0;
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #173B56;
+    }
+
+    .legal-mentions p { margin: 4px 0; font-size: 10pt; }
+
+    .legal-mentions .penalties {
+      font-size: 9pt;
+      color: #64748b;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 8px;
+      margin-top: 8px;
+    }
+
+    /* ============ PAIEMENT ============ */
+    .payment {
+      background: #0f172a;
+      color: #fff;
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .payment h3 {
+      margin: 0 0 10px 0;
+      font-size: 11pt;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #10B981;
+    }
+
+    .payment .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      font-size: 10.5pt;
+    }
+
+    .payment .label {
+      color: #94a3b8;
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 2px;
+    }
+
+    .payment .value { font-weight: 600; }
+
+    /* ============ FOOTER ============ */
+    .footer {
+      margin-top: 36px;
+      border-top: 2px solid #10B981;
+      padding-top: 12px;
+      font-size: 8.5pt;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .footer strong { color: #173B56; }
+
+    @media print {
+      .payment { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div>
+        <div class="brand">Cert<span class="brand-accent">Pilot</span></div>
+        <div style="color:#64748b; font-size:10pt; margin-top:4px;">
+          Logiciel de gestion des habilitations & formations
+        </div>
+      </div>
+      <div class="doc-title">
+        <h1>FACTURE</h1>
+        <div class="doc-meta">
+          N° <strong>FAC-[AAAA]-[NNN]</strong><br>
+          Date d'émission : <strong>[JJ/MM/AAAA]</strong><br>
+          Date d'exécution : <strong>[JJ/MM/AAAA]</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- PARTIES -->
+    <div class="parties">
+      <div class="party">
+        <div class="label">Émetteur</div>
+        <div class="name">Louis Poulain</div>
+        <p>Entrepreneur individuel</p>
+        <p>16 Bis Rue d'Auditoire</p>
+        <p>50300 Avranches</p>
+        <p class="muted">SIRET : 10392607700019</p>
+        <p class="muted">Immatriculation : RNE</p>
+        <p>Email : contact@certpilot.eu</p>
+      </div>
+      <div class="party">
+        <div class="label">Facturé à</div>
+        <div class="name">[Raison sociale du client]</div>
+        <p>[Prénom Nom du contact]</p>
+        <p>[Adresse ligne 1]</p>
+        <p>[Code postal] [Ville]</p>
+        <p class="muted">SIRET : [SIRET du client]</p>
+        <p>Email : [email@client.fr]</p>
+      </div>
+    </div>
+
+    <!-- INFOS FACTURATION -->
+    <div class="billing-info">
+      <div class="item">
+        <div class="lbl">Devis de référence</div>
+        <div class="val">[DEV-AAAA-NNN] — [ou : sans objet]</div>
+      </div>
+      <div class="item">
+        <div class="lbl">Période facturée</div>
+        <div class="val">[JJ/MM/AAAA] → [JJ/MM/AAAA]</div>
+      </div>
+      <div class="item">
+        <div class="lbl">Échéance de paiement</div>
+        <div class="val">[JJ/MM/AAAA]</div>
+      </div>
+    </div>
+
+    <!-- PRESTATIONS -->
+    <table>
+      <thead>
+        <tr>
+          <th>Désignation</th>
+          <th class="qty">Qté</th>
+          <th class="num">Prix unitaire HT</th>
+          <th class="num">Total HT</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <div class="desc">Abonnement CertPilot — Offre [Starter / Pro / Business]</div>
+            <div class="detail">
+              [X] employés · Engagement [mensuel / annuel] · Période : du [JJ/MM/AAAA] au [JJ/MM/AAAA]
+            </div>
+          </td>
+          <td class="qty">1</td>
+          <td class="num">[X XXX,00] €</td>
+          <td class="num">[X XXX,00] €</td>
+        </tr>
+        <tr>
+          <td>
+            <div class="desc">[Ligne additionnelle — ex : Setup / Formation / Import initial]</div>
+            <div class="detail">[Description optionnelle]</div>
+          </td>
+          <td class="qty">[1]</td>
+          <td class="num">[XXX,00] €</td>
+          <td class="num">[XXX,00] €</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- TOTAUX -->
+    <div class="totals">
+      <div class="totals-box">
+        <div class="row sub">
+          <span>Sous-total HT</span>
+          <span>[X XXX,00] €</span>
+        </div>
+        <div class="row sub">
+          <span>TVA</span>
+          <span>Non applicable</span>
+        </div>
+        <div class="row total">
+          <span>Net à payer</span>
+          <span>[X XXX,00] €</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENTION TVA OBLIGATOIRE -->
+    <div class="tva-notice">
+      <strong>TVA non applicable, article 293 B du CGI.</strong>
+      Louis Poulain est en franchise en base de TVA. Les montants sont exprimés
+      en euros, nets de TVA.
+    </div>
+
+    <!-- PAIEMENT -->
+    <div class="payment">
+      <h3>Modalités de paiement</h3>
+      <div class="grid">
+        <div>
+          <div class="label">Mode</div>
+          <div class="value">Virement bancaire / Prélèvement SEPA</div>
+        </div>
+        <div>
+          <div class="label">Échéance</div>
+          <div class="value">[JJ/MM/AAAA] — sous [30] jours à compter de l'émission</div>
+        </div>
+        <div>
+          <div class="label">IBAN</div>
+          <div class="value">[FR76 XXXX XXXX XXXX XXXX XXXX XXX]</div>
+        </div>
+        <div>
+          <div class="label">BIC</div>
+          <div class="value">[XXXXXXXX]</div>
+        </div>
+        <div style="grid-column: 1 / -1;">
+          <div class="label">Référence à rappeler</div>
+          <div class="value">FAC-[AAAA]-[NNN]</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENTIONS LÉGALES OBLIGATOIRES -->
+    <div class="legal-mentions">
+      <h3>Mentions légales obligatoires</h3>
+      <p><strong>Escompte pour règlement anticipé :</strong> aucun.</p>
+      <p>
+        <strong>Pénalités de retard :</strong> en cas de retard de paiement,
+        des pénalités calculées sur la base du taux d'intérêt appliqué par la
+        Banque centrale européenne à son opération de refinancement la plus
+        récente majoré de 10 points de pourcentage seront exigibles de plein
+        droit, sans qu'un rappel soit nécessaire (art. L441-10 du Code de
+        commerce).
+      </p>
+      <p>
+        <strong>Indemnité forfaitaire pour frais de recouvrement :</strong>
+        40 € en cas de retard de paiement (art. D441-5 du Code de commerce).
+        Cette indemnité ne préjuge pas d'une indemnisation complémentaire sur
+        justification, si les frais exposés sont supérieurs.
+      </p>
+      <p class="penalties">
+        Tout litige relatif à la présente facture relève de la compétence
+        exclusive des tribunaux français.
+      </p>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <strong>Louis Poulain — Entrepreneur individuel</strong> ·
+      16 Bis Rue d'Auditoire, 50300 Avranches ·
+      SIRET 10392607700019 · TVA non applicable, art. 293B du CGI<br>
+      Contact : contact@certpilot.eu · www.certpilot.eu
+    </div>
+
+  </div>
+</body>
+</html>
