@@ -1,3 +1,4 @@
+import { legalProfile } from "@/lib/legal-profile";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -52,7 +53,7 @@ export default function CGV() {
           Conditions Générales de Vente
         </h1>
         <p className="mt-2 text-slate-600">
-          Dernière mise à jour : 18 avril 2026
+          Dernière mise à jour : 24 avril 2026
         </p>
 
         <div className="mt-10 space-y-8 text-slate-700">
@@ -75,19 +76,33 @@ export default function CGV() {
             </h2>
             <div className="mt-4 space-y-2">
               <p>
-                <strong>Louis Poulain</strong> — Entrepreneur individuel
+                <strong>
+                  {legalProfile.legalEntityName || "Louis Poulain"}
+                </strong>
+                {legalProfile.legalForm
+                  ? ` — ${legalProfile.legalForm}`
+                  : " — Entrepreneur individuel"}
               </p>
-              <p>Exploitant la marque <strong>CertPilot</strong></p>
-              <p>16 Bis Rue d&apos;Auditoire, 50300 Avranches</p>
-              <p>SIRET : en cours d&apos;immatriculation</p>
+              <p>
+                Exploitant la marque <strong>{legalProfile.brandName}</strong>
+              </p>
+              {legalProfile.address && <p>{legalProfile.address}</p>}
+              <p>
+                SIRET :{" "}
+                {legalProfile.siret ? (
+                  <span>{legalProfile.siret}</span>
+                ) : (
+                  <em>en cours d&apos;immatriculation</em>
+                )}
+              </p>
               <p>TVA non applicable, art. 293B du CGI</p>
               <p>
                 Email :{" "}
                 <a
-                  href="mailto:contact@certpilot.eu"
+                  href={`mailto:${legalProfile.contactEmail}`}
                   className="text-emerald-600 hover:underline"
                 >
-                  contact@certpilot.eu
+                  {legalProfile.contactEmail}
                 </a>
               </p>
             </div>

@@ -57,7 +57,7 @@ export default function MentionsLegales() {
       <main className="mx-auto max-w-4xl px-6 py-12">
         <h1 className="text-3xl font-black text-[#173B56]">Mentions légales</h1>
         <p className="mt-2 text-slate-600">
-          Dernière mise à jour : 16 février 2026
+          Dernière mise à jour : 24 avril 2026
         </p>
 
         {!legalIsSetupComplete && (
