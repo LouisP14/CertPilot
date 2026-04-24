@@ -83,6 +83,7 @@ model ContactRequest {
 model Company {
   id                    String   @id @default(cuid())
   name                  String
+  siret                 String?  // SIRET 14 chiffres — requis pour le CSV officiel Passeport Prévention (colonne SIRET_EMPLOYEUR)
   logo                  String?
   alertThresholds       String   @default("90,60,30,7") // jours avant expiration, séparés par virgule
   priorityThresholds    String   @default("7,30,60")   // jours pour Critique, Urgent, Normal (séparés par virgule)

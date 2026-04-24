@@ -1,5 +1,6 @@
 import { createAuditLog } from "@/lib/audit";
 import { auth } from "@/lib/auth";
+import { parsePpDateFilter } from "@/lib/passeport-prevention-period";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -75,31 +76,6 @@ function newDeclarationRef(): string {
   return `exp_${ts}_${rand}`;
 }
 
-function parseDateFilter(
-  year: string | null,
-  trimestre: string | null,
-): { gte?: Date; lte?: Date } | undefined {
-  if (!year) return undefined;
-  const y = parseInt(year);
-  if (trimestre) {
-    const trimMap: Record<string, [number, number]> = {
-      Q1: [0, 2],
-      Q2: [3, 5],
-      Q3: [6, 8],
-      Q4: [9, 11],
-    };
-    const [startMonth, endMonth] = trimMap[trimestre] || [0, 11];
-    return {
-      gte: new Date(y, startMonth, 1),
-      lte: new Date(y, endMonth + 1, 0, 23, 59, 59),
-    };
-  }
-  return {
-    gte: new Date(y, 0, 1),
-    lte: new Date(y, 11, 31, 23, 59, 59),
-  };
-}
-
 export async function GET(request: NextRequest) {
   try {
     const session = await auth();
@@ -120,7 +96,7 @@ export async function GET(request: NextRequest) {
 
     const year = searchParams.get("year");
     const trimestre = searchParams.get("trimestre");
-    const dateFilter = parseDateFilter(year, trimestre);
+    const dateFilter = parsePpDateFilter(year, trimestre);
 
     // Mode stats : JSON avec les compteurs pour l'UI
     if (statsOnly) {
@@ -178,6 +154,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Mode génération CSV : ne prend par défaut que les non-déclarés
+    const company = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { siret: true },
+    });
+    const companySiret = company?.siret || "";
+
     const certificates = await prisma.certificate.findMany({
       where: {
         isArchived: false,
@@ -261,7 +243,7 @@ export async function GET(request: NextRequest) {
         sanitizeCsvField(cert.employee.nir),
         sanitizeCsvField(nomTitulaire),
         "",
-        "",
+        companySiret,
         declarationRef,
         formatDateFr(endDate),
         formatDateFr(cert.expiryDate),

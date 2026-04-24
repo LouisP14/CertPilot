@@ -214,6 +214,14 @@ export const sendConvocationSchema = z.object({
 export const companySettingsSchema = z.object({
   name: z.string().min(1, "Le nom est requis"),
   adminEmail: z.string().email("Email invalide").optional().or(z.literal("")),
+  siret: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .refine(
+      (v) => !v || /^\d{14}$/.test(v.replace(/\s/g, "")),
+      "Le SIRET doit comporter exactement 14 chiffres",
+    ),
 });
 
 export const alertSettingsSchema = z.object({

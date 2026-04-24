@@ -53,6 +53,7 @@ export default async function SettingsPage() {
               id: company.id,
               name: company.name,
               adminEmail: company.adminEmail,
+              siret: company.siret,
               alertThresholds: company.alertThresholds,
               priorityThresholds: company.priorityThresholds,
               notifyEmployee: company.notifyEmployee,

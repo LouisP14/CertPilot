@@ -37,6 +37,7 @@ interface SettingsAccordionProps {
     id: string;
     name: string;
     adminEmail: string | null;
+    siret: string | null;
     alertThresholds: string;
     priorityThresholds: string;
     notifyEmployee: boolean;
@@ -111,6 +112,7 @@ export function SettingsAccordion({
                         id: company.id,
                         name: company.name,
                         adminEmail: company.adminEmail,
+                        siret: company.siret,
                       }
                     : null
                 }

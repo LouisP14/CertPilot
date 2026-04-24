@@ -1,6 +1,7 @@
 import { auditCreate, auditUpdate } from "@/lib/audit";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { normalizeSiret } from "@/lib/siret";
 import { parseBody, companySettingsSchema } from "@/lib/validations";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,7 +24,8 @@ export async function PUT(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
-    const { name, adminEmail } = parsed.data;
+    const { name, adminEmail, siret } = parsed.data;
+    const normalizedSiret = normalizeSiret(siret);
 
     // Get or create company liée à la session
     let company = await prisma.company.findUnique({
@@ -37,6 +39,7 @@ export async function PUT(request: NextRequest) {
         data: {
           name: name || company.name,
           adminEmail: adminEmail || null,
+          siret: normalizedSiret,
         },
       });
 
@@ -45,8 +48,12 @@ export async function PUT(request: NextRequest) {
         "COMPANY",
         company.id,
         company.name,
-        { name: oldCompany?.name, adminEmail: oldCompany?.adminEmail },
-        { name, adminEmail },
+        {
+          name: oldCompany?.name,
+          adminEmail: oldCompany?.adminEmail,
+          siret: oldCompany?.siret,
+        },
+        { name, adminEmail, siret: normalizedSiret },
         session.user
           ? {
               id: session.user.id,
@@ -61,6 +68,7 @@ export async function PUT(request: NextRequest) {
           id: companyId,
           name: name || "Mon Entreprise",
           adminEmail: adminEmail || null,
+          siret: normalizedSiret,
         },
       });
 
@@ -69,7 +77,7 @@ export async function PUT(request: NextRequest) {
         "COMPANY",
         company.id,
         company.name,
-        { name, adminEmail },
+        { name, adminEmail, siret: normalizedSiret },
         session.user
           ? {
               id: session.user.id,

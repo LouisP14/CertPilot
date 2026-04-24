@@ -742,6 +742,25 @@ export function exportFullReportToPDF(
     expired: number;
   },
   companyName?: string,
+  passeportPrevention?: {
+    counters: {
+      totalConcerned: number;
+      exportable: number;
+      alreadyDeclared: number;
+      skipped: number;
+    };
+    topReady: Array<{
+      employeeName: string;
+      department: string;
+      formationName: string;
+      obtainedDate: string | Date;
+    }>;
+    blocked: Array<{
+      employeeName: string;
+      department: string;
+      formationName: string;
+    }>;
+  } | null,
 ) {
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -1181,6 +1200,179 @@ export function exportFullReportToPDF(
         }
       },
     });
+  }
+
+  // PAGE 4 (optionnelle) : Passeport de Prevention
+  if (passeportPrevention) {
+    doc.addPage();
+    const ppStartY = drawModernHeader(
+      doc,
+      "Passeport de Prevention",
+      "Etat des obligations de declaration - annee en cours",
+      companyName,
+    );
+    let yp = ppStartY + 5;
+
+    // Compteurs en cartes compactes (landscape)
+    const ppC = passeportPrevention.counters;
+    const ppRate =
+      ppC.totalConcerned > 0
+        ? Math.round((ppC.alreadyDeclared / ppC.totalConcerned) * 100)
+        : 0;
+    const ppRateColor =
+      ppRate >= 80
+        ? COLORS.success
+        : ppRate >= 50
+          ? COLORS.warning
+          : COLORS.danger;
+
+    const ppCardWidth = 42;
+    const ppCardHeight = 22;
+    const ppCardGap = 6;
+    const ppCardsTotalWidth = ppCardWidth * 5 + ppCardGap * 4;
+    const ppCardX = (pageWidth - ppCardsTotalWidth) / 2;
+    const ppCards = [
+      { label: "A declarer", value: String(ppC.exportable), color: COLORS.success },
+      {
+        label: "Deja declarees",
+        value: String(ppC.alreadyDeclared),
+        color: COLORS.primary,
+      },
+      { label: "NIR manquant", value: String(ppC.skipped), color: COLORS.warning },
+      {
+        label: "Total concernees",
+        value: String(ppC.totalConcerned),
+        color: COLORS.textMuted,
+      },
+      { label: "Conformite", value: `${ppRate}%`, color: ppRateColor },
+    ];
+    ppCards.forEach((c, i) => {
+      const x = ppCardX + i * (ppCardWidth + ppCardGap);
+      doc.setFillColor(...COLORS.white);
+      doc.setDrawColor(...COLORS.border);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(x, yp, ppCardWidth, ppCardHeight, 2, 2, "FD");
+      doc.setFillColor(...c.color);
+      doc.rect(x, yp, ppCardWidth, 3, "F");
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...c.color);
+      doc.text(c.value, x + ppCardWidth / 2, yp + 13, { align: "center" });
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(...COLORS.textMuted);
+      doc.text(c.label, x + ppCardWidth / 2, yp + 19, { align: "center" });
+    });
+    yp += ppCardHeight + 10;
+
+    // Tableau "A declarer" (top N)
+    const topReady = passeportPrevention.topReady;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.primary);
+    doc.text(
+      `A declarer (${topReady.length}${ppC.exportable > topReady.length ? ` sur ${ppC.exportable}` : ""})`,
+      15,
+      yp,
+    );
+    yp += 4;
+    if (topReady.length === 0) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(...COLORS.textMuted);
+      doc.text("Aucune formation en attente.", 15, yp + 5);
+      yp += 12;
+    } else {
+      autoTable(doc, {
+        head: [["Employe", "Service", "Formation", "Date obtention"]],
+        body: topReady.map((r) => [
+          r.employeeName,
+          r.department || "-",
+          r.formationName,
+          formatFr(r.obtainedDate),
+        ]),
+        startY: yp,
+        ...getModernTableStyles(),
+        styles: {
+          ...getModernTableStyles().styles,
+          fontSize: 8,
+          cellPadding: 3,
+        },
+        margin: { left: 15, right: 15, bottom: 25 },
+        columnStyles: {
+          0: { cellWidth: 60 },
+          1: { cellWidth: 40 },
+          2: { cellWidth: "auto" },
+          3: { cellWidth: 35, halign: "center" },
+        },
+      });
+      yp =
+        (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+          .finalY + 8;
+    }
+
+    // Nouvelle page si plus de place
+    if (yp > pageHeight - 60) {
+      doc.addPage();
+      const contStartY = drawModernHeader(
+        doc,
+        "Passeport de Prevention (suite)",
+        "",
+        companyName,
+      );
+      yp = contStartY + 5;
+    }
+
+    // Tableau "Bloques NIR"
+    const ppBlocked = passeportPrevention.blocked;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.danger);
+    doc.text(`Bloques NIR (${ppBlocked.length})`, 15, yp);
+    yp += 4;
+    if (ppBlocked.length === 0) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(...COLORS.success);
+      doc.text("Aucune fiche employe incomplete.", 15, yp + 5);
+      yp += 12;
+    } else {
+      autoTable(doc, {
+        head: [["Employe", "Service", "Formation"]],
+        body: ppBlocked.map((b) => [
+          b.employeeName,
+          b.department || "-",
+          b.formationName,
+        ]),
+        startY: yp,
+        ...getModernTableStyles(),
+        styles: {
+          ...getModernTableStyles().styles,
+          fontSize: 8,
+          cellPadding: 3,
+        },
+        margin: { left: 15, right: 15, bottom: 25 },
+        columnStyles: {
+          0: { cellWidth: 60 },
+          1: { cellWidth: 40 },
+          2: { cellWidth: "auto" },
+        },
+      });
+      yp =
+        (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+          .finalY + 6;
+    }
+
+    // Footer informatif
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(
+      "Pour le detail complet, generer le rapport Passeport Prevention depuis Import / Export",
+      pageWidth / 2,
+      yp + 4,
+      { align: "center" },
+    );
   }
 
   // PAGE 4+ : Detail complet
@@ -1704,4 +1896,674 @@ export function exportBudgetToPDF(budgetData: {
   }
 
   doc.save(`budget-formation-${year}-${now.toISOString().split("T")[0]}.pdf`);
+}
+
+// ============================================================
+// PASSEPORT DE PREVENTION - Rapport PDF polyvalent
+// Apercu pre-declaration + archive post-declaration + doc audit
+// ============================================================
+
+interface PasseportPreventionPdfData {
+  companyName: string | null;
+  companySiret: string | null;
+  period: {
+    year: string | null;
+    trimestre: string | null;
+    label: string;
+  };
+  counters: {
+    totalConcerned: number;
+    exportable: number;
+    alreadyDeclared: number;
+    skipped: number;
+  };
+  ready: Array<{
+    employeeName: string;
+    department: string;
+    formationName: string;
+    obtainedDate: string | Date;
+    nirMasked: string;
+  }>;
+  declared: Array<{
+    ppDeclarationRef: string;
+    declaredAt: string | Date;
+    items: Array<{
+      employeeName: string;
+      formationName: string;
+      obtainedDate: string | Date;
+    }>;
+  }>;
+  blocked: Array<{
+    employeeName: string;
+    department: string;
+    formationName: string;
+    obtainedDate: string | Date;
+  }>;
+  history: Array<{
+    ppDeclarationRef: string;
+    declaredAt: string | Date;
+    count: number;
+    activeCount: number;
+    archivedCount: number;
+    status: "active" | "archived";
+  }>;
+  byService: Array<{
+    department: string;
+    totalEmployees: number;
+    totalConcerned: number;
+    declared: number;
+    blocked: number;
+    rate: number;
+  }>;
+}
+
+function formatFr(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("fr-FR");
+}
+
+// Formate un SIRET brut en affichage "123 456 789 00012"
+function formatSiretDisplay(siret: string | null): string {
+  if (!siret) return "";
+  const c = siret.replace(/\s/g, "");
+  if (c.length !== 14) return siret;
+  return `${c.substring(0, 3)} ${c.substring(3, 6)} ${c.substring(6, 9)} ${c.substring(9, 14)}`;
+}
+
+export function exportPasseportPreventionToPDF(
+  data: PasseportPreventionPdfData,
+) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+
+  const {
+    companyName,
+    companySiret,
+    period,
+    counters,
+    ready,
+    declared,
+    blocked,
+    history,
+    byService,
+  } = data;
+
+  const complianceRate =
+    counters.totalConcerned > 0
+      ? Math.round((counters.alreadyDeclared / counters.totalConcerned) * 100)
+      : 0;
+  const rateColor =
+    complianceRate >= 80
+      ? COLORS.success
+      : complianceRate >= 50
+        ? COLORS.warning
+        : COLORS.danger;
+
+  // ===== PAGE 1 : Couverture =====
+  doc.setFillColor(...COLORS.primary);
+  doc.rect(0, 0, pageWidth, 80, "F");
+  doc.setFillColor(...COLORS.accent);
+  doc.rect(0, 77, pageWidth, 4, "F");
+
+  doc.setFontSize(13);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.accent);
+  doc.text("CertPilot", 20, 22);
+
+  const badgeText = "Rapport officiel";
+  doc.setFontSize(9);
+  const badgeWidth = doc.getTextWidth(badgeText) + 10;
+  doc.setFillColor(...COLORS.accent);
+  doc.roundedRect(pageWidth - 20 - badgeWidth, 15, badgeWidth, 10, 2, 2, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.white);
+  doc.text(badgeText, pageWidth - 20 - badgeWidth / 2, 21, {
+    align: "center",
+  });
+
+  doc.setFontSize(22);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.white);
+  doc.text("Rapport Passeport de Prevention", pageWidth / 2, 50, {
+    align: "center",
+  });
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(180, 200, 220);
+  doc.text(period.label, pageWidth / 2, 62, { align: "center" });
+
+  // Bloc infos entreprise
+  let infoY = 95;
+  if (companyName) {
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.primary);
+    doc.text(companyName, pageWidth / 2, infoY, { align: "center" });
+    infoY += 8;
+  }
+  if (companySiret) {
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(
+      `SIRET : ${formatSiretDisplay(companySiret)}`,
+      pageWidth / 2,
+      infoY,
+      { align: "center" },
+    );
+    infoY += 6;
+  } else {
+    doc.setFillColor(254, 243, 199);
+    doc.roundedRect(30, infoY - 3, pageWidth - 60, 10, 1.5, 1.5, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.warning);
+    doc.text(
+      "SIRET non renseigne - a completer dans Parametres > Entreprise",
+      pageWidth / 2,
+      infoY + 3,
+      { align: "center" },
+    );
+    infoY += 12;
+  }
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.textMuted);
+  doc.text(`Genere le ${dateStr}`, pageWidth / 2, infoY, { align: "center" });
+
+  // Cartes compteurs
+  const cardWidth = 40;
+  const cardHeight = 32;
+  const cardGap = 6;
+  const totalCardsWidth = cardWidth * 4 + cardGap * 3;
+  const startCardX = (pageWidth - totalCardsWidth) / 2;
+  const cardY = infoY + 15;
+  const cards = [
+    {
+      label: "A declarer",
+      value: counters.exportable,
+      color: COLORS.success,
+    },
+    {
+      label: "Deja declarees",
+      value: counters.alreadyDeclared,
+      color: COLORS.primary,
+    },
+    {
+      label: "NIR manquant",
+      value: counters.skipped,
+      color: COLORS.warning,
+    },
+    {
+      label: "Total concernees",
+      value: counters.totalConcerned,
+      color: COLORS.textMuted,
+    },
+  ];
+  cards.forEach((c, i) => {
+    const x = startCardX + i * (cardWidth + cardGap);
+    doc.setFillColor(...COLORS.white);
+    doc.setDrawColor(...COLORS.border);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, cardY, cardWidth, cardHeight, 3, 3, "FD");
+    doc.setFillColor(...c.color);
+    doc.rect(x, cardY, cardWidth, 4, "F");
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...c.color);
+    doc.text(String(c.value), x + cardWidth / 2, cardY + 18, {
+      align: "center",
+    });
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(c.label, x + cardWidth / 2, cardY + 27, { align: "center" });
+  });
+
+  // Indicateur de conformite
+  const confY = cardY + cardHeight + 18;
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.textMuted);
+  doc.text("Taux de conformite Passeport Prevention", pageWidth / 2, confY, {
+    align: "center",
+  });
+  doc.setFontSize(32);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...rateColor);
+  doc.text(`${complianceRate}%`, pageWidth / 2, confY + 14, {
+    align: "center",
+  });
+  const barW = 120;
+  const barH = 6;
+  const barX = (pageWidth - barW) / 2;
+  const barY = confY + 18;
+  doc.setFillColor(220, 220, 220);
+  doc.roundedRect(barX, barY, barW, barH, 2, 2, "F");
+  const fillW = Math.max(3, (complianceRate / 100) * barW);
+  doc.setFillColor(...rateColor);
+  doc.roundedRect(barX, barY, fillW, barH, 2, 2, "F");
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.textMuted);
+  doc.text(
+    `${counters.alreadyDeclared} declaree(s) sur ${counters.totalConcerned} formation(s) concernee(s)`,
+    pageWidth / 2,
+    barY + barH + 5,
+    { align: "center" },
+  );
+
+  // ===== PAGE 2 : A declarer =====
+  doc.addPage();
+  let y = drawModernHeader(
+    doc,
+    "Formations a declarer",
+    `${ready.length} formation(s) pretes a etre declarees`,
+    companyName || undefined,
+  );
+  y += 3;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(...COLORS.textMuted);
+  doc.text(
+    "Ces formations remplissent toutes les conditions pour etre deposees sur moncompteformation.gouv.fr",
+    15,
+    y,
+  );
+  y += 7;
+
+  if (ready.length === 0) {
+    doc.setFillColor(...COLORS.lighter);
+    doc.roundedRect(15, y, pageWidth - 30, 20, 2, 2, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(
+      "Aucune formation en attente de declaration sur cette periode",
+      pageWidth / 2,
+      y + 12,
+      { align: "center" },
+    );
+  } else {
+    autoTable(doc, {
+      head: [["Employe", "Service", "Formation", "Obtention", "NIR"]],
+      body: ready.map((r) => [
+        r.employeeName,
+        r.department || "-",
+        r.formationName,
+        formatFr(r.obtainedDate),
+        r.nirMasked,
+      ]),
+      startY: y,
+      ...getModernTableStyles(),
+      margin: { left: 15, right: 15, bottom: 25 },
+      columnStyles: {
+        0: { cellWidth: 38 },
+        1: { cellWidth: 28 },
+        2: { cellWidth: 50 },
+        3: { cellWidth: 26, halign: "center" },
+        4: { cellWidth: "auto", fontStyle: "bold" },
+      },
+    });
+  }
+
+  // ===== PAGE 3 : Deja declarees sur la periode =====
+  doc.addPage();
+  y = drawModernHeader(
+    doc,
+    "Declarations effectuees",
+    `${declared.length} declaration(s) deposee(s) sur la periode`,
+    companyName || undefined,
+  );
+  y += 5;
+
+  if (declared.length === 0) {
+    doc.setFillColor(...COLORS.lighter);
+    doc.roundedRect(15, y, pageWidth - 30, 20, 2, 2, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(
+      "Aucune declaration effectuee sur cette periode",
+      pageWidth / 2,
+      y + 12,
+      { align: "center" },
+    );
+  } else {
+    for (const batch of declared) {
+      if (y > pageHeight - 50) {
+        doc.addPage();
+        y = drawModernHeader(
+          doc,
+          "Declarations effectuees (suite)",
+          "",
+          companyName || undefined,
+        );
+        y += 5;
+      }
+      doc.setFillColor(...COLORS.lighter);
+      doc.rect(15, y, pageWidth - 30, 10, "F");
+      doc.setFillColor(...COLORS.primary);
+      doc.rect(15, y, 3, 10, "F");
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...COLORS.primary);
+      doc.text(
+        `${batch.ppDeclarationRef}  -  depose le ${formatFr(batch.declaredAt)}  -  ${batch.items.length} formation(s)`,
+        20,
+        y + 6.5,
+      );
+      y += 12;
+      autoTable(doc, {
+        head: [["Employe", "Formation", "Obtention"]],
+        body: batch.items.map((it) => [
+          it.employeeName,
+          it.formationName,
+          formatFr(it.obtainedDate),
+        ]),
+        startY: y,
+        ...getModernTableStyles(),
+        margin: { left: 15, right: 15, bottom: 25 },
+        columnStyles: {
+          0: { cellWidth: 55 },
+          1: { cellWidth: "auto" },
+          2: { cellWidth: 30, halign: "center" },
+        },
+      });
+      y =
+        (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+          .finalY + 8;
+    }
+  }
+
+  // ===== PAGE 4 : Bloquees (NIR manquant) =====
+  doc.addPage();
+  y = drawModernHeader(
+    doc,
+    "Formations bloquees - NIR manquant",
+    `${blocked.length} formation(s) en attente de completion RH`,
+    companyName || undefined,
+  );
+  y += 5;
+
+  if (blocked.length === 0) {
+    doc.setFillColor(209, 250, 229);
+    doc.roundedRect(15, y, pageWidth - 30, 20, 2, 2, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.success);
+    doc.text(
+      "Aucune formation bloquee - toutes les fiches employes sont completes",
+      pageWidth / 2,
+      y + 12,
+      { align: "center" },
+    );
+  } else {
+    doc.setFillColor(254, 226, 226);
+    doc.rect(15, y, pageWidth - 30, 12, "F");
+    doc.setFillColor(...COLORS.danger);
+    doc.rect(15, y, 3, 12, "F");
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...COLORS.danger);
+    doc.text(
+      "Action RH : completer la fiche employe avec le NIR pour permettre la declaration",
+      20,
+      y + 8,
+    );
+    y += 14;
+
+    autoTable(doc, {
+      head: [["Employe", "Service", "Formation", "Obtention", "Action"]],
+      body: blocked.map((b) => [
+        b.employeeName,
+        b.department || "-",
+        b.formationName,
+        formatFr(b.obtainedDate),
+        "Renseigner le NIR",
+      ]),
+      startY: y,
+      ...getModernTableStyles(),
+      margin: { left: 15, right: 15, bottom: 25 },
+      columnStyles: {
+        0: { cellWidth: 38 },
+        1: { cellWidth: 28 },
+        2: { cellWidth: 50 },
+        3: { cellWidth: 24, halign: "center" },
+        4: { cellWidth: "auto", fontStyle: "bold" },
+      },
+      didParseCell: (cellData) => {
+        if (cellData.section === "body" && cellData.column.index === 4) {
+          cellData.cell.styles.textColor = COLORS.warning;
+        }
+      },
+    });
+  }
+
+  // ===== PAGE 5 : Historique complet =====
+  doc.addPage();
+  y = drawModernHeader(
+    doc,
+    "Historique des declarations",
+    "Toutes declarations effectuees - non filtre par periode",
+    companyName || undefined,
+  );
+  y += 5;
+
+  if (history.length === 0) {
+    doc.setFillColor(...COLORS.lighter);
+    doc.roundedRect(15, y, pageWidth - 30, 20, 2, 2, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text(
+      "Aucune declaration historique",
+      pageWidth / 2,
+      y + 12,
+      { align: "center" },
+    );
+  } else {
+    autoTable(doc, {
+      head: [["Reference", "Date de depot", "Nb formations", "Actives", "Archivees", "Statut"]],
+      body: history.map((h) => [
+        h.ppDeclarationRef,
+        formatFr(h.declaredAt),
+        String(h.count),
+        String(h.activeCount),
+        String(h.archivedCount),
+        h.status === "active" ? "Active" : "Archivee",
+      ]),
+      startY: y,
+      ...getModernTableStyles(),
+      margin: { left: 15, right: 15, bottom: 25 },
+      columnStyles: {
+        0: { cellWidth: 70 },
+        1: { cellWidth: 30, halign: "center" },
+        2: { cellWidth: 22, halign: "center" },
+        3: { cellWidth: 18, halign: "center" },
+        4: { cellWidth: 22, halign: "center" },
+        5: { cellWidth: "auto", fontStyle: "bold" },
+      },
+      didParseCell: (cellData) => {
+        if (cellData.section === "body" && cellData.column.index === 5) {
+          const v = cellData.cell.raw as string;
+          if (v === "Active")
+            cellData.cell.styles.textColor = COLORS.success;
+          else cellData.cell.styles.textColor = COLORS.textMuted;
+        }
+      },
+    });
+    if (history.length >= 50) {
+      y =
+        (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
+          .finalY + 5;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(...COLORS.textMuted);
+      doc.text(
+        "Affichage limite aux 50 dernieres declarations - historique complet disponible dans CertPilot",
+        pageWidth / 2,
+        y,
+        { align: "center" },
+      );
+    }
+  }
+
+  // ===== PAGE 6 : Stats par service =====
+  if (byService.length > 0) {
+    doc.addPage();
+    y = drawModernHeader(
+      doc,
+      "Conformite Passeport Prevention par service",
+      "Repartition des formations concernees par departement",
+      companyName || undefined,
+    );
+    y += 5;
+
+    autoTable(doc, {
+      head: [
+        [
+          "Service",
+          "Nb employes",
+          "Concernees",
+          "Declarees",
+          "Bloquees NIR",
+          "Taux %",
+        ],
+      ],
+      body: byService.map((s) => [
+        s.department,
+        String(s.totalEmployees),
+        String(s.totalConcerned),
+        String(s.declared),
+        String(s.blocked),
+        `${s.rate}%`,
+      ]),
+      startY: y,
+      ...getModernTableStyles(),
+      margin: { left: 15, right: 15, bottom: 25 },
+      columnStyles: {
+        0: { cellWidth: 55 },
+        1: { cellWidth: 28, halign: "center" },
+        2: { cellWidth: 28, halign: "center" },
+        3: { cellWidth: 28, halign: "center" },
+        4: { cellWidth: 28, halign: "center" },
+        5: { cellWidth: "auto", halign: "center", fontStyle: "bold" },
+      },
+      didParseCell: (cellData) => {
+        if (cellData.section !== "body") return;
+        if (cellData.column.index === 5) {
+          const rate = parseInt(cellData.cell.raw as string);
+          if (rate >= 80) cellData.cell.styles.textColor = COLORS.success;
+          else if (rate >= 50)
+            cellData.cell.styles.textColor = COLORS.warning;
+          else cellData.cell.styles.textColor = COLORS.danger;
+        }
+        if (
+          cellData.column.index === 4 &&
+          parseInt(cellData.cell.raw as string) > 0
+        )
+          cellData.cell.styles.textColor = COLORS.warning;
+      },
+    });
+  }
+
+  // ===== PAGE 7 : Cadre reglementaire =====
+  doc.addPage();
+  y = drawModernHeader(
+    doc,
+    "Cadre reglementaire",
+    "Obligation employeur Passeport de Prevention",
+    companyName || undefined,
+  );
+  y += 10;
+
+  doc.setFillColor(...COLORS.lighter);
+  doc.roundedRect(15, y, pageWidth - 30, 110, 3, 3, "F");
+  doc.setDrawColor(...COLORS.primary);
+  doc.setLineWidth(0.5);
+  doc.line(15, y, 15, y + 110);
+
+  let ty = y + 10;
+  const textX = 22;
+  const lineGap = 7;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Texte applicable", textX, ty);
+  ty += lineGap;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text("Decret n 2025-748 du 8 aout 2025", textX, ty);
+  ty += lineGap + 3;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Echeances", textX, ty);
+  ty += lineGap;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text("- Obligation employeur : depuis le 16 mars 2026", textX, ty);
+  ty += lineGap;
+  doc.text("- Pleine application : 1er octobre 2026", textX, ty);
+  ty += lineGap + 3;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Modalites de depot", textX, ty);
+  ty += lineGap;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text("Portail officiel : prevention.moncompteformation.gouv.fr", textX, ty);
+  ty += lineGap;
+  doc.text("Format : CSV UTF-8, separateur | (ADF v. 27/02/2026)", textX, ty);
+  ty += lineGap + 3;
+
+  doc.setFontSize(11);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...COLORS.primary);
+  doc.text("Donnees personnelles", textX, ty);
+  ty += lineGap;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...COLORS.text);
+  doc.text(
+    "Ce rapport contient des donnees personnelles (RGPD) - diffusion restreinte.",
+    textX,
+    ty,
+  );
+  doc.text(
+    "Les NIR sont masques (sexe/annee/mois visibles, reste masque).",
+    textX,
+    ty + 5,
+  );
+
+  // ===== Footers sur toutes les pages =====
+  const pageCount = (
+    doc as unknown as { internal: { getNumberOfPages: () => number } }
+  ).internal.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    drawFooter(doc, i, pageCount);
+  }
+
+  // Nom de fichier
+  const periodPart = period.year
+    ? `-${period.year}${period.trimestre ? `-${period.trimestre}` : ""}`
+    : "";
+  const datePart = now.toISOString().split("T")[0];
+  doc.save(`rapport-passeport-prevention${periodPart}-${datePart}.pdf`);
 }

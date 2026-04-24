@@ -14,6 +14,7 @@ import {
   exportCalendarToPDF,
   exportFormationCoverageToPDF,
   exportFullReportToPDF,
+  exportPasseportPreventionToPDF,
   exportServiceCoverageToPDF,
 } from "@/lib/pdf-export";
 import {
@@ -193,7 +194,12 @@ export default function ExportPage() {
 
       switch (pdfType) {
         case "full_report":
-          exportFullReportToPDF(data.employees, statsData, data.companyName ?? undefined);
+          exportFullReportToPDF(
+            data.employees,
+            statsData,
+            data.companyName ?? undefined,
+            data.passeportPrevention ?? null,
+          );
           break;
         case "alerts":
           exportAlertsToPDF(data.certificates);
@@ -828,6 +834,7 @@ function PasseportPreventionExport() {
   const [ppStats, setPpStats] = useState<PPStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [loadingExport, setLoadingExport] = useState(false);
+  const [loadingPdfReport, setLoadingPdfReport] = useState(false);
 
   // État post-download : déclenche le modal de confirmation
   const [pendingDeclaration, setPendingDeclaration] = useState<{
@@ -928,6 +935,25 @@ function PasseportPreventionExport() {
       console.error("Export PP error:", err);
     } finally {
       setLoadingExport(false);
+    }
+  };
+
+  const handleExportPdfReport = async () => {
+    setLoadingPdfReport(true);
+    try {
+      const params = new URLSearchParams({ type: "passeport_prevention" });
+      if (year) params.set("year", year);
+      if (trimestre) params.set("trimestre", trimestre);
+      const res = await fetch(`/api/export/pdf-data?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error("Erreur lors de la generation du PDF");
+      }
+      const data = await res.json();
+      exportPasseportPreventionToPDF(data);
+    } catch (err) {
+      console.error("Export PP PDF error:", err);
+    } finally {
+      setLoadingPdfReport(false);
     }
   };
 
@@ -1126,10 +1152,29 @@ function PasseportPreventionExport() {
               </>
             )}
           </Button>
+          <Button
+            onClick={handleExportPdfReport}
+            disabled={loadingPdfReport || loadingStats}
+            variant="outline"
+            className="w-full"
+          >
+            {loadingPdfReport ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Génération du PDF...
+              </>
+            ) : (
+              <>
+                <FileText className="mr-2 h-4 w-4" />
+                Télécharger le rapport PDF Passeport Prévention
+              </>
+            )}
+          </Button>
           <p className="text-center text-xs text-gray-500">
             Format : séparateur <code>|</code>, UTF-8 — à déposer sur
             prevention.moncompteformation.gouv.fr (dépôt de fichier
-            disponible à partir du 9 juillet 2026)
+            disponible à partir du 9 juillet 2026). Le PDF est un complément
+            lisible (aperçu pré-déclaration, archive, audit).
           </p>
 
           {/* Historique */}

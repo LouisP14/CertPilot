@@ -13,6 +13,7 @@ interface CompanyFormProps {
     id: string;
     name: string;
     adminEmail: string | null;
+    siret: string | null;
   } | null;
 }
 
@@ -25,6 +26,7 @@ export function CompanyForm({ company }: CompanyFormProps) {
   const [formData, setFormData] = useState({
     name: company?.name || "",
     adminEmail: company?.adminEmail || "",
+    siret: company?.siret || "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,6 +83,23 @@ export function CompanyForm({ company }: CompanyFormProps) {
         />
         <p className="text-xs text-gray-600">
           Recevra les alertes de fin de validité
+        </p>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="companySiret">SIRET</Label>
+        <Input
+          id="companySiret"
+          value={formData.siret}
+          onChange={(e) =>
+            setFormData((prev) => ({ ...prev, siret: e.target.value }))
+          }
+          placeholder="123 456 789 00012"
+          inputMode="numeric"
+          maxLength={20}
+        />
+        <p className="text-xs text-gray-600">
+          14 chiffres — requis pour le dépôt officiel du Passeport de Prévention
+          sur moncompteformation.gouv.fr
         </p>
       </div>
 
