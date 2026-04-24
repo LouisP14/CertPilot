@@ -205,6 +205,10 @@ export async function PATCH(
     if (validatedBody.convocationsSentAt !== undefined) {
       updateData.convocationsSentAt = new Date(validatedBody.convocationsSentAt);
     }
+    if (validatedBody.isArchived !== undefined) {
+      updateData.isArchived = Boolean(validatedBody.isArchived);
+      updateData.archivedAt = validatedBody.isArchived ? new Date() : null;
+    }
 
     const updatedSession = await prisma.trainingSession.update({
       where: { id },

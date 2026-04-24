@@ -5,7 +5,7 @@ import { parseBody, createConvocationSchema } from "@/lib/validations";
 import { NextResponse } from "next/server";
 
 // GET - Récupérer les convocations sauvegardées
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth();
     if (!session?.user) {
@@ -16,9 +16,20 @@ export async function GET() {
     if (!session.user.companyId) {
       return NextResponse.json([]);
     }
-    const whereClause = {
+
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status");
+    const includeArchived = searchParams.get("includeArchived") === "1";
+
+    const whereClause: Record<string, unknown> = {
       companyId: session.user.companyId,
     };
+    if (status === "archived") {
+      whereClause.isArchived = true;
+    } else {
+      if (status) whereClause.status = status;
+      if (!includeArchived) whereClause.isArchived = false;
+    }
 
     const convocations = await prisma.convocation.findMany({
       where: whereClause,
@@ -41,6 +52,10 @@ export async function GET() {
       location: conv.location,
       notes: conv.notes,
       status: conv.status as "draft" | "sent" | "completed",
+      isArchived: conv.isArchived,
+      archivedAt: conv.archivedAt
+        ? conv.archivedAt.toISOString()
+        : null,
       createdAt: conv.createdAt.toISOString().split("T")[0],
       employees: conv.attendees.map((att) => ({
         id: att.employeeId,

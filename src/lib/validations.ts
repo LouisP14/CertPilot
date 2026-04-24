@@ -303,6 +303,7 @@ export const updateSessionSchema = z.object({
   notes: z.string().optional(),
   trainingCost: z.union([z.string(), z.number()]).optional(),
   convocationsSentAt: z.string().optional(),
+  isArchived: z.boolean().optional(),
 }).passthrough();
 
 export const checkConstraintsSchema = z.object({

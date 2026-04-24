@@ -15,9 +15,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const formationTypeId = searchParams.get("formationTypeId");
+    const includeArchived = searchParams.get("includeArchived") === "1";
 
     const where: Record<string, unknown> = {};
-    if (status) where.status = status;
+    if (status === "ARCHIVED") {
+      where.isArchived = true;
+    } else {
+      if (status) where.status = status;
+      if (!includeArchived) where.isArchived = false;
+    }
     if (formationTypeId) where.formationTypeId = formationTypeId;
 
     // Filtrer par companyId via formationType

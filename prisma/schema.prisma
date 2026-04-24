@@ -564,6 +564,10 @@ model TrainingSession {
   // Statut
   status           String         @default("DRAFT") // DRAFT, PROPOSED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED
   convocationsSentAt DateTime?    // Date d'envoi des convocations
+
+  // Archivage (auto après 30j post-endDate si COMPLETED/CANCELLED, ou manuel)
+  isArchived       Boolean        @default(false)
+  archivedAt       DateTime?
   
   // Métadonnées scénario
   scenarioId       String?        // ID du scénario d'origine
@@ -705,16 +709,22 @@ model Convocation {
   notes             String?
   status            String   @default("draft") // draft, sent, completed
   companyId         String?  // ID de l'entreprise (pour isolation des données)
+
+  // Archivage (auto après 30j post-endDate si completed, ou manuel)
+  isArchived        Boolean  @default(false)
+  archivedAt        DateTime?
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-  
+
   // Relations
   attendees         ConvocationAttendee[]
-  
+
   @@index([formationId])
   @@index([status])
   @@index([createdAt])
   @@index([companyId])
+  @@index([isArchived])
 }
 
 model ConvocationAttendee {

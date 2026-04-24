@@ -55,6 +55,8 @@ interface Convocation {
   status: "draft" | "sent" | "completed";
   notes: string;
   createdAt: string;
+  isArchived?: boolean;
+  archivedAt?: string | null;
 }
 
 export default function ConvocationsPage() {
@@ -86,17 +88,28 @@ export default function ConvocationsPage() {
     selectedEmployees: [] as string[],
   });
 
-  // Charger les données au montage
+  const fetchConvocations = async () => {
+    const url =
+      filterStatus === "archived"
+        ? "/api/convocations?status=archived"
+        : "/api/convocations";
+    const convocsResponse = await fetch(url);
+    if (convocsResponse.ok) {
+      const convocsData = await convocsResponse.json();
+      setConvocations(convocsData);
+    }
+  };
+
+  // Recharger les convocations quand le filtre change (pour les archivées)
+  useEffect(() => {
+    fetchConvocations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStatus]);
+
+  // Charger les données au montage (form-data + init URL params)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Charger les convocations existantes
-        const convocsResponse = await fetch("/api/convocations");
-        if (convocsResponse.ok) {
-          const convocsData = await convocsResponse.json();
-          setConvocations(convocsData);
-        }
-
         // Charger les données du formulaire (formations et employés)
         const formDataResponse = await fetch("/api/convocations/form-data");
         if (formDataResponse.ok) {
@@ -134,7 +147,7 @@ export default function ConvocationsPage() {
       conv.employees.some((e) =>
         e.name.toLowerCase().includes(search.toLowerCase()),
       );
-    const matchesStatus = !filterStatus || conv.status === filterStatus;
+    const matchesStatus = !filterStatus || filterStatus === "archived" || conv.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
@@ -228,6 +241,30 @@ export default function ConvocationsPage() {
       toast.error("Erreur", "Une erreur est survenue lors de l'envoi");
     } finally {
       setSendingId(null);
+    }
+  };
+
+  const setConvocationArchived = async (id: string, archived: boolean) => {
+    try {
+      const response = await fetch(`/api/convocations/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isArchived: archived }),
+      });
+      if (response.ok) {
+        toast.success(
+          archived ? "Convocation archivée" : "Convocation désarchivée",
+          archived
+            ? "La convocation a été retirée de la liste principale"
+            : "La convocation est de nouveau dans la liste principale",
+        );
+        fetchConvocations();
+      } else {
+        toast.error("Erreur", "Impossible de mettre à jour la convocation");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      toast.error("Erreur", "Une erreur est survenue");
     }
   };
 
@@ -542,6 +579,7 @@ export default function ConvocationsPage() {
                 <option value="draft">Brouillons</option>
                 <option value="sent">Envoyées</option>
                 <option value="completed">Clôturées</option>
+                <option value="archived">Archivées</option>
               </Select>
             </div>
             {(search || filterStatus) && (
@@ -598,7 +636,14 @@ export default function ConvocationsPage() {
                       )}
                     </p>
                   </div>
-                  {getStatusBadge(convocation.status)}
+                  <div className="flex items-center gap-2">
+                    {getStatusBadge(convocation.status)}
+                    {convocation.isArchived && (
+                      <Badge className="bg-slate-200 text-slate-700">
+                        Archivée
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -697,6 +742,31 @@ export default function ConvocationsPage() {
                           Envoyer
                         </>
                       )}
+                    </Button>
+                  )}
+                  {!convocation.isArchived &&
+                    convocation.status === "completed" && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-slate-600 hover:text-slate-800"
+                        onClick={() =>
+                          setConvocationArchived(convocation.id, true)
+                        }
+                      >
+                        Archiver
+                      </Button>
+                    )}
+                  {convocation.isArchived && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-slate-600 hover:text-slate-800"
+                      onClick={() =>
+                        setConvocationArchived(convocation.id, false)
+                      }
+                    >
+                      Désarchiver
                     </Button>
                   )}
                   <Button

@@ -71,6 +71,8 @@ interface TrainingSession {
   totalCost: number | null;
   attendees: Attendee[];
   createdAt: string;
+  isArchived?: boolean;
+  archivedAt?: string | null;
 }
 
 const STATUS_CONFIG: Record<
@@ -102,6 +104,11 @@ const STATUS_CONFIG: Record<
     color: "bg-red-100 text-red-700",
     icon: <XCircle className="h-3 w-3" />,
   },
+  ARCHIVED: {
+    label: "Archivée",
+    color: "bg-slate-200 text-slate-700",
+    icon: <Clock className="h-3 w-3" />,
+  },
 };
 
 export default function SessionsPage() {
@@ -124,6 +131,10 @@ export default function SessionsPage() {
 
   useEffect(() => {
     fetchSessions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStatus]);
+
+  useEffect(() => {
     // Charger le nom de l'entreprise pour le PDF
     fetch("/api/convocations/form-data")
       .then((r) => (r.ok ? r.json() : null))
@@ -135,13 +146,19 @@ export default function SessionsPage() {
 
   const fetchSessions = async () => {
     try {
-      const response = await fetch("/api/sessions");
+      const url =
+        filterStatus === "ARCHIVED"
+          ? "/api/sessions?status=ARCHIVED"
+          : "/api/sessions";
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setSessions(data);
 
-        // Vérifier et clôturer automatiquement les sessions passées
-        autoCompletePassedSessions(data);
+        // Clôture automatique uniquement sur la vue active (pas les archives)
+        if (filterStatus !== "ARCHIVED") {
+          autoCompletePassedSessions(data);
+        }
       }
     } catch (error) {
       console.error("Erreur:", error);
@@ -308,6 +325,30 @@ export default function SessionsPage() {
     }
   };
 
+  const setSessionArchived = async (sessionId: string, archived: boolean) => {
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isArchived: archived }),
+      });
+      if (response.ok) {
+        toast.success(
+          archived ? "Session archivée" : "Session désarchivée",
+          archived
+            ? "La session a été archivée et retirée de la liste principale"
+            : "La session est de nouveau dans la liste principale",
+        );
+        fetchSessions();
+      } else {
+        toast.error("Erreur", "Impossible de mettre à jour la session");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      toast.error("Erreur", "Une erreur est survenue");
+    }
+  };
+
   const deleteSession = async (sessionId: string) => {
     try {
       const response = await fetch(`/api/sessions/${sessionId}`, {
@@ -347,7 +388,7 @@ export default function SessionsPage() {
       if (!matchFormation && !matchCenter && !matchEmployee) return false;
     }
 
-    if (filterStatus && session.status !== filterStatus) return false;
+    if (filterStatus && filterStatus !== "ARCHIVED" && session.status !== filterStatus) return false;
 
     return true;
   });
@@ -605,6 +646,12 @@ export default function SessionsPage() {
                         {statusConfig.label}
                       </Badge>
 
+                      {session.isArchived && (
+                        <Badge className="bg-slate-200 text-slate-700">
+                          Archivée
+                        </Badge>
+                      )}
+
                       {/* Convocations envoyées */}
                       {session.convocationsSentAt && (
                         <Badge className="flex items-center gap-1 bg-green-100 text-green-700 border-green-200">
@@ -839,6 +886,34 @@ export default function SessionsPage() {
                               Annuler
                             </Button>
                           )}
+                        {!session.isArchived &&
+                          (session.status === "COMPLETED" ||
+                            session.status === "CANCELLED") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                await setSessionArchived(session.id, true);
+                              }}
+                              className="text-slate-600 hover:text-slate-800"
+                            >
+                              Archiver
+                            </Button>
+                          )}
+                        {session.isArchived && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              await setSessionArchived(session.id, false);
+                            }}
+                            className="text-slate-600 hover:text-slate-800"
+                          >
+                            Désarchiver
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
