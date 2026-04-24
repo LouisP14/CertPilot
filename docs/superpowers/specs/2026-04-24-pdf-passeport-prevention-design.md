@@ -19,6 +19,25 @@ En parallèle, enrichir le "Rapport complet" existant d'une page dédiée PP pou
 - Fonctions de rendu jsPDF dans [src/lib/pdf-export.ts](../../src/lib/pdf-export.ts) avec charte graphique établie (palette `COLORS`, `drawModernHeader`)
 - Cadre réglementaire : décret n° 2025-748, obligation depuis 16/03/2026, pleine application 01/10/2026
 
+## Prérequis : ajouter le SIRET sur `Company`
+
+Aujourd'hui le modèle `Company` ne stocke pas le SIRET des entreprises clientes. Or :
+- Le CSV officiel ADF exige la colonne `SIRET_EMPLOYEUR` — actuellement laissée vide (`""`) dans [route.ts:263](../../src/app/api/export/passeport-prevention/route.ts#L263). Risque de rejet au dépôt sur moncompteformation.gouv.fr à partir du 01/10/2026 (pleine application).
+- Le PDF audit a plus de valeur avec le SIRET sur la couverture (identification légale standard de tout document RH français).
+
+**Changements à apporter** (inclus dans le scope de cette feature) :
+
+1. **Migration Prisma** — ajouter `siret String?` sur le modèle `Company` (nullable : les clients existants n'en ont pas, on ne veut pas les bloquer)
+2. **Settings entreprise** — ajouter un champ "SIRET" dans `src/app/dashboard/settings/settings-forms.tsx` (composant `CompanyForm`), avec validation format 14 chiffres
+3. **API settings** — `src/app/api/settings/company/route.ts` accepte et sauvegarde `siret`
+4. **Validation SIRET** — nouveau fichier `src/lib/siret.ts` :
+   - `isValidSiret(value: string): boolean` : exactement 14 chiffres après suppression des espaces
+   - `formatSiret(value: string): string` : affichage formaté `123 456 789 00012` (groupes 3/3/3/5)
+   - **Pas de contrôle Luhn** — les SIRETs de La Poste et certaines entités dérogent au Luhn, on évite les faux négatifs
+5. **CSV officiel** — `src/app/api/export/passeport-prevention/route.ts` remplit désormais `SIRET_EMPLOYEUR` avec `company.siret` (ou `""` si non renseigné, comportement actuel fallback)
+6. **PDF Passeport Prévention** — affiche le SIRET en couverture page 1 (voir ci-dessous). Si non renseigné : mention "SIRET non renseigné — à compléter dans Paramètres > Entreprise" en jaune d'alerte
+7. **Pas d'impact** sur le rapport complet existant (le SIRET pourra être ajouté plus tard à sa page de couverture — hors scope immédiat)
+
 ## Structure du PDF Passeport Prévention (standalone)
 
 7 pages fixes, générées dans cet ordre :
@@ -28,7 +47,8 @@ En parallèle, enrichir le "Rapport complet" existant d'une page dédiée PP pou
 - Header visuel style CertPilot (fond `COLORS.primary`, bande accent `COLORS.accent`, badge entreprise)
 - Titre : "Rapport Passeport de Prévention"
 - Sous-titre : période (ex: "Année 2026" ou "Année 2026 — T2 (avril - juin)")
-- Bloc infos entreprise : nom entreprise + date de génération (SIRET non stocké en base — hors scope de cette feature)
+- Bloc infos entreprise : nom entreprise + SIRET formaté (`123 456 789 00012`) + date de génération
+  - Si SIRET non renseigné → affichage en jaune alerte : "SIRET non renseigné — à compléter dans Paramètres > Entreprise avant le prochain dépôt officiel"
 - **4 compteurs en cartes** (mêmes labels que l'UI pour cohérence) : À déclarer (prêtes) / Déjà déclarées / En attente (NIR manquant) / Total concernées
 - **Indicateur de conformité PP** : `declared / totalConcerned * 100` — barre de progression colorée (vert ≥ 80%, orange ≥ 50%, rouge < 50%)
 - Footer page 1 : mention "Document généré automatiquement par CertPilot"
@@ -138,7 +158,7 @@ if (type === "passeport_prevention") {
       where: { companyId, isActive: true },
       select: { id: true, department: true, nir: true, /* ... */ },
     }),
-    prisma.company.findUnique({ where: { id: companyId }, select: { name: true } }),
+    prisma.company.findUnique({ where: { id: companyId }, select: { name: true, siret: true } }),
   ]);
 
   // Agréger : séparer prêtes / bloquées NIR / déjà déclarées
@@ -152,6 +172,7 @@ if (type === "passeport_prevention") {
 ```typescript
 {
   companyName: string | null,
+  companySiret: string | null,  // brut, 14 chiffres ou null si non renseigné
   period: { year: string, trimestre: string | null, label: string },
   counters: {
     totalConcerned: number,
@@ -264,15 +285,23 @@ Pas de tests unitaires sur le rendu jsPDF (visuel, non critique, couverture diff
 5. Rapport complet sans données PP → pas de page 4, structure existante intacte
 6. Compte MANAGER → bouton PDF disabled/caché, accès API 403
 7. NIR affiché dans le PDF : vérifier format masqué `1 85 04 ** *** **`
+8. **SIRET renseigné** dans Paramètres → affiché formaté en page 1 du PDF et présent dans le CSV officiel (colonne `SIRET_EMPLOYEUR`)
+9. **SIRET vide** dans Paramètres → alerte jaune sur PDF page 1, CSV avec colonne `SIRET_EMPLOYEUR` vide (comportement fallback)
+10. **SIRET invalide** (ex: 13 chiffres ou lettres) → rejet côté client ET côté API avec message d'erreur clair
 
 ## Fichiers modifiés
 
 - **Créés** :
   - `src/lib/nir.ts` — utilitaire `maskNir`
+  - `src/lib/siret.ts` — utilitaires `isValidSiret` et `formatSiret`
   - `src/lib/passeport-prevention-period.ts` — `parseDateFilter` extrait
+  - `prisma/migrations/{timestamp}_add_company_siret/migration.sql` — ajout champ `siret` sur Company
 - **Modifiés** :
+  - `prisma/schema.prisma` — ajout `siret String?` sur `Company`
+  - `src/app/dashboard/settings/settings-forms.tsx` — input SIRET dans `CompanyForm`, validation côté client
+  - `src/app/api/settings/company/route.ts` — accepte et sauvegarde `siret` (validation côté serveur via `isValidSiret`)
   - `src/app/api/export/pdf-data/route.ts` — nouveau cas `type=passeport_prevention`, extension de `full_report`
-  - `src/app/api/export/passeport-prevention/route.ts` — import depuis le nouvel util `passeport-prevention-period.ts`
+  - `src/app/api/export/passeport-prevention/route.ts` — import depuis le nouvel util `passeport-prevention-period.ts`, remplissage de `SIRET_EMPLOYEUR` avec `company.siret`
   - `src/lib/pdf-export.ts` — nouvelle fonction `exportPasseportPreventionToPDF`, modification de `exportFullReportToPDF`
   - `src/app/dashboard/export/view.tsx` — nouveau bouton dans `PasseportPreventionExport`
 
@@ -284,3 +313,6 @@ Pas de tests unitaires sur le rendu jsPDF (visuel, non critique, couverture diff
 - Export au format ODF ou autre
 - Historique étendu > 50 déclarations (pagination PDF)
 - Personnalisation de la charte graphique par entreprise
+- Affichage du SIRET sur la couverture du Rapport complet existant (à faire séparément si besoin — le champ `siret` sera disponible en base après cette feature)
+- Contrôle de clé Luhn sur le SIRET (trop restrictif, faux négatifs connus sur certaines entités comme La Poste)
+- Récupération automatique du SIRET via API INSEE/Sirene (saisie manuelle uniquement dans cette itération)
